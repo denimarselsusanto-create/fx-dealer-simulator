@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Market Trader Simulator v6</title>
+<style>
+:root{--bg:#070707;--pn:#151515;--in:#0e0e0e;--ln:#2b2b2b;--tx:#f4f4f4;--mu:#9a9a9a;--bl:#5b8def;--up:#4fd39a;--dn:#ff6b6b;--am:#ffb340;--bn:#352607}
+[data-theme=light]{--bg:#eaf0f6;--pn:#fff;--in:#f2f6fa;--ln:#d3dde8;--tx:#0e1b26;--mu:#5d7083;--bn:#fff0cf}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.4 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select{font:inherit;color:var(--tx);background:var(--in);border:1px solid var(--ln);border-radius:5px;padding:5px 9px}
+button{cursor:pointer}button:hover:not(:disabled){border-color:var(--mu)}button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--bl);outline-offset:1px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:9px 14px 6px;position:relative}
+#scn{font-weight:650;font-size:15px;border:0;background:none;padding:0;max-width:230px}
+.nm{border:1px solid var(--ln);border-radius:5px;padding:4px 9px;color:var(--mu)}.nm b{color:var(--tx)}
+.lnk{color:var(--mu);text-decoration:underline;cursor:pointer;background:none;border:0;padding:0}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:var(--up)}.dot.p{background:var(--am)}
+#clock{font-size:30px;font-weight:300;font-variant-numeric:tabular-nums}
+.sp{flex:1}.mu{color:var(--mu)}.up{color:var(--up)}.dn{color:var(--dn)}.am{color:var(--am)}
+#tl{position:relative;height:8px;margin:0 14px;border-bottom:1px solid var(--ln)}
+#tl i{position:absolute;bottom:0;width:2px;background:var(--tx);opacity:.8}
+#tl b{position:absolute;left:0;bottom:-1px;height:3px;background:var(--bl)}
+#banner{margin:8px 14px 0;padding:10px 14px;border-radius:6px;background:var(--bn);border:1px solid #6b5518;display:none}
+main{display:grid;grid-template-columns:310px minmax(0,1.1fr) minmax(0,1fr) 380px;gap:10px;padding:10px 14px 18px;align-items:stretch}
+@media(max-width:1100px){main{grid-template-columns:1fr 1fr}}
+@media(max-width:850px){main{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:90px}
+.pn{position:relative;background:var(--pn);border:1px solid #1e1e1e;border-radius:6px;padding:12px}
+.pn>.ph,.pn>.tabs{padding-right:22px}.tabs button{white-space:nowrap}
+.gr{position:absolute;top:7px;right:7px;width:18px;height:18px;line-height:18px;text-align:center;color:var(--mu);cursor:grab;border-radius:4px;user-select:none;touch-action:none;opacity:.55}.gr:hover{opacity:1;background:var(--in)}
+.pn.drag{position:fixed;z-index:60;pointer-events:none;opacity:.92;box-shadow:0 12px 36px #000c}.phd{border:1px dashed var(--mu);border-radius:6px;background:#ffffff0a}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ph h3{margin:0;font-size:15px;font-weight:600;border-left:3px solid var(--bl);padding-left:8px}.ph h3 span{font-weight:300;color:var(--mu)}
+.big{font-size:20px;font-weight:700}
+.kv{display:flex;justify-content:space-between;padding:2px 0}.kv span:first-child{color:var(--mu)}
+.lim{height:4px;background:var(--ln);border-radius:2px;margin:3px 0}.lim i{display:block;height:100%;background:var(--bl);border-radius:2px}
+.tabs{display:flex;gap:0}.tabs button{border-radius:0;border-color:var(--ln)}.tabs button.on{background:var(--bg);border-color:var(--tx)}
+.sw{position:relative;width:34px;height:18px;border-radius:9px;background:var(--ln);cursor:pointer;display:inline-block;vertical-align:middle;margin:0 6px}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--tx);transition:.15s}.sw.on{background:var(--bl)}.sw.on::after{left:18px}
+.call{border-top:1px solid var(--ln);padding:10px 0}.call:first-child{border:0}
+.call .ch{display:flex;align-items:baseline;gap:8px}.call .ch .tm{margin-left:auto;color:var(--am);font-size:15px;border-bottom:2px solid var(--am);font-variant-numeric:tabular-nums}
+.call .cn{font-weight:600;margin:5px 0}.call .cn small{font-weight:400;color:var(--mu);margin-left:6px}
+.cr{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.cr input{width:92px;font-size:15px;font-weight:600}
+.cr .go{margin-left:auto}
+.ent{display:flex;align-items:center;gap:8px;margin:10px 0 8px;font-size:15px}.ent input{width:70px;text-align:right;font-weight:700}
+.pr{display:grid;grid-template-columns:1fr auto 1fr auto;gap:6px}.pr input{width:100%;font-size:15px}
+.l4{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:6px;align-items:center;font-size:12px;color:var(--mu)}
+.l4 button{font-weight:700;font-size:12.5px}.l4 .s{background:#7a2b2b;border-color:#a33}.l4 .b{background:#1f6b4f;border-color:#2a9}
+.bb{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;margin:8px 0 6px;font-size:20px;font-weight:600;cursor:pointer}
+.bb small{font-size:11px;font-weight:400;color:var(--mu);text-align:center;padding:0 8px}.bb span:first-child{text-align:right}
+.lr{display:grid;grid-template-columns:1fr 1fr;font-size:14px;font-variant-numeric:tabular-nums}
+.lr div{display:flex;justify-content:space-between;padding:3px 6px;margin:1px;cursor:pointer}
+.lr .l{background:linear-gradient(to left,rgba(255,107,107,.28) var(--w),transparent 0)}.lr .r{background:linear-gradient(to right,rgba(53,212,154,.28) var(--w),transparent 0)}
+.lr small{font-size:11.5px;color:var(--mu);align-self:center}
+canvas{width:100%;height:290px;display:block}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,td{padding:4px 6px;text-align:right;border-bottom:1px solid var(--ln)}th:first-child,td:first-child{text-align:left}th{color:var(--mu);font-weight:500}
+.lg{display:flex;gap:9px;padding:7px 0;border-top:1px solid var(--ln)}.lg:first-child{border:0}.ic{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#06141c;font-weight:700}
+.lg b{display:block}.lg small{color:var(--mu)}
+#nbody{max-height:640px;overflow:auto}
+.nw{padding:8px 0;border-top:1px solid var(--ln)}.nw .t{color:var(--mu);font-size:12px;display:flex;justify-content:space-between}.nw h4{margin:3px 0;font-size:15px}.nw p{margin:4px 0;color:var(--mu)}
+.vt{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--ln);border-radius:5px;margin-top:6px}.vt button{border:0;border-radius:0;background:none;font-size:15px}.vt button.on{background:var(--bl);color:#fff}
+.ev{display:grid;grid-template-columns:62px 1fr 56px 56px;gap:6px;padding:6px 0;border-top:1px solid var(--ln)}.ev small{color:var(--mu)}
+dialog{background:var(--pn);color:var(--tx);border:1px solid var(--ln);border-radius:10px;width:min(620px,94%)}dialog::backdrop{background:#000a}
+.menu{position:absolute;right:14px;top:44px;z-index:9;background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:8px 12px;display:none}.menu label{display:block;padding:2px 0}
+.hint{font-size:12px;color:var(--mu)}
+
+/* ===== online layer ===== */
+body.lock main,body.lock #tl{filter:blur(14px);pointer-events:none;user-select:none}
+.pri{background:var(--bl)!important;color:#fff!important;border-color:var(--bl)!important}
+#lobby{position:fixed;inset:0;z-index:90;background:var(--bg);overflow:auto}
+.lbx{max-width:760px;margin:0 auto;padding:28px 18px}.lbx h1{margin:0 0 4px;font-size:26px}.lbx h2{margin:26px 0 4px;font-size:17px}
+.lbx input,.lbx select{width:100%;margin:6px 0;padding:9px 10px;font-size:15px}.lbx .tabs{margin:14px 0 6px}
+.pr2{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}.lbx .kv{display:flex;justify-content:space-between}
+.warn{display:none;margin:12px 0;padding:10px 12px;border-radius:6px;background:var(--bn);border:1px solid #6b5518}
+#lmsg{min-height:20px;margin:8px 0;color:var(--dn)}
+#rep{position:fixed;inset:0;z-index:95;overflow:auto;background:#eef1f5;color:#111;display:none;font-size:13px}
+#rep .pg{max-width:980px;margin:0 auto;padding:16px}#rep .bar{display:flex;gap:8px;align-items:center}
+#rep button{background:#fff;color:#111;border-color:#c5ccd8}#rep button.pri{background:#3b6fd4;color:#fff;border-color:#3b6fd4}
+#rep .sec{background:#fff;border:1px solid #d6dbe3;border-radius:8px;padding:16px 18px;margin:14px 0}
+#rep h1{margin:2px 0;font-size:24px}#rep h2{margin:0 0 8px;font-size:17px}#rep h3{margin:14px 0 6px;font-size:14px}
+#rep .mu2{color:#667085;font-size:12px;font-weight:400}#rep small{color:#667085;display:block}
+#rep .g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}#rep .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#rep .c{border:1px solid #e1e5ec;border-radius:6px;padding:8px 10px}#rep .c b{font-size:17px;display:block}
+#rep .kv{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid #eef0f4}#rep .kv span:first-child{color:#444}
+#rep .up{color:#0a8f5a}#rep .dn{color:#d23a3f}#rep table{font-size:12.5px}#rep td,#rep th{border-bottom:1px solid #e6e9ef}
+#rep .cw{position:relative;height:240px}#rep ol{margin:4px 0;padding-left:20px}#rep li{margin:4px 0}
+@media(max-width:760px){#rep .g2{grid-template-columns:1fr}}
+@media print{body>*:not(#rep){display:none!important}#rep{position:static;overflow:visible;background:#fff}#rep .noprint{display:none!important}
+#rep .sec{break-inside:avoid;page-break-inside:avoid;border-color:#bbb}#rep .pg{max-width:none;padding:0}@page{size:A4;margin:12mm}}
+.fl{display:block;margin:8px 0;color:var(--mu)}.rm2{border:1px solid var(--ln);border-radius:8px;padding:14px;margin-top:12px}
+#rep .tip{cursor:help;color:#3b6fd4;margin-left:4px}#rep .am{color:#c77d00}#rep .bd{display:inline-block;padding:3px 12px;border-radius:12px;font-weight:700;color:#fff}
+#rep .bd.up{background:#0a8f5a}#rep .bd.am{background:#c77d00;color:#fff}#rep .bd.dn{background:#d23a3f}#rep p.nr{font-size:14px;line-height:1.65}
+.scg{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:460px;overflow:auto;margin:8px 0;padding:2px}
+.scc{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--ln);border-radius:6px;padding:12px 14px;background:var(--pn)}
+.scc.on{outline:2px solid var(--bl)}.scc .sct{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.scc .sct b{font-size:15px}
+.scc .tg{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.scc .tg span{background:var(--in);border-radius:3px;padding:3px 8px;font-size:12px;font-weight:600}
+.scc .tg span.cl{font-size:11px}.cl-FI{color:#e8a066}.cl-FX{color:#6c9cff}.cl-EQ{color:#35d49a}.cl-CM{color:#e6c14f}.cl-OT{color:#b48cff}
+.scc .du{font-size:12px;color:var(--mu);border:1px solid var(--ln);border-radius:4px;padding:1px 6px}
+.scc .prc{white-space:nowrap;padding:8px 16px;background:#4a6f94;color:#fff;border:0;border-radius:4px;cursor:pointer;font-weight:600}.scc .prc:hover{filter:brightness(1.15)}
+.scf{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr auto auto;gap:8px;align-items:center;margin-top:10px}
+@media(max-width:900px){.scg{grid-template-columns:1fr}.scf{grid-template-columns:1fr 1fr}}
+.crow{padding:7px 10px;border-bottom:1px solid var(--ln);cursor:pointer}.crow:hover{background:var(--in)}.crow b{font-weight:600}
+
+/* ===== v4: Fixed Income + technical chart + calendar ===== */
+body:not(.isfi) .fionly{display:none!important}
+body.isfi .l4,body.isfi .bb{display:none}body.isfi .lr{display:block}
+.fr{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;padding:3px 8px;margin:1px 0;cursor:pointer;font-variant-numeric:tabular-nums}
+.fr.a{background:linear-gradient(to left,rgba(53,212,154,.26) var(--w),transparent 0)}.fr.b{background:linear-gradient(to right,rgba(255,107,107,.26) var(--w),transparent 0)}
+.fr b{text-align:center;font-weight:500}.fr.a b{color:var(--up)}.fr.b b{color:var(--dn)}.fr.best b{font-size:19px;font-weight:700}.fr small{font-size:12px;color:var(--tx)}.fr.a small{text-align:right}
+.fr:hover{outline:1px solid var(--mu)}.fsp{text-align:center;color:var(--mu);font-size:12px;margin:4px 0}
+.pop{position:absolute;z-index:30;right:12px;top:78px;background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:8px 12px;display:none;min-width:250px;box-shadow:0 8px 24px #0009}
+.pop label{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+#dtb{display:none;gap:4px;margin:4px 0 6px;align-items:center;flex-wrap:wrap}#dtb button{padding:3px 8px}#dtb button.on{background:var(--bl);color:#fff;border-color:var(--bl)}
+.ev3{display:grid;grid-template-columns:1fr 74px 74px;gap:6px;margin:6px 0}.ev3 small{display:block}.evd{color:var(--mu);margin:4px 0}
+.nwb{background:#fff;color:#000;border-radius:3px;padding:0 6px;font-size:11px;font-weight:700}
+.crw{display:flex;justify-content:space-between;padding:3px 0}.crw input{width:110px;text-align:right;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <select id="scn" aria-label="Scenario"></select>
+  <span class="nm">Trading as <b id="who"></b></span><button class="lnk" id="notyou">Not you?</button>
+  <span><span class="dot" id="dot"></span><span id="live">Live</span></span>
+  <span class="sp"></span>
+  <button id="run">▶ Resume</button><select id="spd" aria-label="Speed"><option value="1">1x</option><option value="2">2x</option><option value="4">4x</option><option value="8">8x</option></select>
+  <span id="clock">60:00</span><span class="mu">left</span>
+  <span class="mu" id="next"></span>
+  <span class="sp"></span>
+  <button id="setB">⚙ Settings</button><button id="layB">Layout ▾</button><button id="helpB" aria-label="Help">?</button><button id="thmB" aria-label="Theme">◐</button><button id="dashB">Dashboard</button><button id="finB">Finish &amp; Record Session</button>
+  <div class="menu" id="lay"></div>
+</header>
+<div id="tl"><b id="tlp"></b></div>
+<div id="banner"></div>
+<main>
+  <div class="col">
+    <section class="pn" id="p-pos"><div class="ph"><h3 id="posT"></h3></div><div id="posB"></div></section>
+    <section class="pn" id="p-watch"><div class="ph"><h3>Scenario watch</h3></div><div id="watchB"></div></section>
+    <section class="pn fionly" id="p-risk"><div class="ph"><h3>Bond risk</h3></div><div id="riskB"></div></section>
+    <section class="pn" id="p-brk"><div class="ph"><h3 id="brkT"></h3></div>
+      <div class="l4"><span id="szb"></span><button class="s" id="mSell"></button><button class="b" id="mBuy"></button><span id="sza"></span></div>
+      <div class="bb" id="best"></div><div class="lr" id="lad"></div>
+      <div class="ent"><span class="mu" id="ccy"></span><input id="size" type="number" min="1" step="1" value="20" aria-label="Size in millions"><span class="mu">M</span></div>
+      <div class="pr"><input id="pb" aria-label="Bid price"><button id="bBid">Bid</button><input id="pa" aria-label="Ask price"><button id="bAsk">Ask</button></div>
+    </section>
+  </div>
+  <div class="col"><section class="pn fionly" id="p-calc"><div class="ph"><h3 id="calcT"></h3></div><div id="calcB"></div></section><section class="pn" id="p-calls">
+    <div class="ph"><h3>Calls</h3><span class="mu" id="wait"></span></div>
+    <div class="row" style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="tabs"><button id="tA" class="on"></button><button id="tR"></button></div><span class="mu">Auto-quote<span class="sw" id="auto" role="switch" aria-checked="false" tabindex="0"></span><span id="aq"></span></span></div>
+    <div style="margin-bottom:8px"><button id="cmm" style="width:100%">☎ Call market makers</button></div>
+    <div id="clist"></div>
+  </section></div>
+  <div class="col">
+    <section class="pn" id="p-chart"><div class="ph"><h3 id="chT"></h3><span class="mu" id="chR"></span></div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:4px"><span class="mu">Last</span><b class="big" id="last"></b><span id="dlt"></span><span class="sp"></span><select id="ctype" aria-label="Chart type"><option value="line">Line</option><option value="candle">Candles</option><option value="area">Area</option></select><button id="indB" title="Indicators">〜 Indicators</button><button id="drwB" title="Drawing tools">✎ Draw</button></div><div class="pop" id="indM"></div><div id="dtb"></div><canvas id="cv"></canvas></section>
+    <section class="pn" id="p-ord"><div class="ph"><h3>Orders</h3><span class="mu" id="onum"></span></div><div id="ordB"></div></section>
+    <section class="pn" id="p-log"><div class="ph"><h3>Log</h3><span class="mu" id="lnum"></span></div><div id="logB" style="max-height:300px;overflow:auto"></div></section>
+  </div>
+  <div class="col"><section class="pn" id="p-news">
+    <div class="tabs" style="margin-bottom:8px"><button id="nT" class="on">News</button><button id="cT">Calendar</button><button class="lnk" id="brief2" style="margin-left:auto">Morning brief</button></div>
+    <div id="nbody"></div><div class="ph" style="margin-top:8px"><span class="mu">Online</span><b id="onl">10</b></div>
+  </section></div>
+</main>
+<dialog id="dlg"><div id="dc"></div><div style="text-align:right;margin-top:12px"><button id="dx">Close</button></div></dialog>
+
+<div id="lobby"><div class="lbx">
+ <h1>Market Dealer Simulator</h1><div class="mu">One profile, many dealing games on host-locked servers (same rules, same market for every player). Games are saved online: pause, close the tab, continue later (also from another device). Every game appears on the leaderboard while it is played.</div>
+ <div id="cfgw" class="warn"><b>Supabase is not configured.</b> Fill in <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> at the top of the &lt;script&gt; block.</div>
+ <div id="auth"><div class="tabs"><button id="lt1" class="on">New Profile</button><button id="lt2">Continue Profile</button></div>
+ <div id="lp1"><input id="nn" placeholder="Player name" maxlength="24" autocomplete="off"><input id="np" placeholder="PIN (4-6 digits)" inputmode="numeric" maxlength="6" type="password" autocomplete="off"><button id="nGo" class="pri" style="width:100%;padding:10px">Create profile</button></div>
+ <div id="lp2" style="display:none"><input id="cn" placeholder="Player name" maxlength="24" autocomplete="off"><input id="cp" placeholder="PIN" inputmode="numeric" maxlength="6" type="password" autocomplete="off"><button id="cGo" style="width:100%;padding:10px">Sign in</button></div></div>
+ <div id="prof" style="display:none"><div class="kv" style="align-items:center;margin-top:14px"><span>Signed in as <b id="pnm"></b></span><button id="pout">Sign out</button></div><div id="qc"></div>
+  <div class="pr2"><button id="hostB" class="pri" style="padding:12px">Create Server (Host)</button><button id="joinB" style="padding:12px">Join Server (Player)</button></div><div id="rm"></div><h2>Server tersedia <span class="mu" style="font-size:12px;font-weight:400">dibuat pemain lain · refresh tiap 5 dtk</span></h2><div id="rl" style="overflow-x:auto"></div><h2>Server tersedia <span class="mu" style="font-size:12px;font-weight:400">dibuat pemain lain, refresh tiap 5 dtk</span></h2><div id="srv"></div><h2>My games</h2><div id="glist"></div></div>
+ <div id="lmsg"></div><h2>Global leaderboard <span class="mu" style="font-size:12px;font-weight:400">live, refreshes every 5 s</span></h2><div id="lbBox"></div></div></div>
+<div id="rep"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ============ ISI DI SINI (Supabase > Project Settings > API) ============ */
+const SUPABASE_URL="https://kmwlgwmllityndymybld.supabase.co";          // contoh: https://abcdxyz.supabase.co
+const SUPABASE_ANON_KEY="sb_publishable_A4QufToT3UcNPYCUMTF_CA_Frv9btsa"; // anon / public key
+/* ======================================================================== */
+let RK="a",RNGS=null;const nx=()=>{if(!RNGS)return Math.random();let t=RNGS[RK]=RNGS[RK]+0x6D2B79F5|0;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
+const $=id=>document.getElementById(id),rnd=(a,b)=>a+nx()*(b-a),pick=a=>a[Math.floor(nx()*a.length)];
+const randn=()=>{let u=0;while(!u)u=nx();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*nx())};
+let SESSION=3600;
+const SCB=[
+{id:"idr",title:"Monetary Motion Mayhem",pair:"USD/IDR",base:"USD",qUSD:false,k:1000,px:15.7,dec:3,pip:.001,spr:10,step:10,vol:1.2,limit:500,sizes:[5,10,15,20,25,50,75],strong:15,weak:5,
+ brief:"Rupiah is range-bound ahead of a heavy US data week. Bank Indonesia is expected to hold, but any hawkish surprise could pull USD/IDR sharply lower. You are the dealer for the pair: clients will call for quotes, and the broker screen lets you manage inventory. Keep your position well inside the 500M limit and watch the calendar.",
+ ev:[{t:90,n:"Average Hourly Earnings (YoY)",c:"USA",fc:4.3,pv:4.5,sd:.2,d:1,s:120,u:"%"},{t:420,n:"BI Rate Decision",c:"IDN",fc:6,pv:6,sd:.25,d:2,s:-140,u:"%"},{t:900,n:"CPI (YoY)",c:"USA",fc:3.2,pv:3.4,sd:.1,d:1,s:180,u:"%"},{t:1500,n:"Trade Balance",c:"IDN",fc:2.4,pv:1.9,sd:.6,d:1,s:-25,u:"B"},{t:2100,n:"Nonfarm Payrolls",c:"USA",fc:185,pv:199,sd:40,d:0,s:.45,u:"k"},{t:2700,n:"FOMC Rate Decision",c:"USA",fc:5.5,pv:5.5,sd:.25,d:2,s:150,u:"%"}],
+ nw:[{t:200,h:"Bank Indonesia official signals readiness to intervene in FX market",b:"A deputy governor said the central bank is monitoring volatility and will use all tools to keep the rupiah orderly.",i:-8},{t:600,h:"Foreign outflows from Indonesian bonds accelerate",b:"Offshore investors sold a net amount of government bonds this week, adding pressure on the currency.",i:10},{t:1200,h:"Fed's Waller: more evidence needed before easing",b:"The Fed governor said inflation progress is not yet convincing enough to justify cuts.",i:9},{t:1800,h:"Oil slump eases Indonesia import bill worries",b:"Lower crude prices reduce the energy import bill and support the current account outlook.",i:-7},{t:2400,h:"Regional central bank not ruling out 25 bps hike at next meeting",b:"Policymakers in the region flagged upside inflation risks, lifting Asian currencies briefly.",i:-4}]},
+{id:"cny",title:"Monetary Motion Mayhem",pair:"CNY/IDR",base:"CNY",qUSD:false,k:1,px:2190,dec:1,pip:.5,spr:2,step:2,vol:.35,limit:1500,sizes:[20,50,100,150,200],strong:8,weak:3,
+ brief:"Yuan cross against the rupiah moves slowly: both the PBoC and Bank Indonesia manage their currencies tightly. Importers and exporters call for direct CNY/IDR quotes. Limit is 1,500M CNY.",
+ ev:[{t:150,n:"Caixin Manufacturing PMI",c:"CHN",fc:50.6,pv:50.8,sd:.6,d:1,s:5,u:""},{t:600,n:"PBoC Loan Prime Rate (1Y)",c:"CHN",fc:3.1,pv:3.1,sd:.05,d:2,s:-100,u:"%"},{t:1200,n:"Trade Balance",c:"CHN",fc:85,pv:78,sd:10,d:0,s:.3,u:"B"},{t:1900,n:"BI Rate Decision",c:"IDN",fc:6,pv:6,sd:.25,d:2,s:-9,u:"%"},{t:2500,n:"Industrial Production (YoY)",c:"CHN",fc:5,pv:5.2,sd:.5,d:1,s:6,u:"%"}],
+ nw:[{t:240,h:"PBoC sets yuan fixing firmer than expected",b:"The daily midpoint signalled tolerance for gradual yuan appreciation.",i:4},{t:900,h:"China weighs fresh property stimulus",b:"Officials are drafting measures to support housing demand, lifting risk appetite in Asia.",i:3},{t:1700,h:"Bank Indonesia says rupiah stabilisation continues",b:"Policymakers reiterated intervention in spot and DNDF markets to keep the rupiah orderly.",i:-3}]},
+{id:"eur",title:"Monetary Motion Mayhem",pair:"EUR/IDR",base:"EUR",qUSD:false,k:1,px:17035,dec:0,pip:1,spr:12,step:10,vol:2,limit:300,sizes:[5,10,15,20,25],strong:25,weak:9,
+ brief:"EUR/IDR is a cross, so local liquidity is thinner and spreads are wider than USD/IDR. ECB and German data drive the euro leg, Bank Indonesia the rupiah leg. Limit is 300M EUR.",
+ ev:[{t:120,n:"ZEW Sentiment",c:"DEU",fc:12,pv:9,sd:5,d:0,s:3,u:""},{t:700,n:"Flash CPI (YoY)",c:"EUR",fc:2.4,pv:2.6,sd:.2,d:1,s:90,u:"%"},{t:1300,n:"German Manufacturing PMI",c:"DEU",fc:44,pv:43.5,sd:1.2,d:1,s:12,u:""},{t:2000,n:"ECB Rate Decision",c:"EUR",fc:2,pv:2,sd:.25,d:2,s:120,u:"%"},{t:2700,n:"BI Rate Decision",c:"IDN",fc:6,pv:6,sd:.25,d:2,s:-60,u:"%"}],
+ nw:[{t:260,h:"ECB's Lagarde: policy path remains data-dependent",b:"She said the bank will decide meeting by meeting and avoided signalling the next move.",i:12},{t:950,h:"Eurozone bond yields slip as growth fears resurface",b:"Weaker sentiment data weighed on the euro.",i:-15},{t:1800,h:"Rupiah firms as Indonesian bonds attract inflows",b:"Offshore buyers returned to government bonds, supporting the rupiah.",i:-14}]},
+{id:"chf",title:"Monetary Motion Mayhem",pair:"CHF/IDR",base:"CHF",qUSD:false,k:1,px:17700,dec:0,pip:1,spr:15,step:12,vol:2.2,limit:200,sizes:[5,10,15,20],strong:28,weak:10,
+ brief:"CHF/IDR is the thinnest cross on the screen. The franc reacts to SNB decisions and to global risk-off flows, which can widen spreads fast. Limit is 200M CHF.",
+ ev:[{t:200,n:"Swiss CPI (YoY)",c:"CHE",fc:.3,pv:.2,sd:.2,d:1,s:70,u:"%"},{t:800,n:"KOF Economic Barometer",c:"CHE",fc:101,pv:100,sd:2,d:1,s:8,u:""},{t:1500,n:"SNB Rate Decision",c:"CHE",fc:0,pv:0,sd:.25,d:2,s:130,u:"%"},{t:2100,n:"Trade Balance",c:"CHE",fc:4.2,pv:3.9,sd:.5,d:1,s:15,u:"B"},{t:2700,n:"BI Rate Decision",c:"IDN",fc:6,pv:6,sd:.25,d:2,s:-60,u:"%"}],
+ nw:[{t:300,h:"Swiss franc climbs as safe-haven demand returns",b:"Global equities wobbled, sending investors toward the franc.",i:20},{t:1000,h:"SNB's Schlegel: ready to intervene if franc strength persists",b:"The central bank repeated that it can act in FX markets when needed.",i:-14},{t:2000,h:"Bank Indonesia official signals readiness to intervene",b:"A deputy governor said the bank will keep the rupiah orderly.",i:-12}]}
+];
+SCB.push({id:"jpy",title:"Monetary Motion Mayhem",pair:"USD/JPY",base:"USD",qUSD:true,k:1,px:155.2,dec:2,pip:.01,spr:2,step:2,vol:.75,limit:150,sizes:[5,10,15,20,25,50],strong:60,weak:20,
+ brief:"USD/JPY is the most active and most volatile pair on the screen. The yen reacts violently to US data, BoJ signals and Ministry of Finance warnings, and moves of 30-60 pips in minutes are normal around releases. Spreads are tight (about 2 pips) so edge comes from skewing quotes and managing inventory fast. Position limit is 150M USD.",
+ ev:[{t:120,n:"Average Hourly Earnings (YoY)",c:"USA",fc:3.9,pv:4,sd:.2,d:1,s:150,u:"%"},{t:480,n:"Tokyo CPI (YoY)",c:"JPN",fc:2.6,pv:2.5,sd:.2,d:1,s:-110,u:"%"},{t:900,n:"CPI (YoY)",c:"USA",fc:3.1,pv:3.2,sd:.1,d:1,s:350,u:"%"},{t:1500,n:"BoJ Rate Decision",c:"JPN",fc:.5,pv:.5,sd:.25,d:2,s:-170,u:"%"},{t:2100,n:"Nonfarm Payrolls",c:"USA",fc:175,pv:190,sd:40,d:0,s:1.1,u:"k"},{t:2700,n:"FOMC Rate Decision",c:"USA",fc:4.5,pv:4.5,sd:.25,d:2,s:200,u:"%"}],
+ nw:[{t:200,h:"Japan MoF official warns against excessive yen moves",b:"The vice finance minister said the government is watching FX closely and will respond to disorderly moves.",i:-35},{t:700,h:"US Treasury yields climb as Fed signals patience",b:"Higher US yields widened the rate gap with Japan.",i:30},{t:1200,h:"BoJ's Ueda: will keep adjusting policy if outlook is realised",b:"He said further rate rises remain possible if inflation and wages evolve as projected.",i:-25},{t:1800,h:"Risk-off in equities lifts the yen as a safe haven",b:"A global equity sell-off prompted a sharp unwind of carry trades.",i:-30},{t:2400,h:"Strong US retail sales lift the dollar",b:"Consumer spending beat forecasts, reducing expectations of near-term Fed cuts.",i:25}]});
+(()=>{const K={idr:{vol:.25,spr:6,step:5,es:.3,dv:.3,strong:7,weak:3},cny:{vol:.055,es:.5,dv:.2,strong:4,weak:1.5},eur:{vol:.33,es:.4,dv:.35,strong:11,weak:4},chf:{vol:.38,es:.4,dv:.35,strong:12,weak:4},jpy:{vol:.55,dv:.5,es:.6}};
+SCB.forEach(c=>{const k=K[c.id];if(!k)return;const {es,...r}=k;Object.assign(c,r);c.ev.forEach(e=>e.s*=es);c.nw.forEach(n=>n.i*=es)})})();
+/* ===== KATALOG SKENARIO + GENERATOR INSTRUMEN (v3) — hanya APPEND ke SCB agar indeks game lama tetap valid ===== */
+const hz=(s,k)=>{let a=2166136261;const t=s+"#"+k;for(let i=0;i<t.length;i++){a^=t.charCodeAt(i);a=Math.imul(a,16777619)}return((a>>>0)%10007)/10007};
+const esc=t=>String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const CCY={USD:["USA",1],EUR:["EUR",1.08],GBP:["GBR",1.29],JPY:["JPN",.0065],CHF:["CHE",1.12],CAD:["CAN",.72],AUD:["AUS",.66],MXN:["MEX",.054],BRL:["BRA",.18],TRY:["TUR",.026],PLN:["POL",.25],NGN:["NGA",.00065],IDR:["IDN",.000061],CNY:["CHN",.14],HKD:["HKG",.128]};
+/* [bank, rate, cpi, aktivitas, fc, sd, desimal, unit] */
+const REG={USA:["FOMC Rate Decision",4,3,"Nonfarm Payrolls",175,40,0,"k"],EUR:["ECB Rate Decision",2,2.2,"German Manufacturing PMI",45,1.2,1,""],GBR:["BoE Rate Decision",4,3.4,"GDP (QoQ)",.2,.2,1,"%"],JPN:["BoJ Rate Decision",.5,2.8,"Tankan Large Manufacturers",12,3,0,""],CHE:["SNB Rate Decision",0,.3,"KOF Economic Barometer",101,2,1,""],CAN:["BoC Rate Decision",2.75,2.2,"Employment Change",25,20,0,"k"],AUS:["RBA Rate Decision",3.6,3,"Employment Change",20,15,0,"k"],MEX:["Banxico Rate Decision",7,3.8,"Industrial Production (YoY)",1,1.2,1,"%"],BRA:["Copom Rate Decision",14.5,5,"Retail Sales (MoM)",.3,.6,1,"%"],TUR:["CBRT Rate Decision",40,33,"Trade Balance",-7,1.5,1,"B"],POL:["NBP Rate Decision",4.5,3.2,"Retail Sales (YoY)",3,1.5,1,"%"],NGA:["CBN MPC Rate Decision",27,22,"Trade Balance",1.2,.6,1,"T"],IDN:["BI Rate Decision",5,2,"Trade Balance",2.4,.6,1,"B"],CHN:["PBoC Loan Prime Rate (1Y)",3,.3,"Caixin Manufacturing PMI",50.5,.6,1,""],HKG:["HKMA Base Rate",4.5,1.8,"Retail Sales (YoY)",2,2,1,"%"]};
+function genEv(c){const ev=[],v=c.vol,sym=c.pair;let n=0;
+  if(c.sp==="stk")ev.push({n:"Quarterly Earnings (EPS)",c:sym,fc:1.2,pv:1.05,sd:.15,d:2,u:"",s:+(70*v/.15).toFixed(2)*(hz(sym,"e")<.5?-1:1)});
+  if(c.sp==="oil")ev.push({n:"EIA Crude Oil Inventories",c:"USA",fc:-.8,pv:1.2,sd:2.2,d:1,u:"M",s:-+(45*v/2.2).toFixed(2)});
+  c.reg.forEach((rg,ri)=>{const R=REG[rg];if(!R)return;
+    const add=(nm,fc,sd,d,u,k)=>{const sg=c.fx?(ri?-1:1):(hz(sym,"s"+n)<.5?-1:1);ev.push({n:nm,c:rg,fc,pv:+(fc+(hz(sym,"p"+n)-.5)*sd*1.5).toFixed(d),sd,d,u,s:c.fi?+(-({48:4.5,38:3.2,24:2.2}[k]||3)*c.kv*c.ppbp/sd).toFixed(2):+(sg*k*v/sd).toFixed(2)});n++};
+    add(R[0],R[1],.25,2,"%",48);if(ri===0)add("CPI (YoY)",R[2],.1,1,"%",38);add(R[3],R[4],R[5],R[6],R[7],24)});
+  const slots=[150,520,900,1350,1850,2350,2800];
+  return ev.slice(0,7).map((e,i)=>({e,o:hz(sym,"o"+i)})).sort((a,b)=>a.o-b.o).map((x,i)=>Object.assign(x.e,{t:slots[i]+Math.round((hz(sym,"t"+i)-.5)*80)}))}
+function genNw(c){const sym=c.pair,v=c.vol,r0=REG[c.reg[0]]||REG.USA,cb=r0[0].replace(/ (Rate|Loan).*/,""),ts=[240,900,1500,2100,2750];
+  const T=[[cb+" officials keep policy options open","Policymakers stressed that decisions will depend on incoming data, leaving "+sym+" range-bound."],
+   ["Risk appetite shifts across markets","Cross-asset flows turned abruptly, with "+sym+" reacting to the move in global sentiment."],
+   ["Positioning data show crowded trades in "+sym,"Dealers report one-sided client flow, raising the risk of a sharp reversal."],
+   ["Liquidity thins ahead of key data","Quotes in "+sym+" widened as participants stepped back before the next release."],
+   ["Large corporate flow reported in "+sym,"Several desks noted sizeable orders hitting the screen late in the session."]];
+  return T.map((x,i)=>({t:ts[i]+Math.round((hz(sym,"n"+i)-.5)*120),h:x[0],b:x[1],i:+((hz(sym,"i"+i)<.5?-1:1)*(18+hz(sym,"j"+i)*22)*v).toFixed(2)}))}
+const BRX={FX:"is quoted all session by corporates, hedge funds and real-money clients. Show competitive two-way prices, skew quotes to manage inventory and use the broker screen to adjust risk.",
+ EQ:"is a listed-equity market where clients ask for prices in size and news can gap the price. Sizes are in millions of shares (index scenarios: lots). Levels are indicative simulation prices.",
+ FI:"is quoted in yield (% p.a.): the ladder shows yields, the price moves the opposite way, and risk is measured in DV01. Sizes are USD face value in millions. Rate data and central-bank headlines drive the market.",
+ CM:"is a commodity market where inventory data, geopolitics and the dollar move the price. Sizes are in millions of units (see base label).",
+ FXSWP:"is simulated as forward swap points. Quotes are in points, spreads are wide and moves are slow but steady.",
+ IRS:"is simulated as a swap-rate price proxy (rates up = price down). Sizes are USD-equivalent notional in millions.",
+ BFUT:"is a bond-futures price. Sizes are USD-equivalent notional in millions; rate surprises move it fast.",
+ CDS:"is a credit-spread market quoted in basis points. Sizes are notional in millions; sovereign headlines widen or tighten spreads."};
+/* ===== v4: Fixed Income (quote dalam yield) ===== */
+const bpx=(y,c,n,f)=>{const r=y/100/f,N=Math.round(n*f);let s=0,d=1;for(let k=1;k<=N;k++){d/=1+r;s+=c/f*d}return s+100*d};
+const byld=(p,c,n,f)=>{let y=c>0?c:2;for(let i=0;i<10;i++){const a=bpx(y,c,n,f),sl=(bpx(y+.01,c,n,f)-a)/.01;if(!sl)break;y-=(a-p)/sl;if(y<-5)y=-5;if(y>60)y=60}return y};
+/* TTS: MD = (Pd - P1)/(Pd x dy), P1 = harga bila yield turun 1bp (dy = -0.01%) */
+const bdur=(y,c,n,f)=>{const p=bpx(y,c,n,f);return(bpx(y-.01,c,n,f)-p)/(p*1e-4)};
+/* TTS convexity: selisih kedua +/-1bp dibagi P0, skala 1m (contoh slide 37: 5Y 3% @2.80% => 0.26) */
+const bcvx=(y,c,n,f)=>{const p=bpx(y,c,n,f);return(bpx(y+.01,c,n,f)+bpx(y-.01,c,n,f)-2*p)/p*1e6};
+function bondInit(c,o){const ten=c.ten||10,m=/\s([\d.]+)\//.exec(c.pair),my=/\/(\d{4})/.exec(c.pair);c.fi=1;c.yrs=ten;c.frq=2;c.base="USD";
+  const yg=1.8+ten*.04;c.cpn=m?+m[1]:c.pair==="US10Y"?1.625:Math.round(yg*8)/8;
+  let y0=byld(c.px,c.cpn,ten,2);if(!(y0>.2&&y0<12)){c.px=+bpx(yg,c.cpn,ten,2).toFixed(3);y0=yg}
+  c.iss=c.pair==="US10Y"?"15.02.2016":"15.02."+(my?my[1]-ten:2026-Math.floor(ten/2));
+  const ppb=c.px*bdur(y0,c.cpn,ten,2)*1e-4;c.pip=.001;
+  /* vol harian 10Y (bp) ~ MOVE 80-100 => 5-6 bp; gilt/BTP tertinggi, JGB terendah. Sesi = jam aktif => dipadatkan x1.3 */
+  const rg=/^DE/.test(c.pair)?4.5:/^IT/.test(c.pair)?6.3:/^UK/.test(c.pair)?6.5:/^CA/.test(c.pair)?5:/^JGB/.test(c.pair)?3.5:/^ID/.test(c.pair)?3.6:/^(MSFT|TENT|TNCT|BCGPP|SIEG)/.test(c.pair)?6:5.4,
+    tf=ten<=3?1.05:ten<=7?1.05:ten<=10?1:.92;c.dvol=+(rg*tf).toFixed(2);c.kv=c.dvol/5.4;c.ppbp=ppb/.001;
+  c.fvol=c.dvol/Math.sqrt(6.5)*1.3/60*c.ppbp;c.dv=+(c.ppbp*.07).toFixed(2);c.spr=Math.max(2,Math.round(.2*ppb/.001));o.step=Math.max(2,Math.round(2*ppb/.001));
+  c.sizes=[10,25,50,75,100,150];c.limit=600}
+function finishI(c,h,o){c.id="x"+SCB.length;c.gen=1;c.title=c.pair;if(c.cls==="FI")bondInit(c,o);c.dec=o.dec!=null?o.dec:Math.max(0,Math.ceil(-Math.log10(c.pip)-1e-9));c.step=o.step||c.spr;
+  c.vol=+(c.px*h/100/c.pip/60).toFixed(4);if(c.fi)c.vol=+c.fvol.toFixed(3);c.strong=Math.max(4,Math.round(c.vol*80));c.weak=Math.max(2,Math.round(c.vol*27));
+  c.ev=genEv(c);c.nw=genNw(c);if(o.base)c.base=o.base;
+  c.brief=c.pair+" "+BRX[c.cls]+" Watch the calendar for "+c.reg.join(" / ")+". Keep your position inside the limit.";SCB.push(c)}
+const FXQ=(sym,px,h,o)=>{o=o||{};const [b,q]=sym.split("/"),u=b==="USD";finishI({pair:sym,base:b,qUSD:u,k:1,qv:u?undefined:(o.qv!=null?o.qv:CCY[q][1]),px,pip:o.pip||(q==="JPY"?.01:.0001),spr:o.spr||2,sizes:o.sizes||[5,10,15,20,25,50,75],limit:o.limit||100,cls:"FX",reg:[(CCY[b]||[])[0],(CCY[q]||[])[0]].filter(Boolean),fx:1},h,o)};
+const EQQ=(sym,px,h,o)=>{o=o||{};const ix=px>=1000,pip=px>=10000?1:px>=1000?.5:px<10?.001:.01,f=o.f||1,lim=ix?100:Math.max(.2,+(150/(px*f)).toFixed(1)),
+  sz=ix?[5,10,15,20,25,50]:[.03,.06,.12,.2,.35,.6].map(k=>Math.max(.01,+(lim*k).toFixed(2)));
+  finishI({pair:sym,base:ix?"lot":sym,qUSD:false,k:1,qv:(ix?1e-5:1)*f,px,pip,spr:Math.max(2,Math.round(px*(ix?.00015:.00035)/pip)),sizes:sz,limit:lim,cls:"EQ",reg:o.reg||["USA"],sp:ix?"idx":"stk"},h,o)};
+const FIQ=(sym,px,ten,o)=>{o=o||{};finishI({pair:sym,base:sym,qUSD:false,k:1,qv:.01,px,pip:.01,spr:2,sizes:[5,10,20,25,50,100],limit:150,cls:o.cls||"FI",ten:ten,reg:o.reg||["USA"]},o.cls?.02+.008*ten:.1+.03*ten,o)};
+const CDSQ=(sym,px,qv)=>finishI({pair:sym,base:sym,qUSD:false,k:1,qv,px,pip:.1,spr:3,sizes:[5,10,20,25,50,100],limit:100,cls:"CDS",reg:["IDN"]},.6,{});
+const SWQ=(sym,px,reg)=>finishI({pair:sym,base:sym,qUSD:false,k:1,qv:.0001,px,pip:.1,spr:3,sizes:[10,25,50,75,100,150],limit:300,cls:"FXSWP",reg,fx:1},.8,{});
+const CMQ=(sym,px,h,o)=>{o=o||{};finishI({pair:sym,base:o.base||sym,qUSD:false,k:1,qv:o.qv||1,px,pip:o.pip||.01,spr:o.spr||3,sizes:o.sizes||[.2,.5,1,1.5,2,3],limit:o.limit||5,cls:"CM",reg:o.reg||["USA","CHN"],sp:o.sp||""},h,o)};
+SCB.forEach(c=>{if(!c.cls)c.cls="FX"});
+/* --- FX --- */
+FXQ("USD/MXN",18.6,.10,{spr:8});FXQ("USD/BRL",5.5,.12,{spr:15});FXQ("AUD/USD",.66,.07);FXQ("EUR/USD",1.085,.06);FXQ("USD/CHF",.89,.06);FXQ("USD/CAD",1.38,.05);
+FXQ("GBP/USD",1.29,.06);FXQ("EUR/CHF",.95,.04,{spr:3});FXQ("USD/TRY",38,.12,{pip:.001,spr:20});FXQ("EUR/GBP",.85,.05);FXQ("EUR/PLN",4.27,.06,{spr:8});
+FXQ("BRL/MXN",3.38,.12,{spr:15});FXQ("USD/NGN",1550,.08,{pip:.5,spr:6});
+finishI({pair:"BTC/USD",base:"lot",qUSD:false,k:1,qv:1e-5,px:95000,pip:1,spr:30,sizes:[1,2,3,5,8,10],limit:20,cls:"FX",reg:["USA"]},.4,{});
+finishI({pair:"XRP/USD",base:"XRP",qUSD:false,k:1,qv:1,px:2.3,pip:.0001,spr:20,sizes:[5,10,20,30,50,75],limit:150,cls:"FX",reg:["USA"]},.5,{});
+/* --- Equity & indeks --- */
+EQQ("0941.HK",78,.3,{f:.128,reg:["HKG","CHN"]});EQQ("HSI",20500,.25,{f:.128,reg:["HKG","CHN"]});EQQ("DAX",24000,.2,{f:1.08,reg:["EUR"]});EQQ("NDX",25000,.3);EQQ("SPX",6500,.2);
+EQQ("FTSE-100",9300,.15,{f:1.29,reg:["GBR"]});EQQ("SPY",650,.2);EQQ("FB",700,.45);EQQ("DB",29,.4,{f:1.08,reg:["EUR"]});EQQ("TSLA",320,.7);EQQ("CLM",70,.35);EQQ("CLU",70.5,.35);
+EQQ("GLD-SPDR",310,.25);EQQ("MRK",85,.3);EQQ("XOM",110,.3);EQQ("AMZN",230,.4);EQQ("URW",70,.35,{f:1.08,reg:["EUR"]});EQQ("VOW",95,.35,{f:1.08,reg:["EUR"]});
+EQQ("TM",200,.35,{reg:["JPN","USA"]});EQQ("BBD.B",85,.5,{f:.72,reg:["CAN"]});EQQ("PFE",26,.3);EQQ("SMSN",42,.4);EQQ("NESN",80,.25,{f:1.12,reg:["CHE"]});
+EQQ("UBSG",30,.35,{f:1.12,reg:["CHE"]});EQQ("LOGN",85,.4,{f:1.12,reg:["CHE"]});EQQ("NOVN",95,.3,{f:1.12,reg:["CHE"]});EQQ("ROG",270,.3,{f:1.12,reg:["CHE"]});
+EQQ("ABBN",55,.3,{f:1.12,reg:["CHE"]});EQQ("RY",190,.25,{f:.72,reg:["CAN"]});EQQ("GE",250,.4);EQQ("GM",55,.4);EQQ("AIR",170,.35,{f:1.08,reg:["EUR"]});
+EQQ("CNQ",33,.35,{f:.72,reg:["CAN"]});EQQ("AAPL",240,.3);EQQ("FGP",2.1,.5,{f:1.29,reg:["GBR"]});EQQ("TSMC",200,.4,{reg:["USA","CHN"]});
+/* --- Obligasi / IRS / Bond futures / CDS / FX swap --- */
+FIQ("US2Y",99.6,2);FIQ("US10Y",96.9446,10);FIQ("DE10Y",98.5,10,{reg:["EUR"]});FIQ("DE2Y",99.8,2,{reg:["EUR"]});FIQ("IT10Y",97.2,10,{reg:["EUR"]});FIQ("UK10Y",95.5,10,{reg:["GBR"]});
+FIQ("CA10Y",97.4,10,{reg:["CAN"]});FIQ("JGB10Y",93.8,10,{reg:["JPN"]});FIQ("ID10Y",98.8,10,{reg:["IDN"]});FIQ("IDG0000102035",99.3,10,{reg:["IDN"]});
+FIQ("MSFT10Y",98.4,10);FIQ("MSFT10YN",98.4,10);FIQ("TENT10Y",97.9,10,{reg:["CHN","USA"]});FIQ("TENT7Y",98.3,7,{reg:["CHN","USA"]});FIQ("TNCT10Y",97.9,10,{reg:["CHN","USA"]});
+FIQ("BCGPP",99,5);FIQ("SIEG 0.5/2034",87.5,8,{reg:["EUR"]});
+FIQ("EUR30Y",100,30,{cls:"IRS",reg:["EUR"]});FIQ("EUR10Y",100,10,{cls:"IRS",reg:["EUR"]});FIQ("EUR2Y",100,2,{cls:"IRS",reg:["EUR"]});
+FIQ("FGBLc3",131.5,10,{cls:"BFUT",reg:["EUR"]});FIQ("US2YFUT",103.5,2,{cls:"BFUT"});FIQ("US10YFUT",111,10,{cls:"BFUT"});
+CDSQ("IDGV2YUSAC",45,.00018);CDSQ("IDGV10YUSAC",75,.00045);
+SWQ("EUR/USD3M",24.5,["EUR","USA"]);SWQ("EUR/USD1Y",98,["EUR","USA"]);SWQ("USD/IDR3M",310,["USA","IDN"]);SWQ("USD/JPY3M",105,["USA","JPN"]);SWQ("USD/JPY6M",205,["USA","JPN"]);SWQ("USD/JPY12M",395,["USA","JPN"]);
+/* --- Komoditas --- */
+CMQ("OIL",68,.3,{sp:"oil"});CMQ("OIL-CL.1",68,.3,{sp:"oil"});CMQ("OIL-CLM22",68,.3,{sp:"oil"});CMQ("OIL-CLU22",68.4,.3,{sp:"oil"});CMQ("OIL-CLC1",68,.3,{sp:"oil"});
+CMQ("GOLD-GC",3400,.25,{pip:.1,spr:4,qv:.001,base:"k-oz",sizes:[1,2,5,10,15,20],limit:50});CMQ("COPPER-HGC1",4.7,.35,{pip:.0005,spr:3,sizes:[.5,1,2,3,5,10],limit:20});
+CMQ("ETHK24",2.9,.4,{pip:.001,spr:5,qv:.18,reg:["BRA"],sizes:[5,10,20,30,50,75],limit:100});CMQ("ETHK",2.9,.4,{pip:.001,spr:5,qv:.18,reg:["BRA"],sizes:[5,10,20,30,50,75],limit:100});CMQ("LTC",9.5,.5,{spr:6,reg:["CHN","USA"],sizes:[.5,1,2,3,5,10],limit:20});
+CMQ("BTC-F",95000,.4,{pip:5,spr:8,qv:1e-5,base:"lot",sizes:[1,2,3,5,8,10],limit:20,reg:["USA"]});
+/* --- Katalog 213 skenario: Judul|durasi(mnt)|instrumen;instrumen|tingkat (e/m/h) --- */
+const AL={"China Mobile":"0941.HK","USD10Y":"US10Y"};
+const CATTXT=`Order, Progress and Pinata|60|USD/MXN;USD/BRL|m
+Dodging a bullet|60|China Mobile;HSI|m
+Trading Orchestra|60|US2Y;US10Y|m
+Bonds at Work|60|US10Y|m
+Oil Level 5|60|OIL|m
+Zenith|60|USD/JPY;AUD/USD|h
+Fiddle and Drum|60|FB;US10Y|h
+Heroes and Villains|60|EUR/USD3M;EUR/USD1Y|h
+Hold the phone|60|EUR/USD;USD/CHF|h
+Pushing buttons|60|USD/JPY;USD/CHF|h
+Loonie Tunes|60|USD/CAD;USD/CHF|h
+Long story short|60|GBP/USD;EUR/CHF|h
+A Good Pattern 151|15|EUR/USD;USD/CHF|h
+A Good Pattern 152|15|USD/JPY;USD/CHF|h
+A Good Pattern 153|15|GBP/USD;EUR/CHF|h
+A Good Pattern 154|15|USD/CAD;USD/CHF|h
+Shadow of Beta|60|DB;DAX|h
+Swissie pay dirt|60|USD/CHF;GOLD-GC|h
+Triple A Ripple|60|MSFT10Y;US10Y|h
+Turkish delight|60|USD/TRY;EUR/USD|h
+Two Cents on Tencent [FI Tencent vs UST]|60|TENT10Y;US10Y|h
+Until it spills II|60|CLM;CLU|h
+On the Horizon|60|US10Y|h
+On the Horizon II|60|US2Y;US10Y|h
+Swissie coyote hole|60|USD/CHF;GLD-SPDR|h
+Every bp Tells A Story III|60|EUR30Y;FGBLc3|h
+The Merry Swing|60|EUR30Y;FGBLc3|h
+Primal Instincts IV|60|EUR/GBP;EUR/USD|h
+Visor 9|60|DE10Y;DE2Y|h
+Becoming a Whale|60|BTC/USD;XRP/USD|h
+Age against the machines|60|TSLA;NDX|h
+The Merry Swing|60|EUR30Y;FGBLc3|h
+Rates dark game|60|EUR10Y;EUR2Y|h
+Fog of War|60|EUR/USD;EUR/PLN|h
+Oil Level 1|10|OIL-CL.1|m
+Oil Level 2|10|OIL-CL.1|m
+Oil Level 3|10|OIL-CL.1|m
+Oil Level 4|10|OIL-CL.1|m
+Oil Level 6|60|OIL-CLM22;OIL-CLU22|m
+Peaks and Valleys: A Tale of US Yields|60|US2Y;US10Y|m
+The Bank Job|60|US2YFUT;US10YFUT|m
+Rate Ride Rumble|60|IDGV2YUSAC;IDGV10YUSAC|h
+Monetary Motion Mayhem|60|USD/IDR|h
+Bumba meu etanol|60|ETHK24|h
+On the Horizon|60|EUR/USD;US10Y|h
+Dollar Dip Dive|60|USD/IDR|h
+Swap Safari|60|USD/IDR3M|h
+Dollar Dip Dive|60|USD/IDR|h
+Dollar Dramatics|60|USD/IDR;GBP/USD|h
+Sakura Swap Saga|60|USD/JPY3M;USD/JPY12M|h
+Global Currency Convergence Nexus|60|USD/BRL;US10Y;USD/JPY6M|h
+Bonds Across Borders|60|DE10Y;IT10Y|h
+Global Currency Convergence Nexus|90|USD/BRL;US10Y;USD/JPY6M|h
+Treasuries, Trends & Tensions|60|USD/BRL;US10Y;SPY|h
+Policy PingPong|90|USD/BRL;US10Y;SPY|h
+Treasuries, Trends & Tensions USD/BRL vs. US10Y vs. SPY|90|USD/BRL;US10Y;SPY|h
+Treasuries, Trends & Tensions USD/BRL vs. US10Y|120|USD/BRL;US10Y|h
+Global Currency Convergence Nexus USD/BRL vs. USDJPY 6M FX SWP|120|USD/BRL;USD/JPY6M|h
+The 10-Year Tide Turn USD/IDR vs. ID10Y|120|USD/IDR;ID10Y|h
+Treasuries, Trends & Tensions USD/BRL vs. US10Y|90|USD/BRL;US10Y|h
+E2E Session Trading Regression|15|EUR/USD|e
+A Greek Drama|60|EUR/USD|m
+A Latin Fiesta|60|BRL/MXN|m
+A Pill for Economic Recovery|60|MRK|m
+A Random Walk on the Matterhorn|30|USD/CHF|m
+A Random Walk on the Matterhorn II|30|USD/CHF|m
+A muddy business|60|XOM|m
+A tale of an ambitious man|60|TSLA|m
+A to Z journey|60|AMZN|m
+A trip to Confidence Plaza|60|URW|m
+Advanced Fun Trader Three|60|FB|m
+Age against the Machine!|60|TSLA|m
+All mixed up|60|GBP/USD|m
+Along the corridor and up above|60|EUR/USD|m
+American Action Blockbuster|60|USD/JPY|m
+An icy road|60|XOM|m
+Asian Race|60|TM|m
+Automotive Cyborg II|60|VOW|m
+Battery Life|60|TSLA|m
+Becoming a Whale|60|XRP/USD|m
+Becoming a Whale V|60|BTC-F|m
+Big Pharma Boys|60|PFE|m
+Black Hawk Up|60|BBD.B|m
+Blue Chips and Fish please! II|60|SMSN|m
+Bond Voyage: A 10-Year Treasury Journey II|60|US10Y|m
+Bonded by innovation II|60|SIEG 0.5/2034|m
+Bonds at Work|60|US10Y|m
+Buck 'n' Ozzie II|60|AUD/USD|m
+Bull vs Bear II|60|US10Y|m
+Bumba meu etanol II|60|ETHK|m
+Bumba meu etanol IV|60|ETHK|m
+Bunds Gone Wild|60|DE10Y|m
+Central Banks Bounce · Options|60|EUR/USD|m
+Central Banks' Fight Club II|60|EUR/USD|m
+Central Banks' Fight Club II|45|EUR/USD|m
+Change is afoot|60|PFE|m
+Charging into the future|60|TSLA|m
+Chasing the Eagle|60|EUR/USD|m
+Choco madness|60|NESN|m
+Correlated|60|CA10Y|m
+Currency Crossroads: AUD vs. USD|60|AUD/USD|m
+Currency Currents II|60|USD/IDR|m
+Disorderly Day|60|PFE|m
+Disorderly Day|30|PFE|m
+Dodging a bullet III|60|0941.HK|m
+Dollar Capoeira|60|USD/BRL|m
+Dollar Samba|60|USD/BRL|m
+Drifting around II|60|TM|m
+Drilling Through Tensions|60|OIL-CLC1|m
+ECB's Hammer|60|DE10Y|m
+El Rey del Market|60|USD/MXN|m
+Electric Boogie Party|60|GE|m
+EnGulfed|60|GBP/USD|m
+Enter the FED III|60|US10Y|m
+Fibonacci Retracement Hunt|60|USD/CAD|m
+Field Trip to Berlin VI|60|DE10Y|m
+Fix me a Bollinger|60|VOW|m
+Flying High|60|BBD.B|m
+Forex Deluxe Edition|60|USD/CAD|m
+From Li to EV|60|LTC|m
+From Li to EV|60|LTC|m
+From Palo Alto with love|60|TSLA|m
+Fundamental Analysis Task Force|60|USD/CAD|m
+[SI] Funky Business Pro|60|GM|m
+Gaming the Markets III|60|LOGN|m
+Hang in there!|60|TSLA|m
+Happy 100th Birthday on TSX|60|RY|m
+Hungry Hungry Dragon|60|TSLA|m
+In the hands of European Central Bank|60|EUR/USD|m
+Inclusive Investing|60|UBSG|m
+Incursion into the Cable II|60|GBP/USD|m
+Inflecto Voltex|60|TSLA|m
+Intense Fiber II|60|EUR/USD|m
+Introduction to The Funds II|60|USD/CAD|m
+Join the Dark Side|60|GE|m
+[SI] Just another Tuesday|60|GM|m
+Kizuna of Central Banks II|60|USD/JPY|m
+Kung-Fu Pfizer|60|PFE|m
+Loonie Tunes|60|USD/CAD|m
+Los Morlacos|60|USD/MXN|m
+[SI] Meta Hungry|60|FB|m
+Motor All-Stars|60|GM|m
+My first day as a Ninja|60|USD/JPY|m
+Naira Nexus|60|USD/NGN|m
+[SI] Not Just a Number|60|US10Y|m
+Oil Fight V|60|OIL-CL.1|m
+Oil is king II|60|US10Y|m
+On the Horizon IV|60|USD10Y|m
+One Month of Carry III|60|USD/NGN|m
+One Month of Carry IV|60|USD/NGN|m
+Oops!...I did it again II|60|XOM|m
+Open the Book II|60|FB|m
+[SI] Orders Inferno|60|SMSN|m
+Primal Instincts V|60|GBP/USD|m
+Primal Instincts V|100|GBP/USD|m
+Rate Ride Rumble VI|60|ID10Y|m
+Ready Steady Go!|60|TSLA|m
+Red Metal Prophecy II|60|COPPER-HGC1|m
+Red Pill or Blue Pill?|60|NOVN|m
+Request for take-off|10|AIR|m
+Return of the Samurai II|60|USD/JPY|m
+Return of the Samurai II-XL|40|USD/JPY|m
+[SI] Rise of the Machines|60|GM|m
+[SI] River Expansion|60|AMZN|m
+Rock the Roche II|60|ROG|m
+[SI] Rocky Road|60|GE|m
+Shogun Reloaded|60|JGB10Y|m
+Shogun Reloaded II-XL|40|JGB10Y|m
+Shogun Spread|60|USD/JPY|m
+Slip & Slide|60|USD/JPY|m
+Smells Like Musk Spirit|60|TSLA|m
+Statistics Day|60|GBP/USD|m
+Stocks Crusader II|60|DB|m
+Surfing the gas wave|60|CNQ|m
+Tariff Tremors III|60|EUR/USD|m
+[SI] The Bell Curve|60|US10Y|m
+The Empire Cuts Back III|60|OIL-CL.1|m
+The First Bite II|60|AAPL|m
+The Geopolitics of Oil II|60|OIL-CL.1|m
+The Invisible Hand of the...Zuckerberg|60|FB|m
+The Long Arm of Automation|60|ABBN|m
+The Morning Run|60|FGP|m
+The Rates Lie Heavier|60|EUR/USD|m
+The Rates Lie Heavier|45|EUR/USD|m
+The Return of Economic Data|60|EUR/USD|m
+The Rolling Stones II|60|FTSE-100|m
+The Shadow of Beta|60|DB|m
+The Supply Fortress Meets Demand Weakness IV|46|OIL-CLC1|m
+The Tariff That Wasn't II|60|TSMC|m
+The Yield Curve Gambit II|60|UK10Y|m
+The Yield Yodel|60|DE10Y|m
+Time to Ride II|60|TM|m
+Trade War II|60|CA10Y|m
+Trading Orchestra|60|US10Y|m
+Tread the Boards III|35|EUR/USD|m
+Triple A Ripple IV|60|MSFT10YN|m
+Triple A Ripple II|60|MSFT10Y|m
+True Trade Eight|60|EUR/USD|m
+Turbocharge my account! III|60|TSLA|m
+Turbocharge my account! III-XL|40|TSLA|m
+Turkish Delight|60|USD/TRY|m
+Two Cents on Tencent II [all yield]|60|TENT7Y|m
+Two Cents on Tencent [spread] II|60|TNCT10Y|m
+Waiting for the Action|60|TM|m
+Where is my Alpha?|60|USD/CAD|m
+[SI] Wild West IX|60|GE|m
+Year of the Rat III|60|BCGPP|m
+Yield Yoyo|60|JGB10Y|m
+Zenith|60|USD/JPY|m
+The Greeks Are Coming|58|SPX|m
+Tightening Tides|60|USD/IDR|m
+The 10-Year Tussle|60|IDG0000102035|m
+Central Banks Bounce|60|EUR/USD|m`;
+const scIdx=s=>SCB.findIndex(c=>c.pair===s);
+const CAT=CATTXT.split("\n").map(l=>{const [n,d,ins,df]=l.split("|"),I=ins.split(";").map(x=>AL[x]||x);
+  return{n,d:+d,ins:I,df:{e:"easy",m:"medium",h:"hard"}[df],cls:[...new Set(I.map(x=>(SCB[scIdx(x)]||{}).cls).filter(Boolean))]}}).filter(s=>s.ins.every(x=>scIdx(x)>=0));
+
+const CL=[{n:"Northwind Corp",ty:"Corporate",inf:0},{n:"Redwood Imports",ty:"Corporate",inf:0},{n:"Halcyon Capital",ty:"Hedge fund",inf:1},{n:"Apex Macro Fund",ty:"Hedge fund",inf:1},{n:"Orion Pension",ty:"Real money",inf:.3}];
+CL.forEach(c=>c.pat=c.inf>.5?.85:c.inf?1:1.2);
+const MMN=["Atlas Securities","Meridian Bank","Pacific Markets","Sentosa FX"];
+const BOTN=["Alex M.","Priya S.","Jordan K.","Mei L.","Tomás R.","Sara B.","Kenji O.","Nadia F.","Liam W."];
+const DEFCFG={on:1,int:15,ans:30,large:20,one:25,two:25,prop:50,ib:1,br:1,pl:30,pm:2,ref:5};let CFG={...DEFCFG};try{Object.assign(CFG,JSON.parse(localStorage.getItem("mts_cfg")))}catch(e){}
+let S,ALL=[],cur=0,pi=0,fd=0,nameU=localStorage.getItem("mts_name")||"Trader";
+const yld=p=>byld(p,S.sc.cpn,S.sc.yrs,S.sc.frq),dur=()=>bdur(yld(S.mid),S.sc.cpn,S.sc.yrs,S.sc.frq),/* DV01 = N x (Pd/100) x MD x 0.01% ($ untuk turun 1bp; long = positif). PV01 = Pd x MD x 0.01% per 100 nominal */
+dv01=q=>q*1e6*(S.mid/100)*dur()*1e-4,pv01=()=>S.mid*dur()*1e-4;
+const fpv=v=>v.toFixed(S.sc.fi?4:S.sc.dec),fp=p=>fpv(S.sc.fi?yld(p):p),fu=p=>fp(p)+(S.sc.fi?"%":""),pips=x=>x/S.sc.pip,ip=v=>S.sc.fi?+bpx(v,S.sc.cpn,S.sc.yrs,S.sc.frq).toFixed(S.sc.dec):v;
+const fK=v=>{const a=Math.abs(v);return a>=1e6?(a/1e6).toFixed(2)+"M":a>=1e3?(a/1e3).toFixed(1)+"K":a.toFixed(0)},sK=v=>(v<0?"−":"")+fK(v);
+const mm=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
+const TT=s=>"T+"+String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0");
+const fM=x=>{x=Math.abs(x);return x>=1000?(x/1000).toFixed(2)+"B":(+x.toFixed(x<1?2:1))+"M"};
+const fU=v=>{const a=Math.abs(v),s=v<0?"−":"+";return s+(a>=1e6?(a/1e6).toFixed(2)+"M":a>=1e3?(a/1e3).toFixed(1)+"k":a.toFixed(0))};
+const cu=v=>v>=0?"up":"dn";
+let USDIDR=15700;const cv=()=>S.sc.qUSD?1/S.mid:S.sc.qv!=null?S.sc.qv:S.sc.k/(S.sc.id==="idr"?S.mid*1000:USDIDR);
+function agg(){const x=S;let r=0,u=0,e=0,g=0;ALL.forEach(t=>{S=t;r+=t.real;u+=unreal();const v=t.pos*t.mid*t.sc.k/(ALL[0].mid*1000);e+=v;g+=Math.abs(v)});S=x;return{r,u,e,g}}
+function pp(t){const x=S;S=t;const v=t.real+unreal();S=x;return v}
+
+/* ---------- sesi ---------- */
+function tune(sc,rm){const f=SESSION/3600,nm={std:1,calm:.5,vol:1.6,off:0}[rm.news];sc.limit=rm.limit;sc.px=rm.px||sc.px;if(!nm){sc.ev=[];sc.nw=[]}
+  sc.ev.forEach(e=>{e.t*=f;e.s*=nm});sc.nw.forEach(n=>{n.t*=f;n.i*=nm})}
+const cfgOf=r=>({on:1,int:r.int,ans:r.ans,large:r.large,one:0,two:r.two,prop:r.prop,ib:r.ib,br:r.br,pl:r.pl,pm:r.pm,ref:r.ref});
+/* ===== v6 (v5 + DV01/PV01 ala TTS, regime vol MOVE, berita per instrumen, katalog kartu) ===== */
+
+/* ===== v6: tipe skenario + panel "Scenario watch" ===== */
+const regOf=p=>/^US/.test(p)?"US":/^DE/.test(p)?"DE":/^IT/.test(p)?"IT":/^UK/.test(p)?"UK":/^JGB/.test(p)?"JP":/^ID/.test(p)?"ID":/^CA/.test(p)?"CA":"X",isCorp=p=>/^(MSFT|TENT|TNCT|BCGPP|SIEG)/.test(p);
+function scnType(ins,leg){const refs=ins.filter(x=>x!==leg);if(!refs.length)return "outright";const cs=ins.map(x=>SCB[scIdx(x)]).filter(Boolean);
+  if(cs.every(c=>c.cls==="FI")){if(cs.some(c=>isCorp(c.pair)))return "credit";return new Set(cs.map(c=>regOf(c.pair))).size===1?"curve":"spread"}return "cross"}
+const SPF={
+ outright:{n:"Outright",w:["Price/yield reaction to every headline and calendar release","Inventory versus the position limit; hedge on the broker screen before a breach","Client RFQs: quote tighter on small tickets, skew with your inventory"]},
+ curve:{n:"Curve trade",w:["Slope = long-tenor yield − short-tenor yield (bp). Steepener: long short-tenor, short long-tenor; flattener: the opposite","Bull/bear steepening and flattening show which end leads the move","Size legs DV01-neutral: notional = DV01 / ((P/100) × 0.01% × MD), so a parallel shift gives zero P&L","Your traded leg is live; the other leg is the reference moving with correlation"]},
+ spread:{n:"Cross-border spread",w:["Spread = weaker-credit yield − benchmark yield (bp)","Political, rating and supply headlines move the spread more than the benchmark","DV01-match the traded leg to the reference leg to isolate the spread","Risk-off tends to widen the spread; risk-on tightens it"]},
+ credit:{n:"Credit vs government",w:["Credit spread = corporate yield − Treasury yield (bp)","Earnings, leverage and rating news hit the corporate leg; macro/Fed hits both","DV01-match against the Treasury to trade the spread only","Spread widens in stress and in heavy issuance"]},
+ cross:{n:"Cross-asset",w:["Reference assets move with partial correlation to your traded leg","Equity/FX/rates headlines can pull in different directions","Track each leg's change since the open and keep your inventory inside the limit"]}};
+const gauss=R=>Math.sqrt(-2*Math.log(R()||1e-9))*Math.cos(6.2831853*R());
+function initWatch(S,rm){const sc=S.sc;S.sty="outright";S.rf=[];S.fy=null;if(!rm||!rm.scn)return;
+  const key=rm.scn.split(" · ")[0],mul=rm.scn.includes(" · "),s=CAT.find(x=>x.ins.includes(sc.pair)&&(x.ins.length>1)===mul&&x.n.startsWith(key));if(!s)return;
+  S.sty=scnType(s.ins,sc.pair);S.rr=mkP((sc.sx||1)^0xA5A5A5);S.scn=s;
+  S.rf=s.ins.filter(x=>x!==sc.pair).map(x=>{const c=SCB[scIdx(x)],fi=!!c.fi,r={pair:x,cls:c.cls,fi,px:c.px,p0:c.px,pip:c.pip,dec:c.dec,v:c.vol,cpn:c.cpn,yrs:c.yrs,frq:2,vbp:fi?c.vol/c.ppbp*(sc.vm||1):0};
+    if(fi){r.y=r.y0=byld(c.px,c.cpn,c.yrs,2)}r.rho=fi&&sc.fi?(S.sty==="credit"?.7:.85):fi?-.25:c.cls==="EQ"?.3:.1;return r})}
+function stepWatch(dt,zz){if(!S.rf||!S.rf.length)return;const sc=S.sc,sq=Math.sqrt(dt);let zy=-zz;
+  if(sc.fi){const y=byld(S.fv,sc.cpn,sc.yrs,2),d=(S.fy==null?0:(y-S.fy)*100);S.fy=y;zy=Math.max(-4,Math.min(4,d/Math.max(1e-9,sc.vol/sc.ppbp*sq)))}
+  S.rf.forEach(r=>{const zi=gauss(S.rr);if(r.fi){const z=r.rho*zy+Math.sqrt(1-r.rho*r.rho)*zi;r.y+=z*r.vbp*sq/100}else{const z=r.rho*(-zy)+Math.sqrt(1-r.rho*r.rho)*zi;r.px+=z*r.pip*r.v*sq}})}
+function renderWatch(){const sc=S.sc,t=S.sty||"outright",P=SPF[t]||SPF.outright,rf=S.rf||[],kv=(a,b,c)=>`<div class="kv"><span>${a}</span><b${c?` class="${c}"`:""}>${b}</b></div>`,bp=v=>(v>=0?"+":"")+v.toFixed(1)+" bp";
+  let h=kv("Scenario",esc(S.scn?S.scn.n:"Custom / single market"))+kv("Type",P.n);
+  const ym=sc.fi?yld(S.mid):null,y0=sc.fi?byld(S.start,sc.cpn,sc.yrs,2):null;
+  if(sc.fi)h+=kv(sc.pair+" (traded)",ym.toFixed(3)+"%",(ym-y0)>=0?"up":"dn")+kv("  change since open",bp((ym-y0)*100));
+  else h+=kv(sc.pair+" (traded)",fpv(S.mid))+kv("  change since open",((S.mid/S.start-1)*100).toFixed(2)+"%");
+  rf.forEach(r=>{h+=r.fi?kv(r.pair+" (ref)",r.y.toFixed(3)+"%")+kv("  change since open",bp((r.y-r.y0)*100)):kv(r.pair+" (ref)",r.px.toFixed(r.dec))+kv("  change since open",((r.px/r.p0-1)*100).toFixed(2)+"%")});
+  const r0=rf[0];
+  if(sc.fi&&r0&&r0.fi&&(t==="curve"||t==="spread"||t==="credit")){
+    const lg=t==="curve"?(sc.yrs>=r0.yrs?[ym,r0.y]:[r0.y,ym]):t==="credit"?(isCorp(sc.pair)?[ym,r0.y]:[r0.y,ym]):[ym,r0.y],
+          lg0=t==="curve"?(sc.yrs>=r0.yrs?[y0,r0.y0]:[r0.y0,y0]):t==="credit"?(isCorp(sc.pair)?[y0,r0.y0]:[r0.y0,y0]):[y0,r0.y0],
+          lab={curve:"Curve slope (long − short)",spread:"Spread ("+sc.pair+" − "+r0.pair+")",credit:"Credit spread (corp − gov)"}[t];
+    const cur=(lg[0]-lg[1])*100,op=(lg0[0]-lg0[1])*100;h+=kv(lab,cur.toFixed(1)+" bp")+kv("  change since open",bp(cur-op),cur-op>=0?"up":"dn");
+    const Pr=bpx(r0.y,r0.cpn,r0.yrs,2),Mr=bdur(r0.y,r0.cpn,r0.yrs,2),d=dv01(S.pos);
+    h+=kv("Reference MD / PV01",Mr.toFixed(2)+" / "+(Pr*Mr*1e-4).toFixed(4));
+    h+=kv("DV01-neutral hedge on "+r0.pair,S.pos?((d>0?"sell ":"buy ")+(Math.abs(d)/((Pr/100)*1e-4*Mr)/1e6).toFixed(1)+"M"):"flat position")}
+  $("watchB").innerHTML=h+`<ul class="hint" style="margin:8px 0 0;padding-left:16px">${P.w.map(x=>`<li>${x}</li>`).join("")}</ul>`}
+
+/* ===== v5: news & kalender acak per sesi (tidak bisa dihafal) ===== */
+const sxSeed=()=>{try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]}catch(e){return(Math.random()*4294967296)>>>0}};
+const mkP=s=>{s>>>=0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}};
+const BK={USA:"Fed",EUR:"ECB",GBR:"Bank of England",JPN:"Bank of Japan",CHE:"SNB",CAN:"Bank of Canada",AUS:"RBA",MEX:"Banxico",BRA:"Brazil's central bank",TUR:"Turkey's central bank",POL:"Poland's central bank",NGA:"Nigeria's central bank",IDN:"Bank Indonesia",CHN:"PBoC",HKG:"HKMA"};
+const NA={USA:"US",EUR:"Eurozone",GBR:"UK",JPN:"Japanese",CHE:"Swiss",CAN:"Canadian",AUS:"Australian",MEX:"Mexican",BRA:"Brazilian",TUR:"Turkish",POL:"Polish",NGA:"Nigerian",IDN:"Indonesian",CHN:"Chinese",HKG:"Hong Kong"};
+const CB_H=[["{B} officials push back on rate-cut bets","Several policymakers said it is too early to ease, citing sticky {N} inflation."],["{B} minutes show appetite for tighter policy","The record of the last meeting showed members open to further tightening."],["{B} chief: inflation fight not over","The governor said {N} price pressures remain too high for comfort."],["{N} wage growth accelerates, keeping {B} on guard","Faster pay growth fuels worries that services inflation is not cooling."],["Markets price a higher {B} terminal rate","Swaps moved to price extra tightening after hawkish remarks."],["{B} member: no rush to cut rates","The official said the bank can wait for more evidence on {N} inflation."]];
+const CB_D=[["{B} signals rate cuts could come sooner","A senior policymaker said the case for easing is building as {N} inflation cools."],["{B} policymaker flags growth risks","The official said downside risks to the {N} economy have increased."],["{N} unemployment ticks up, easing pressure on {B}","The softer labour data revived bets on earlier rate cuts."],["{B} minutes show debate over easing","Several members saw room to cut if disinflation continues."],["{N} inflation undershoots forecasts","Lower price growth strengthens the case for looser policy."],["{B} chief hints at a more gradual stance","He stressed that policy can respond quickly if growth weakens."]];
+const D_UP=[["{N} retail sales beat expectations","Stronger spending points to resilient {N} demand."],["{N} factory activity returns to expansion","The manufacturing survey rose above the neutral 50 level."],["{N} job openings surge to six-month high","Hiring demand stays firm across services and construction."],["{N} consumer confidence jumps","Households are more upbeat about income and jobs."],["{N} services PMI shows fastest growth in a year","New orders and employment both improved."],["{N} exports rebound strongly","Overseas demand picked up across most major categories."]];
+const D_DN=[["{N} industrial output falls unexpectedly","Output fell in most sectors, raising growth worries."],["{N} manufacturing contracts for a third month","Orders weakened and inventories built up."],["{N} consumer spending disappoints","Retail data came in well below economists' forecasts."],["{N} housing market cools sharply","Sales and permits fell as financing costs bit."],["{N} business sentiment slumps","Firms cut hiring plans amid softer demand."],["{N} exports drop as global demand weakens","Shipments fell for the second straight month."]];
+const SPEC={JPY:[["Japan MoF official warns against excessive yen moves","The vice finance minister said the government is watching FX closely.",1],["Japan's trade deficit widens on energy imports","A wider deficit adds to yen selling by importers.",-1]],
+ IDR:[["Bank Indonesia signals readiness to intervene in FX","A deputy governor said it will use all tools to keep the rupiah orderly.",1],["Foreign outflows from Indonesian bonds accelerate","Offshore investors sold government bonds, pressuring the rupiah.",-1]],
+ CNY:[["PBoC sets yuan fixing firmer than expected","The midpoint signalled tolerance for gradual yuan appreciation.",1],["PBoC sets yuan fixing weaker than expected","The weaker midpoint hints at tolerance for depreciation.",-1]],
+ CHF:[["Swiss franc climbs as safe-haven demand returns","Investors sought safety as equities wobbled.",1],["SNB says ready to intervene if franc strength persists","The central bank repeated it can act in FX markets.",-1]],
+ EUR:[["Euro-area investor morale improves","The sentiment index beat forecasts on easing energy costs.",1],["French budget row weighs on the euro","Political wrangling raised doubts over fiscal discipline.",-1]],
+ GBP:[["BoE economist says services inflation is sticky","The remarks lifted bets that rates stay higher for longer.",1],["UK gilt yields jump on fiscal worries, pound slips","Investors questioned the government's borrowing plans.",-1]],
+ AUD:[["China stimulus hopes lift the Australian dollar","Talk of new support measures helped commodity currencies.",1],["Iron ore slides, weighing on the Aussie","Weak steel demand pushed the key export price lower.",-1]],
+ CAD:[["Oil rally supports the Canadian dollar","Higher crude prices improved the terms-of-trade outlook.",1],["Canadian housing data disappoints","Weak activity raised doubts about domestic demand.",-1]],
+ USD:[["US Treasury yields climb, supporting the dollar","Higher yields widened the rate gap versus peers.",1],["Dollar slips as traders trim Fed hike bets","Softer data pulled back expectations for tighter policy.",-1]],
+ MXN:[["Mexican remittances beat forecasts, peso firms","Strong inflows supported the currency.",1],["Peso slips on political-risk concerns","Investors trimmed exposure ahead of a policy decision.",-1]],
+ BRL:[["Brazil fiscal framework earns praise, real gains","Investors welcomed the spending-cap commitment.",1],["Brazil budget worries hit the real","Fiscal slippage fears prompted selling.",-1]],
+ TRY:[["Turkey's central bank holds tight stance, lira steadies","Officials vowed to keep policy restrictive.",1],["Lira slides as inflation expectations rise","Residents increased dollar purchases.",-1]]};
+const GL={riskoff:{fx:{JPY:1,CHF:1,USD:.6,EUR:-.3,GBP:-.4,AUD:-1,CAD:-.8,MXN:-1,BRL:-1,TRY:-.8,PLN:-.8,NGN:-.6,IDR:-.8,CNY:-.4,HKD:-.1},y:-1,eq:-1,cm:-.6,cds:1},
+ oilup:{fx:{CAD:.8,MXN:.4,BRL:.3,NGN:.8,JPY:-.5,TRY:-.4,EUR:-.2},y:.6,eq:-.2,cm:1,cds:-.2}};
+const neg=o=>({fx:Object.fromEntries(Object.entries(o.fx).map(([k,v])=>[k,-v])),y:-o.y,eq:-o.eq,cm:-o.cm,cds:-o.cds});GL.riskon=neg(GL.riskoff);GL.oildn=neg(GL.oilup);
+const GLH={riskoff:[["Global stocks slide as risk aversion spreads","Investors cut exposure and moved into safe assets."],["Geopolitical tension flares, markets turn defensive","Traders pared risk ahead of the weekend."],["Credit spreads widen as funding worries return","Dealers reported thinner liquidity across credit and rates."]],
+ riskon:[["Global equities rally on easing trade fears","Risk appetite returned across regions."],["Volatility drops as investors add risk","Cross-asset sentiment turned decisively positive."]],
+ oilup:[["Oil jumps on supply disruption fears","Crude rose sharply after reports of an outage."],["OPEC+ signals deeper output cuts","Producers hinted at tighter supply into next quarter."]],
+ oildn:[["Oil slumps on demand worries","Weak data from major importers hit crude prices."],["US crude stocks build more than expected","Inventories rose, signalling softer demand."]]};
+const NOISE=[["Positioning data show crowded trades in {S}","Dealers report one-sided client flow, raising reversal risk."],["Liquidity thins ahead of key data","Quotes in {S} widened as participants stepped back."],["Large corporate flow reported in {S}","Several desks noted sizeable orders late in the session."],["Month-end rebalancing flows expected","Real-money accounts may adjust holdings into the close."],["Options expiry looms for {S}","Large strikes could pin prices into the expiry."],["Analysts split on near-term outlook for {S}","Strategists disagree on whether the recent move will extend."]];
+const FIX=(s,r,sym)=>String(s).replace(/\{B\}/g,BK[r]||"Central bank").replace(/\{N\}/g,NA[r]||"Local").replace(/\{S\}/g,sym);
+const ccyOf=rg=>{for(const k in CCY)if(CCY[k][0]===rg)return k;return null};
+function themeOf(txt){const t=(txt||"").toLowerCase(),o={rg:{},tg:{}};
+  [[/fed|fomc|treasur|us10|us2|\bust\b/,"USA"],[/ecb|europe|bund|euro|de10|de2|btp|it10/,"EUR"],[/boj|japan|yen|jgb|jpy/,"JPN"],[/china|tencent|pboc|cny|tent/,"CHN"],[/\buk\b|gilt|boe|sterling|gbp/,"GBR"],[/indonesia|idr|rupiah|\bbi\b/,"IDN"]].forEach(([r,k])=>{if(r.test(t))o.rg[k]=1});
+  [[/yield|curve|steep|flat|peaks|valley/,"curve"],[/border|spread|btp|across/,"spread"],[/tariff|trade/,"trade"],[/oil|energy|crude/,"oil"],[/infl|cpi|price/,"inf"],[/job|payroll|nfp|employ/,"jobs"],[/risk|crisis|bear|fear/,"risk"]].forEach(([r,k])=>{if(r.test(t))o.tg[k]=1});return o}
+function newsPool(sc,th){const C=[],sym=sc.pair,cls=sc.cls||"FX",R0=sc.reg||[],add=(p,eff,w,rg,tg)=>C.push({h:FIX(p[0],rg,sym),b:FIX(p[1],rg,sym),e:eff,w:w||1,rg:rg||"",tg:tg||""});
+  const isFx=sc.fx||((!sc.cls||sc.cls==="FX")&&/^[A-Z]{3}\/[A-Z]{3}$/.test(sym)),ccs=isFx?sym.split("/"):[];
+  const gl=(k,sel)=>{GLH[k].forEach(p=>{const e=sel(GL[k]);if(Math.abs(e)>.15)add(p,e,.9,"",k.startsWith("oil")?"oil":"risk")})};
+  if(isFx){gl("riskoff",g=>(g.fx[ccs[0]]||0)-(g.fx[ccs[1]]||0));gl("riskon",g=>(g.fx[ccs[0]]||0)-(g.fx[ccs[1]]||0));gl("oilup",g=>(g.fx[ccs[0]]||0)-(g.fx[ccs[1]]||0));gl("oildn",g=>(g.fx[ccs[0]]||0)-(g.fx[ccs[1]]||0));
+    ccs.forEach((cc,ix)=>{const rg=(CCY[cc]||[])[0],sg=ix?-1:1;if(!rg)return;
+      CB_H.forEach(p=>add(p,sg,1,rg,"cb"));CB_D.forEach(p=>add(p,-sg,1,rg,"cb"));D_UP.forEach(p=>add(p,sg*.8,.9,rg,"data"));D_DN.forEach(p=>add(p,-sg*.8,.9,rg,"data"));
+      (SPEC[cc]||[]).forEach(p=>add(p,sg*p[2],1.1,rg,"spec"))})
+    const PN={"EUR/USD":[["German ZEW sentiment jumps","Investor morale improved on easing energy costs.",1],["US ISM services beat estimates","Strong US activity supported the dollar.",-1],["Euro-area inflation cools faster than expected","Lower prices reduced hawkish ECB bets.",-1]],
+     "USD/JPY":[["Japan wage deal supports BoJ hike bets","Higher pay raised odds of tighter policy.",-1],["US Treasury yields climb above recent range","The wider rate gap favoured the dollar.",1],["Japan MoF warns of decisive action on yen","Verbal intervention sent the pair lower.",-1]],
+     "GBP/USD":[["UK services inflation stays sticky","Fewer BoE cuts were priced.",1],["UK budget plans unsettle gilts","Higher borrowing costs weighed on sterling.",-1],["US payrolls beat forecasts","The dollar firmed broadly after the report.",-1]],
+     "USD/IDR":[["Foreign inflows into Indonesian bonds accelerate","Offshore demand supported the rupiah.",-1],["Bank Indonesia steps into the market","Central-bank dollar sales steadied the rupiah.",-1],["Dollar demand rises from importers","Month-end corporate flows pressured the rupiah.",1]],
+     "USD/CHF":[["Swiss CPI undershoots, SNB cut bets rise","Lower inflation weighed on the franc.",1],["Haven flows lift the franc","Equity weakness drove safe-haven demand.",-1]],
+     "AUD/USD":[["China data beats, Aussie climbs","Stronger Chinese output helped commodity currencies.",1],["RBA minutes lean dovish","Officials saw room to cut if inflation cools.",-1]],
+     "USD/CAD":[["Oil spikes on supply worries","Higher crude supported the loonie.",-1],["Canadian jobs data disappoints","Weak hiring lifted bets on BoC cuts.",1]],
+     "USD/MXN":[["Banxico signals pause in easing","Higher carry attracted inflows to the peso.",-1],["US tariff threats hit the peso","Trade risk drove selling in Mexican assets.",1]],
+     "USD/BRL":[["Brazil fiscal rule credibility questioned","Budget worries weighed on the real.",1],["Selic stays high, carry trades return","Inflows supported the real.",-1]],
+     "USD/TRY":[["Turkey central bank hikes more than expected","A tighter stance supported the lira.",-1],["Inflation data surprises to the upside","Residents turned to dollars.",1]]};
+    (PN[sym]||[]).forEach(p=>add(p,p[2],1.8,"","pair"));
+    [["Exporters sell into rallies in {S}","Corporate offers capped the upside.",-.6],["Real-money accounts buy {S} dips","Bids appeared on pullbacks.",.6],["Stop-loss orders triggered above the recent high in {S}","Short covering accelerated the move.",.9],["Stop-loss orders triggered below the recent low in {S}","Long liquidation accelerated the move.",-.9],["Fixing flows skew to {S} buying","Dealers flagged one-sided demand at the fix.",.5],["Large option barrier sits near spot in {S}","Hedging flows may pin the price.",0]].forEach(p=>add(p,p[2],.9,"","tech"));
+  }
+  else if(cls==="FI"||cls==="IRS"||cls==="BFUT"){const sgn=cls==="BFUT"?1:-1;/* e=efek ke harga; yield naik => harga turun */
+    const yl=(p,y,w,rg,tg)=>add(p,sgn*y,w,rg,tg);
+    R0.slice(0,2).forEach(rg=>{CB_H.forEach(p=>yl(p,1,1.1,rg,"cb"));CB_D.forEach(p=>yl(p,-1,1.1,rg,"cb"));D_UP.forEach(p=>yl(p,.8,.9,rg,"data"));D_DN.forEach(p=>yl(p,-.8,.9,rg,"data"));
+      [["{N} government plans a larger bond sale","Bigger issuance raises supply worries and cheapens the curve.",1],["Strong demand at {N} 10-year auction","Bid-to-cover came in above average, easing supply concerns.",-1],["{N} 10-year auction tails","Weak demand forced the sale to price at a higher yield.",1],["{N} inflation expectations climb","Breakevens widened after sticky price data.",1],["{N} inflation expectations fall","Breakevens narrowed as price pressures eased.",-1],["Investors demand more term premium on deficit worries","Heavy issuance and fiscal concerns pushed long yields higher.",1]].forEach(p=>yl(p,p[2],1,rg,"supply"))});
+    gl("riskoff",g=>sgn*g.y);gl("riskon",g=>sgn*g.y);gl("oilup",g=>sgn*g.y);gl("oildn",g=>sgn*g.y);
+
+    const yrs0=sc.yrs||10,rg0=R0[0]||"USA";
+    if(yrs0<=3){[["Money markets trim {B} cut bets after firm data","Futures priced fewer cuts as the data beat forecasts.",1],["Money markets add to {B} easing bets","Weak data pulled forward expectations of a cut.",-1],["{N} payrolls beat, front-end yields jump","Strong hiring pushed back the expected pace of easing.",1],["{N} payrolls miss, two-year yields tumble","Soft jobs data revived talk of faster cuts.",-1],["Hot {N} CPI print lifts short-dated yields","Core prices rose faster than forecast.",1],["Soft {N} core inflation pulls short-end yields lower","Lower price growth strengthened the case for easing.",-1],["{B} dot plot signals fewer cuts","Policymakers' projections point to a higher-for-longer path.",1],["Flight to quality into short-dated notes","Safe-haven buying compressed front-end yields.",-1]].forEach(p=>yl(p,p[2],1.3,rg0,"front"))}
+    else{[["Term premium jumps as deficit outlook worsens","Investors asked for more yield to hold long-dated debt.",1],["Pension funds buy long-dated bonds on the dip","Liability-driven demand absorbed supply at higher yields.",-1],["Debt office leans toward longer maturities in issuance","More long-end supply raised concession demand.",1],["Foreign central banks add to long-end holdings","Official-sector buying supported the long end.",-1],["Basis-trade unwind forces long-end selling","Leveraged funds cut positions as margins rose.",1],["Oil-led inflation scare lifts breakevens","Higher energy prices pushed inflation expectations up.",.8],["Risk-off bid drives a long-end rally","Haven demand lowered long-dated yields.",-1],["Fiscal package larger than expected","Extra borrowing needs weighed on long-dated bonds.",1]].forEach(p=>yl(p,p[2],1.3,rg0,"term"))}
+    const sh=yrs0<=3;[["Bull steepening: front end leads the rally","Short yields fell more than long yields on easing hopes.",sh?-1:-.3],["Bear steepening: long end sells off","Long yields rose faster than short yields on inflation and supply fears.",sh?.4:1],["Bull flattening: long end outperforms","Long yields fell more than short yields as growth worries built.",sh?-.4:-1],["Bear flattening: short end sells off","Short yields rose faster than long yields on hawkish signals.",sh?1:.4]].forEach(p=>yl(p,p[2],1.1,rg0,"curve"));
+    if(/^US/.test(sc.pair)){[["Treasury announces larger quarterly refunding","A bigger auction calendar raised supply worries.",.9],["Tariff headlines revive inflation worries","Investors priced higher goods prices ahead.",.8],["Treasury buyback operation supports liquidity","Dealers saw better demand for off-the-run issues.",-.6],["Strong 30-year auction draws foreign bids","Indirect demand came in above average.",-.8],["Fed slows balance-sheet runoff","Less supply for the market to absorb.",-.7],["Shutdown risk lifts safe-haven demand","Investors favoured Treasuries ahead of the funding deadline.",-.6]].forEach(p=>yl(p,p[2],1.2,"USA","spec"))}
+    if(/^DE/.test(sc.pair)){[["Germany plans bigger defence and infrastructure borrowing","Higher Bund supply is expected over the coming years.",1],["Bundestag debates debt-brake reform","Looser fiscal rules would mean more issuance.",.8],["ECB speakers see inflation near target","Officials sounded comfortable with the policy path.",-.8],["Euro-area flash PMI contracts, Bunds rally","Weak activity data drew haven demand.",-.9],["Bund auction well covered","Bids exceeded the offered amount comfortably.",-.6],["ECB winds down reinvestments faster than expected","Less central-bank demand for euro bonds.",.8]].forEach(p=>yl(p,p[2],1.2,"EUR","spec"))}
+    if(/^ID/.test(sc.pair)){[["Finance ministry trims bond issuance target","Lower supply supported local yields.",-.9],["Bank Indonesia holds rate, rupiah steadies","Stable policy calmed foreign investors.",-.6],["Global yields push Indonesian bond yields higher","Spillover from US Treasuries lifted local rates.",.8]].forEach(p=>yl(p,p[2],1.2,"IDN","spec"))}
+    const pr=sc.pair;
+    if(/^JGB/.test(pr)){[["Bank of Japan discusses trimming bond purchases","Board members debated a faster taper of JGB buying.",1],["Japan MoF to shift issuance toward shorter maturities","Less super-long supply eased pressure on the curve.",-1]].forEach(p=>yl(p,p[2],1.1,"JPN","spec"))}
+    if(/^UK/.test(pr)){[["Chancellor's plans lift UK borrowing forecasts","Higher gilt supply unsettled investors.",1],["UK gilt auction draws strong demand","Investors absorbed the supply with little concession.",-1]].forEach(p=>yl(p,p[2],1.1,"GBR","spec"))}
+    if(/^IT/.test(pr)){[["Political tension in Rome widens BTP spread","Investors demanded more yield over German bunds.",1],["Rating agency lifts Italy outlook","The upgrade tightened BTP spreads.",-1]].forEach(p=>yl(p,p[2],1.1,"EUR","spec"))}
+    if(/^ID/.test(pr)){[["Foreign inflows into Indonesian bonds accelerate","Offshore buyers returned to government bonds.",-1],["Rupiah slump triggers selling in local bonds","Currency weakness prompted foreign investors to cut holdings.",1]].forEach(p=>yl(p,p[2],1.1,"IDN","spec"))}
+    if(/^(MSFT|TENT|TNCT|SIEG|BCGPP)/.test(pr)){const nm=/^MSFT/.test(pr)?"Microsoft":/^(TENT|TNCT)/.test(pr)?"Tencent":/^SIEG/.test(pr)?"Siemens":"The issuer";
+      [[nm+" beats earnings, credit spreads tighten","Investors bought the bonds after solid results.",-1],[nm+" announces debt-funded acquisition","Higher leverage worries pushed spreads wider.",1],["Rating agency flags leverage risk at "+nm.toLowerCase(),"The outlook revision weighed on the company's bonds.",1],[nm+" cash flow tops forecasts","Stronger cash generation reduced credit risk.",-1]].forEach(p=>yl(p,p[2],1.3,"","credit"))}}
+  else if(cls==="EQ"){const nm=sym;[[nm+" beats quarterly profit estimates","Earnings per share topped forecasts and margins improved.",1],[nm+" cuts full-year guidance","Management cited weaker demand and higher costs.",-1],["Analysts upgrade "+nm+" on improving outlook","Brokers raised price targets after the update.",.7],["Analysts downgrade "+nm+" on valuation","Several brokers turned cautious after the recent run.",-.7],["Regulator opens probe into "+nm,"Investors worried about possible fines.",-.9],[nm+" announces share buyback","The board approved a sizeable repurchase programme.",.8],[nm+" lands major contract","The deal adds visible revenue for the next years.",.8],["Supply-chain disruption hits "+nm,"Delays could weigh on near-term sales.",-.8],["US yields jump, pressuring equities","Higher discount rates weighed on valuations.",-.5],["Yields ease, equities catch a bid","Lower rates supported valuations.",.5]].forEach(p=>add(p,p[2],1.1,"","eq"));
+    gl("riskoff",g=>g.eq);gl("riskon",g=>g.eq)}
+  else if(cls==="CDS"){[[sym+" sovereign outlook cut by rating agency","Investors demanded more protection against default.",1],["Strong debt auction narrows spreads","Demand for the sovereign's bonds improved.",-1],["IMF programme talks make progress","Officials signalled a deal is near.",-1],["Political turmoil widens sovereign spreads","Uncertainty over fiscal policy rose.",1]].forEach(p=>add(p,p[2],1.2,"","spec"));gl("riskoff",g=>g.cds);gl("riskon",g=>g.cds)}
+  else if(cls==="CM"){[["Producers signal tighter supply","Output cuts and outages reduced available supply.",1],["Inventories build more than expected","Stocks rose, hinting at softer demand.",-1],["Dollar weakens, commodities firm","A softer dollar made commodities cheaper for buyers abroad.",.7],["China demand data disappoints","Weak imports hit the outlook for demand.",-1],["China stimulus lifts demand outlook","Investors expect higher consumption of raw materials.",.9],["Recession fears weigh on commodities","Investors trimmed exposure to cyclical assets.",-.8]].forEach(p=>add(p,p[2],1.1,"","spec"));gl("riskoff",g=>g.cm);gl("riskon",g=>g.cm);gl("oilup",g=>g.cm);gl("oildn",g=>g.cm)}
+  else{(sc.nw||[]).forEach(n=>C.push({h:n.h,b:n.b,e:Math.sign(n.i||0),w:1,rg:"",tg:"",fx:1}))}
+  /* berita kurasi bawaan skenario ikut masuk kolam */
+  if(cls!=="FXSWP")(sc.nw||[]).forEach(n=>{if(n.h&&!C.some(c=>c.h===n.h))C.push({h:n.h,b:n.b,e:Math.sign(n.i||0)||0,w:1.2,rg:"",tg:"",cur:Math.abs(n.i||0)})});
+  NOISE.forEach(p=>C.push({h:FIX(p[0],"",sym),b:FIX(p[1],"",sym),e:0,w:.5,rg:"",tg:"noise"}));
+  C.forEach(c=>{if(c.rg&&th.rg[c.rg])c.w*=3;if(c.tg&&th.tg[c.tg])c.w*=2.5});return C}
+function rndTimes(R,n,lo,hi,gap){for(let a=0;a<80;a++){const t=[];for(let i=0;i<n;i++)t.push(lo+R()*(hi-lo));t.sort((x,y)=>x-y);if(t.every((v,i)=>!i||v-t[i-1]>=gap))return t.map(Math.round)}return Array.from({length:n},(_,i)=>Math.round(lo+(hi-lo)*(i+.5)/n))}
+function shuf(R,a){for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function randSession(sc,label){const _t=(label||"");const sx=sxSeed(),R=mkP(sx),v=sc.vol,th=themeOf((label||"")+" "+sc.pair);if(/Across Borders|Visor|Horizon II|Orchestra|Peaks/i.test(_t)){th.tg.curve=1;th.tg.spread=1}if(/Triple A|Tencent/i.test(_t))th.tg.credit=1;sc.sx=sx;
+  /* regime volatilitas acak per sesi: MOVE 2026 berkisar ~62 (tenang) - ~115 (stres); 1 MOVE-pt ~ 1/sqrt(252) bp per hari */
+  if(sc.fi){const q=R(),rg=q<.25?["Calm",.72]:q<.75?["Normal",1]:["Stressed",1.3];sc.vm=rg[1];sc.vr=rg[0];sc.vol=+(sc.vol*rg[1]).toFixed(3);sc.dvol=+(sc.dvol*rg[1]).toFixed(2);sc.move=Math.round(sc.dvol*15.87);sc.brief+=" Rate-vol regime today: "+rg[0]+" (~"+sc.dvol+" bp/day, MOVE-equivalent ~"+sc.move+")."}
+  /* kalender: urutan, waktu, forecast/previous diacak */
+  const E=shuf(R,sc.ev.slice()),k=Math.min(E.length,Math.max(3,E.length-(R()<.35?1:0))),ev=E.slice(0,k),ts=rndTimes(R,k,120,3300,200);
+  ev.forEach((e,i)=>{e.t=ts[i];if(!/decision|lpr|loan prime/i.test(e.n)){e.fc=+(e.fc+(R()-.5)*e.sd*.8).toFixed(e.d);e.pv=+(e.fc+(R()-.5)*e.sd*1.6).toFixed(e.d)}});sc.ev=ev.sort((a,b)=>a.t-b.t);
+  /* news: pilih 6-9 dari kolam berbobot, waktu & dampak acak */
+  let pool=newsPool(sc,th),n=8+Math.floor(R()*5),pick=[],mag=sc.fi?sc.ppbp:v;
+  n=Math.min(n,pool.length);for(let q=0;q<n;q++){const tot=pool.reduce((s,c)=>s+c.w,0);let r=R()*tot,ix=0;for(;ix<pool.length-1;ix++){r-=pool[ix].w;if(r<=0)break}pick.push(pool.splice(ix,1)[0])}
+  const tt=rndTimes(R,n,90,3450,150);
+  sc.nw=pick.map((c,i)=>{let size=sc.fi?(.5+R())*sc.kv*sc.ppbp*(sc.vm||1):(18+R()*22)*v;
+    if(c.cur!=null&&c.cur>0)size=c.cur*(.7+R()*.6);
+    let sg=c.e===0?(R()<.5?-1:1):Math.sign(c.e);if(c.e===0)size*=.15;else if(R()<.15)size*=-.4; /* kadang pasar "menjual berita" */
+    return{t:tt[i],h:c.h,b:c.b,i:+(sg*Math.abs(size)*(c.e!==0&&c.cur==null?Math.min(1.2,Math.abs(c.e)):1)).toFixed(2)}}).sort((a,b)=>a.t-b.t)}
+function mk(i,rm){
+  const sc=JSON.parse(JSON.stringify(SCB[i]));const rng={m:rm?rm.seed|0:1,c:rm?(rm.seed^0x9e3779b9)|0:2,a:rm?(rm.seed^0x85ebca6b)|0:3};RNGS=rng;RK="m";randSession(sc,rm&&rm.scn);if(rm)tune(sc,rm);
+  const S={sc,cfg:rm?cfgOf(rm):{...CFG},sim:0,paused:true,fin:false,speed:+$("spd").value||1,mid:sc.px,fv:sc.px,disp:sc.px,nextRef:5,start:sc.px,hist:[[0,sc.px]],lastH:0,pos:0,avg:0,real:0,trades:[],orders:[],calls:[],feed:[],log:[],imp:[],wide:0,nextCall:rnd(4,10)*(sc.cr||1),cid:1,oid:1,auto:false,votes:{},res:[],bank:0,tab:"active",ntab:"news",v2:1,pk:0,dd:0,maxPos:0,rel:{},st:{sent:0,hit:0,exp:0,pass:0},
+    tB:[],tA:[],zB:[],zA:[],bots:BOTN.map(n=>({n,pnl:0,mu:rnd(-.3,.8),sg:rnd(2,6)}))};
+
+  for(let k=0;k<=10;k++){S.tB.push(Math.round(rnd(100,1300)*(sc.fi?.08:1)));S.tA.push(Math.round(rnd(100,1300)*(sc.fi?.08:1)))}S.zB=S.tB.slice();S.zA=S.tA.slice();S.rng=rng;S.room=rm;initWatch(S,rm);RK="a";return S;
+}
+function sel(k){
+  cur=k;S=ALL[k];RNGS=S.rng||null;const sc=S.sc;document.body.classList.toggle("isfi",!!sc.fi);if(sc.fi)initCalc();loadInd();drawTB();
+  $("tl").querySelectorAll("i").forEach(e=>e.remove());sc.ev.forEach(e=>tick1(e.t,24));
+  $("posT").innerHTML=`${sc.pair} <span>Position</span>`;$("brkT").innerHTML=`${sc.pair} <span>Broker</span>`;$("chT").innerHTML=`${sc.pair} <span>Chart</span>`;
+  $("ccy").textContent=sc.base;if(sc.gen){$("size").min="0";$("size").step="any";$("size").value=sc.sizes[2]}$("aq").textContent=sc.pair;$("pb").dataset.d="";$("pa").dataset.d="";
+  $("auto").classList.toggle("on",!!S.auto);$("auto").setAttribute("aria-checked",!!S.auto);S.v2++;S.lv=-1;$("cmm").style.display=S.cfg.ib?"":"none";render();
+}
+function init(i=0){pi=i;ALL=[mk(i)];fd=0;sel(0);$("run").textContent="▶ Resume";realStart()}
+function tick1(t,h){const e=document.createElement("i");e.style.left=(t/SESSION*100)+"%";e.style.height=h/3+"px";$("tl").appendChild(e)}
+async function realStart(){
+  const t=ALL[0];
+  try{const ac=new AbortController();setTimeout(()=>ac.abort(),3500);
+    const j=await(await fetch("https://api.frankfurter.dev/v1/latest?base=USD&symbols=IDR,CNY,EUR,CHF,JPY",{signal:ac.signal})).json(),r=j.rates,
+      v={idr:r.IDR/1000,cny:r.IDR/r.CNY,eur:r.IDR/r.EUR,chf:r.IDR/r.CHF,jpy:r.JPY}[t.sc.id];
+    if(r.IDR>0)USDIDR=r.IDR;
+    if(ALL[0]===t&&t.sim===0&&v>0&&!t.room){const p=t.sc.pip;t.mid=t.fv=t.disp=t.start=+(Math.round(v/p)*p).toFixed(t.sc.dec);t.hist=[[0,t.mid]];t.real0=true;t.v2++}}catch(e){}
+}
+const qz=x=>+(Math.round(x/S.sc.pip)*S.sc.pip).toFixed(S.sc.dec);
+const sprP=()=>Math.max(1,Math.round(S.sc.spr*(S.sim<S.wide?2.2:1)));
+const bidP=()=>qz(S.mid-sprP()*S.sc.pip/2),askP=()=>qz(bidP()+sprP()*S.sc.pip);
+const lvl=(buy,k)=>+((buy?askP()+k*S.sc.step*S.sc.pip:bidP()-k*S.sc.step*S.sc.pip)).toFixed(S.sc.dec);
+const unreal=()=>S.pos?S.pos*(S.mid-S.avg)*cv()*1e6:0;
+const L=(k,h,d)=>{S.log.unshift({k,h,d:d||"",t:S.sim});S.v2++};
+const err=d=>{L("err","Action could not be completed",d);return false};
+function guard(){if(S.fin)return err("You can't do this right now. The session has ended.");if(S.paused)return err("You can't do this right now. The session is paused.");if(S.sim<(S.lock||0))return err(`Trading is paused after a limit breach (${Math.ceil(S.lock-S.sim)} s left).`);return true}
+
+/* ---------- eksekusi ---------- */
+function fill(q,p,ch,cl){
+  let r=0;const a=Math.abs(q),ap=Math.abs(S.pos),conv=cv();
+  if(!S.pos||Math.sign(S.pos)===Math.sign(q))S.avg=(ap*S.avg+a*p)/(ap+a);
+  else{const c=Math.min(a,ap);r=Math.sign(S.pos)*c*(p-S.avg)*conv*1e6;S.real+=r;if(a>ap)S.avg=p}
+  S.pos=+(S.pos+q).toFixed(6);if(Math.abs(S.pos)<1e-9){S.pos=0;S.avg=0}
+  S.maxPos=Math.max(S.maxPos,Math.abs(S.pos));S.trades.push({t:S.sim,q,p,ch,cl,r});
+  L("fill",`${q>0?"Bought":"Sold"} ${fM(a)} ${S.sc.base} @ ${fu(p)}`,`${ch==="rfq"?"Client: "+cl:ch==="limit"?"Your order":"Broker"}${r?" · realized "+fU(r):""}`);
+}
+const limOK=q=>{const n=Math.abs(S.pos+q),ok=n<=S.sc.limit+1e-9||n<Math.abs(S.pos);if(!ok&&S.cfg.br&&S.sim>=(S.lock||0)){const len=S.cfg.pl*Math.pow(S.cfg.pm,S.nbr||0);S.nbr=(S.nbr||0)+1;S.lock=S.sim+len;L("err","Limit breach: trading paused",`${Math.round(len)} s pause`)}return ok};
+function market(q,ch){
+  if(!guard())return false;if(!(Math.abs(q)>0))return err("Enter a size.");
+  if(!limOK(q))return err(`Position limit of ${S.sc.limit}M ${S.sc.base} would be exceeded.`);
+  const buy=q>0,sz=buy?S.zA:S.zB,st=S.sc.step*S.sc.pip;let rem=Math.abs(q),cost=0,sw=[];
+  for(let k=0;k<=10&&rem>1e-9;k++){const t=Math.min(rem,sz[k]),p=buy?askP()+k*st:bidP()-k*st;cost+=t*p;rem-=t;sw.push([k,t])}
+  if(rem>1e-9)return err("Not enough liquidity on the broker screen for that size.");
+  sw.forEach(([k,t])=>sz[k]-=t);fill(q,qz(cost/Math.abs(q)),ch);return true;
+}
+function drift(cl,d,sz){const o=RK;RK="a";const z=1+(sz||0)/S.sc.sizes[2];if(rnd(0,1)<.35+cl.inf*.4+(z-1)*.15)S.imp.push({per:rnd(4,10)*d*(S.sc.dv||1)/10*z,left:10});RK=o}
+function post(side){
+  if(!guard())return;const sz=+$("size").value,rw=+$(side>0?"pb":"pa").value,px=ip(rw);
+  if(!(sz>0)||!(rw>0)||!(px>0))return err("Enter a size and a price.");
+  if(side>0&&px>=askP()||side<0&&px<=bidP())return void market(side*sz,"limit");
+  S.orders.push({id:S.oid++,q:side*sz,px:+px.toFixed(S.sc.dec),left:sz});L("info",`${side>0?"Bid":"Offer"} placed: ${fM(sz)} @ ${fu(px)}`);
+}
+function orderTick(dt){const o=RK;RK="a";try{orderTick0(dt)}finally{RK=o}}
+function orderTick0(dt){
+  S.orders=S.orders.filter(o=>{const buy=o.q>0;let f=0;
+    if(buy&&askP()<=o.px||!buy&&bidP()>=o.px)f=o.left;
+    else if((buy&&o.px>=bidP()||!buy&&o.px<=askP())&&rnd(0,1)<.1*dt)f=+(o.left*rnd(.4,1)).toFixed(1);
+    if(f>0){const q=buy?f:-f;if(!limOK(q)){err("Resting order cancelled: position limit.");return false}fill(q,o.px,"limit");o.left=+(o.left-f).toFixed(1);return o.left>.05}return true});
+}
+
+/* ---------- calls ---------- */
+function newCall(spawn){const o=RK;RK="c";try{newCall0(spawn)}finally{RK=o}}
+function newCall0(spawn){
+  const g=S.cfg,cl=pick(CL),d=rnd(0,1)<.5?1:-1,ty=rnd(0,(g.two+g.prop)||1)<g.two?"two":"prop",z=S.sc.sizes,
+    sz=rnd(0,100)<g.large?pick(z.slice(-2)):pick(z.slice(0,Math.max(1,z.length-2))),pt=g.ans*cl.pat*rnd(.85,1.15),
+    c={id:S.cid++,tol:rnd(.6,1.5),cl,d,size:sz,two:ty==="two",one:false,left:pt,pat:pt,st:"active",qb:bidP(),qa:askP(),res:"",at:S.sim,u:rnd(0,1),rw:rnd(1,3)};
+  if(ty==="prop"){const e=(rnd(0,1)<.55?rnd(3,6):rnd(0,1)<.6?rnd(7,11):rnd(-3,-.5))*S.sc.spr/10;c.px=qz(S.mid+d*e*S.sc.pip)}
+  if(spawn){S.calls.unshift(c);if(ty!=="prop"&&S.auto)c.autoAt=S.sim+1.5;S.v2++}}
+function finish(c,res,cls){c.st="done";c.res=res;c.rc=cls||"";c.dt=S.sim;S.v2++}
+function sendQuote(c,b,a){
+  if(!guard())return;if(!(b>0&&a>0&&(c.one||b<a)))return err(c.one?"Enter a price.":"Bid must be lower than ask.");
+  c.qb=b;c.qa=a;c.pend=true;c.wait=c.rw||2;S.st.sent++;S.v2++;
+}
+function evalQuote(c){
+  /* Two-way RFQ: client direction is hidden; client hits our bid (sells) or lifts our offer (buys) only if price, spread width, size and speed are acceptable. */
+  const sp=S.sc.spr,buyC=c.d>0,b=c.qb,a=c.qa,ib=bidP(),ia=askP(),w=pips(a-b),ex=buyC?pips(a-ia):pips(ib-b),
+    wide=sp*c.tol*(1.5+.4*Math.log2(1+c.size/S.sc.sizes[0])),off=Math.abs(pips((a+b)/2-S.mid))>3*sp,
+    el=c.qt||0,tf=el<=c.pat*.45?1:Math.max(.12,1-(el-c.pat*.45)/(c.pat*.55)*.88),R=S.rel[c.cl.n]=S.rel[c.cl.n]||[0,0],rf=.85+.3*(R[1]+1)/(R[0]+2);
+  let pf=ex<=0?.97:Math.exp(-ex/(sp*1.25*c.tol));if(w>wide)pf*=Math.exp(-(w-wide)/sp);
+  const p=off?.03:pf*tf*rf*(c.cl.inf>.5?.9:1);R[0]++;
+  if(c.u<p){const q=buyC?-c.size:c.size,px=buyC?a:b;
+    if(!limOK(q)){err(`Quote filled but position limit of ${S.sc.limit}M would be exceeded.`);finish(c,"Rejected: position limit","dn");return}
+    fill(q,px,"rfq",c.cl.n);R[1]++;S.st.hit++;drift(c.cl,buyC?1:-1,c.size);finish(c,buyC?`Client lifted your offer ("Mine") @ ${fu(px)}`:`Client hit your bid ("Yours") @ ${fu(px)}`,"up")}
+  else{S.st.pass++;finish(c,"Nothing done · "+(off?"off-market":w>wide?"spread too wide":tf<.6?"too slow":ex>0?"price not competitive":"client passed"),"mu")}
+}
+function accept(c){
+  if(!guard())return;const q=c.d>0?-c.size:c.size;
+  if(!limOK(q))return void err(`Position limit of ${S.sc.limit}M ${S.sc.base} would be exceeded.`);
+  fill(q,c.px,"rfq",c.cl.n);S.st.hit++;drift(c.cl,c.d,c.size);finish(c,`Traded @ ${fu(c.px)}`,"up");
+}
+function callTick(dt){
+  if(S.sim>=S.nextCall){if(S.cfg.on)newCall(S.calls.filter(c=>c.st==="active"&&!c.mm).length<6);S.nextCall=S.sim+S.cfg.int*rnd(.35,1.3)}
+  S.calls.forEach(c=>{if(c.st!=="active")return;
+    if(c.pend){c.wait-=dt;if(c.wait<=0){if(c.mm){c.pend=false;const h=sprP()*S.sc.pip*rnd(.5,.9);c.mb=qz(S.mid-h);c.ma=qz(S.mid+h);c.left=rnd(20,30);S.v2++}else evalQuote(c)}return}
+    if(c.autoAt&&S.sim>=c.autoAt){const h=sprP()*S.sc.pip*.6,sk=S.pos/S.sc.limit*sprP()*S.sc.pip*.5;if(c.one){const p=c.d>0?qz(S.mid+h-sk):qz(S.mid-h-sk);sendQuote(c,p,p)}else sendQuote(c,qz(S.mid-h-sk),qz(S.mid+h-sk));return}
+    c.left-=dt;if(c.left<=0){S.st.exp++;finish(c,c.two?"Missed (timed out)":"Expired","mu")}});
+}
+
+/* ---------- mesin pasar ---------- */
+function step(dt){
+  S.sim+=dt;const zz=randn();let m=S.fv+S.sc.pip*S.sc.vol*(S.vz||1)*zz*Math.sqrt(dt);
+  S.imp=S.imp.filter(i=>{m+=i.per*Math.min(dt,i.left)*S.sc.pip;i.left-=dt;return i.left>0});S.fv=m;stepWatch(dt,zz);
+  if(S.sim>=S.nextRef){const df=S.fv-S.mid,cp=Math.max(S.sc.pip*S.sc.vol*2.5,Math.abs(df)*.35);S.mid=qz(S.mid+Math.max(-cp,Math.min(cp,df)));S.nextRef=S.sim+(S.cfg.ref||5)*(S.sim<S.wide?.5:1)*rnd(.7,1.3)}
+  S.disp+=(S.mid-S.disp)*(1-Math.exp(-dt/1.5));
+  for(let k=0;k<=10;k++){S.zB[k]+=(S.tB[k]-S.zB[k])*.12*dt+rnd(-15,15)*(S.sc.fi?.1:1)*dt;S.zA[k]+=(S.tA[k]-S.zA[k])*.12*dt+rnd(-15,15)*(S.sc.fi?.1:1)*dt;S.zB[k]=Math.max(S.sc.fi?6:20,S.zB[k]);S.zA[k]=Math.max(S.sc.fi?6:20,S.zA[k])}
+  S.sc.ev.forEach((e,i)=>{if(!e.fired&&S.sim>=e.t){e.fired=1;const sur=+((rnd(0,1)*2-1)*e.sd*1.4).toFixed(e.d);e.act=+(e.fc+sur).toFixed(e.d);
+    const imp=sur*e.s+randn()*S.sc.spr*.3;S.imp.push({per:imp/6,left:6});S.wide=S.sim+25;L("info",`${e.c} ${e.n}: ${e.act}${e.u}`,`forecast ${e.fc}${e.u}, previous ${e.pv}${e.u}`);
+    S.res.push({at:S.sim+30,i,m0:S.mid});S.v2++}});
+  S.sc.nw.forEach(n=>{if(!n.fired&&S.sim>=n.t){n.fired=1;S.feed.unshift({t:n.t,h:n.h,b:n.b,open:true});S.feed.forEach((f,k)=>{if(k)f.open=false});S.imp.push({per:(n.i+randn()*2)/8,left:8});S.wide=S.sim+12;S.v2++}});
+  S.res=S.res.filter(r=>{if(S.sim<r.at)return true;const mv=(S.sc.fi?-1:1)*pips(S.mid-r.m0),a=Math.abs(mv),c=a>=S.sc.strong?2:a>=S.sc.weak?1:0,real=c*Math.sign(mv),v=S.votes[r.i],e=S.sc.ev[r.i];
+    if(v==null)L("info","Bank's view: no vote",`${e.n} moved ${mv.toFixed(1)} pips`);
+    else{const pts=v===real?2:(v&&Math.sign(v)===Math.sign(real)&&real!==0?1:0);S.bank+=pts;L("info",`Bank's view result: +${pts} pts`,`${e.n}: market moved ${mv.toFixed(1)} pips`)}return false});
+  orderTick(dt);callTick(dt);
+  if(S.sim-S.lastH>=1){S.lastH=S.sim;S.hist.push([S.sim,S.disp]);const p=S.real+unreal();S.pk=Math.max(S.pk,p);S.dd=Math.max(S.dd,S.pk-p);S.bots.forEach(b=>b.pnl+=b.mu*1e3+randn()*b.sg*1e3)}
+  if(S.sim>=SESSION){S.fin=true;S.paused=true}
+}
+setInterval(()=>{if(!S)return;if(!S.paused&&!S.fin)for(let i=0;i<S.speed;i++){const a=S;ALL.forEach(t=>{S=t;step(.25)});S=a}
+  if(S.fin&&!fd){fd=1;$("run").textContent="Ended";finishSession()}render()},250);
+
+/* ---------- render ---------- */
+function render(){
+  const sc=S.sc;$("clock").textContent=mm(SESSION-S.sim);$("tlp").style.width=(S.sim/SESSION*100)+"%";
+  $("dot").className="dot"+(S.paused?" p":"");$("live").textContent=S.fin?"Ended":S.paused?"Paused":"Live";
+  const bn=$("banner");bn.style.display=S.paused?"block":"none";
+  bn.innerHTML=S.fin?"<b>Session ended.</b> Open the Dashboard for your performance report.":"<b>Session paused.</b> Trading is stopped until you resume the session."+(S.real0&&S.sim===0?" Start rate taken from the latest ECB reference rate.":"");
+  const lk=(S.lock||0)-S.sim;if(!S.paused&&!S.fin&&lk>0){bn.style.display="block";bn.innerHTML=`<b>Limit breach.</b> Trading is paused for ${Math.ceil(lk)} s.`}
+  const nx=sc.ev.find(e=>!e.fired);$("next").innerHTML=nx?`Next ${nx.c} <b style="color:var(--tx)">${nx.n}</b> in <b style="color:var(--tx)">${mm(nx.t-S.sim)}</b>`:"No more scheduled events";
+  const b=bidP(),a=askP(),u=unreal(),ap=Math.abs(S.pos);
+  $("posB").innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="${S.pos>0?"up":S.pos<0?"dn":"mu"}" style="font-size:17px">${S.pos>0?"Long":S.pos<0?"Short":"Flat"}</span><span class="big ${S.pos>0?"up":S.pos<0?"dn":""}">${S.pos<0?"−":""}${fM(ap)} <small class="mu" style="font-size:12px">${sc.base}</small></span></div>
+   <div class="kv"><span>Unrealized <b class="${cu(u)}">${fU(u)}</b></span><span>avg <b class="big" style="font-size:17px">${S.pos?fu(S.avg):"—"}</b></span></div>
+   <div class="kv"><span>Realized</span><b class="${cu(S.real)}">${S.real?fU(S.real):"0"}</b></div>
+   ${sc.fi?fiLim():`<div class="kv"><span>Limit</span><span>${Math.round(ap/sc.limit*100)}% · ${fM(ap)} of ${sc.limit}M ${sc.base}</span></div><div class="lim"><i style="width:${Math.min(100,ap/sc.limit*100)}%"></i></div>`}
+   <div class="kv mu"><span>${S.orders.filter(o=>o.q>0).map(o=>"Bid "+fM(o.left)+" @ "+fp(o.px)).join(", ")||"No bids"}</span><span>${S.orders.filter(o=>o.q<0).map(o=>"Ask "+fM(o.left)+" @ "+fp(o.px)).join(", ")||"No asks"}</span></div>`;
+  const sz=+$("size").value||0;$("mSell").textContent="SELL "+fM(sz);$("mBuy").textContent="BUY "+fM(sz);$("szb").textContent=fM(S.zB[0]);$("sza").textContent=fM(S.zA[0]);
+  $("best").innerHTML=`<span data-reset="1">${fp(b)}</span><small>${sprP()} pips</small><span data-reset="1">${fp(a)}</span>`;
+  let h="";const mx=Math.max(...S.zB.slice(1),...S.zA.slice(1));
+  for(let k=1;k<=10;k++)h+=`<div class="l" style="--w:${S.zB[k]/mx*100}%" data-p="${fp(lvl(false,k))}" data-s="b"><small>${fM(S.zB[k])}</small><span class="dn">${fp(lvl(false,k))}</span></div><div class="r" style="--w:${S.zA[k]/mx*100}%" data-p="${fp(lvl(true,k))}" data-s="a"><span class="up">${fp(lvl(true,k))}</span><small>${fM(S.zA[k])}</small></div>`;
+  $("lad").innerHTML=sc.fi?fiLad():h;
+  [["pb",b],["pa",a]].forEach(([id,v])=>{const e=$(id);if(!e.dataset.d&&document.activeElement!==e)e.value=fp(v)});
+  $("onum").textContent=S.orders.length+" orders";
+  $("ordB").innerHTML=S.orders.length?`<table><thead><tr><th>Side</th><th>Size</th><th>Price</th><th></th></tr></thead><tbody>${S.orders.map(o=>`<tr><td class="${o.q>0?"up":"dn"}">${o.q>0?"Bid":"Offer"}</td><td>${fM(o.left)}</td><td>${fp(o.px)}</td><td><button data-x="${o.id}">Cancel</button></td></tr>`).join("")}</tbody></table>`:`<div style="text-align:center;padding:30px 0">No orders</div>`;
+  $("lnum").textContent=S.trades.length+" fills";
+  if(S.lv!==S.v2){S.lv=S.v2;
+    $("logB").innerHTML=S.log.slice(0,60).map(l=>{const c=l.k==="err"?"var(--dn)":l.k==="info"?"var(--bl)":l.h.startsWith("Bought")?"var(--up)":"var(--dn)";return `<div class="lg"><span class="ic" style="background:${c}">${l.k==="err"?"✕":l.k==="info"?"i":"✓"}</span><div><b>${l.h}</b><small>${l.d}</small></div></div>`}).join("")||`<span class="mu">No activity yet.</span>`;
+    renderCalls();renderNews()}
+  document.querySelectorAll("[data-tm]").forEach(e=>{const c=S.calls.find(x=>x.id==e.dataset.tm);if(c){e.textContent=mm(c.pend?c.wait:c.left)}});
+  document.querySelectorAll("[data-cd]").forEach(e=>e.textContent=mm(+e.dataset.cd-S.sim));
+  const act=S.calls.filter(c=>c.st==="active");$("wait").textContent=act.length+" waiting";$("tA").textContent="Active "+act.length;$("tR").textContent="Recent "+(S.calls.length-act.length);
+  const vw=S.sc.ev.findIndex(e=>!e.fired&&S.sim>=e.t-45);if(vw!==S.vw){S.vw=vw;S.v2++}
+  if(sc.fi)renderFI();renderWatch();drawChart();
+}
+function renderCalls(){
+  $("tA").className=S.tab==="active"?"on":"";$("tR").className=S.tab==="recent"?"on":"";
+  const list=S.calls.filter(c=>S.tab==="active"?c.st==="active":c.st==="done");
+  $("clist").innerHTML=list.map(c=>{
+    if(c.mm){const hd=`<div class="ch"><b>${S.sc.pair}</b><span>Market maker <b style="font-size:16px">${c.size}M</b> ${S.sc.base}</span>${c.st==="active"?`<span class="tm" data-tm="${c.id}"></span>`:""}</div><div class="cn">${c.cl.n}<small>Interbank</small></div>`;
+      if(c.st==="done")return `<div class="call" data-id="${c.id}">${hd}<div class="${c.rc}">${c.res} <span class="mu">· ${TT(c.at)}</span></div></div>`;
+      if(c.pend)return `<div class="call" data-id="${c.id}">${hd}<div class="mu">Waiting for quote…</div></div>`;
+      return `<div class="call" data-id="${c.id}">${hd}<div class="cr"><span class="mu">Bid</span><b style="font-size:17px">${fp(c.mb)}</b><span class="mu">Ask</span><b style="font-size:17px">${fp(c.ma)}</b></div><div class="cr" style="margin-top:6px"><button class="dn" data-mhit>Sell @ bid</button><button class="up" data-mlift>Buy @ ask</button><button class="go" data-dec>Decline</button></div></div>`}
+    const head=`<div class="ch"><b>${S.sc.pair}</b>${c.two?`<span>Two-way <b style="font-size:16px">${c.size}M</b> ${S.sc.base}</span>`:`<span class="${c.d<0?"dn":"up"}">They ${c.d<0?"sell":"buy"} <b style="font-size:16px;color:var(--tx)">${c.size}M</b> ${S.sc.base}</span>`}${c.st==="active"?`<span class="tm" data-tm="${c.id}"></span>`:""}</div><div class="cn">${c.cl.n}<small>${c.cl.ty}${c.one?" · asks your price":""}</small></div>`;
+    if(c.st==="done")return `<div class="call" data-id="${c.id}">${head}<div class="${c.rc}">${c.res} <span class="mu">· ${TT(c.at)}</span></div></div>`;
+    if(c.pend)return `<div class="call" data-id="${c.id}">${head}<div class="mu">Quote sent ${fp(c.qb)} / ${fp(c.qa)}, waiting for client…</div></div>`;
+    if(c.one)return `<div class="call" data-id="${c.id}">${head}<div class="cr"><span class="mu">Your ${c.d>0?"offer":"bid"}</span><input data-cp value="${fp(c.d>0?c.qa:c.qb)}" aria-label="Price"><button data-mkt1>Market</button><button class="go" data-send1>Send price</button><button data-pass>Pass</button></div></div>`;
+    return `<div class="call" data-id="${c.id}">${head}`+(c.two?`<div class="cr"><span class="mu">Bid</span><input data-cb value="${fp(c.qb)}" aria-label="Bid"><span class="mu">Ask</span><input data-ca value="${fp(c.qa)}" aria-label="Ask"></div><div class="cr" style="margin-top:6px"><button data-mkt>Market</button><button class="go" data-send>Send quote</button><button data-pass>Pass</button></div>`
+      :`<div class="cr"><span class="mu">Client price</span><b style="font-size:17px">${fu(c.px)}</b><button class="go" data-acc>Accept</button><button data-dec>Decline</button></div>`)+`</div>`}).join("")||`<div class="mu" style="padding:16px 0;text-align:center">${S.tab==="active"?"No active calls."+(S.cfg.on?"":" Client calls are off in Settings."):"No recent calls."}</div>`;
+}
+const EVD=[[/hourly|wage/i,"Wage growth. Faster wage growth feeds inflation and supports expectations of higher rates."],[/payroll|employment change|jobs/i,"Jobs added to the economy. Strong hiring signals a healthy economy and can lift rate expectations."],[/cpi|inflation|price index|ppi/i,"Change in the price of a basket of goods and services. A high reading points to inflation and raises the odds of tighter policy."],[/rate decision|lpr|loan prime|policy rate/i,"The central bank's policy-rate decision. A hike or hawkish tone usually lifts the currency and yields; a cut or dovish tone does the opposite."],[/pmi|manufacturing|zew|sentiment|kof|tankan|confidence|barometer/i,"Survey-based gauge of business or consumer conditions. Readings above the neutral level (50 for PMIs) point to expansion."],[/gdp/i,"Total output of the economy. Growth above forecast tends to support the currency and push yields up."],[/trade balance/i,"Exports minus imports. A larger surplus is generally positive for the local currency."],[/building permits|housing|home/i,"Tracks new construction or housing activity. A higher number points to a stronger housing market and economy."],[/industrial|production/i,"Volume of output in factories and mines. Strong readings can raise inflation and rate expectations."],[/crude|eia|oil|inventor/i,"Weekly change in crude stocks. A larger draw than forecast is usually read as bullish for oil."],[/retail|sales/i,"Consumer spending. A high reading signals strong demand and supports the currency."],[/earnings|eps/i,"Company profit per share against analyst forecasts. A beat usually lifts the share price."]];
+const EVDesc=n=>(EVD.find(x=>x[0].test(n))||[0,"Scheduled data release. A reading above forecast is usually seen as positive for the local currency and yields."])[1];
+function evBlock(e,i){const sc=S.sc,labs=["↓↓","↓","Flat","↑","↑↑"],cur=S.votes[i],open=i===S.vw&&!e.fired,df=e.fired?+(e.act-e.fc).toFixed(e.d):0,mt='<div class="mu" style="margin-top:6px">';
+  const top=`<div class="mu" style="display:flex;justify-content:space-between"><span>${e.fired?TT(e.t):`in <b data-cd="${e.t}">${mm(e.t-S.sim)}</b>`} · ${e.c}${e.fired&&S.sim-e.t<45?' <span class="nwb">New</span>':""}</span>${open?`<span class="am"><b data-cd="${e.t}">${mm(e.t-S.sim)}</b> left to vote</span>`:""}</div><b style="font-size:15px">${e.n}</b>`;
+  const nums=`<div class="ev3"><div>${e.fired?`<small class="mu">Actual</small><b style="font-size:20px" class="${df>0?"up":df<0?"dn":""}">${e.act}${e.u}</b>`:""}</div><div><small class="mu">Forecast</small><b>${e.fc}${e.u}</b></div><div><small class="mu">Previous</small><b>${e.pv}${e.u}</b></div></div>`+(e.fired?`<div class="mu">${df>0?"↑":df<0?"↓":"="} ${Math.abs(df)}${e.u} ${df>0?"above":df<0?"below":"in line with"} forecast</div>`:"");
+  const view=open?`${mt}Your bank's view · ${sc.pair} ${sc.fi?"yield":"price"}</div><div class="vt">${labs.map((l,k)=>`<button data-v="${k-2}" class="${cur===k-2?"on":""}">${l}</button>`).join("")}</div>`
+   :cur!=null?`${mt}Your bank's view · ${sc.pair} · cast <b class="am">${["down ×2","down","flat","up","up ×2"][cur+2]}</b></div>`
+   :e.fired?`${mt}Your bank's view · no vote</div>`:`${mt}Voting opens 0:45 before release</div>`;
+  return `<div class="nw">${top}${nums}${view}<details><summary class="mu" style="cursor:pointer;margin-top:4px">About this release</summary><p class="evd">${EVDesc(e.n)}</p></details></div>`}
+function calHTML(all){const E=S.sc.ev.map((e,i)=>[e,i]),up=E.filter(x=>!x[0].fired),er=E.filter(x=>x[0].fired).reverse(),hd=(a,b)=>`<div class="ph" style="margin-top:12px"><span style="font-weight:600">${a}</span><span class="mu">${b}</span></div>`;
+  return hd("Upcoming","Forecast &nbsp; Previous")+(up.slice(0,all?9:2).map(x=>evBlock(...x)).join("")||'<div class="mu">None.</div>')+hd("Earlier","Actual &nbsp; Forecast")+(er.slice(0,all?9:3).map(x=>evBlock(...x)).join("")||'<div class="mu">Nothing released yet.</div>')}
+function renderNews(){
+  $("nT").innerHTML=`News <small class="mu">${S.feed.length} today</small>`;$("cT").innerHTML=`Calendar <small class="mu">${S.sc.ev.filter(e=>e.fired).length} today</small>`;
+  $("nT").className=S.ntab==="news"?"on":"";$("cT").className=S.ntab==="cal"?"on":"";
+  if(S.ntab==="cal"){$("nbody").innerHTML=calHTML(true);return}
+  const h=S.feed.map((f,i)=>`<div class="nw"><div class="t"><span>${TT(f.t)}</span></div><h4>${f.h}</h4>${f.open?`<p>${f.b}</p>`:""}<button class="lnk" data-tg="${i}">${f.open?"Show less":"Show more"}</button></div>`).join("")
+   ||`<div class="nw"><div class="t"><span>T+00:00</span><button class="lnk" id="brief">Morning brief</button></div><h4>No news yet</h4><p>Headlines will appear here as the session runs.</p></div>`;
+  $("nbody").innerHTML=h+calHTML(false)}
+
+/* ---------- FI panels ---------- */
+function fiLim(){const sc=S.sc,d=dv01(S.pos),lm=sc.limit*sc.px*bdur(byld(sc.px,sc.cpn,sc.yrs,sc.frq),sc.cpn,sc.yrs,sc.frq),p=Math.min(100,Math.abs(d)/lm*100);
+  const bar=n=>`<div class="kv"><span>${n}</span><span>${Math.round(p)}% · ${fK(d)} of ${fK(lm)}</span></div><div class="lim"><i style="width:${p}%"></i></div>`;
+  return `<div class="kv"><span>DV01</span><b>${S.pos?sK(d):"0"}</b></div>`+bar(sc.yrs+"Y DV01")+bar("Total DV01")}
+function fiLad(){const sc=S.sc,sz=+$("size").value||0,row=(a,k)=>{const p=k?lvl(a,k):a?askP():bidP(),s=(a?S.zA:S.zB)[k],mx=Math.max(...S.zB.slice(0,6),...S.zA.slice(0,6));
+    return `<div class="fr ${a?"a":"b"}${k?"":" best"}" style="--w:${s/mx*100}%" data-p="${fp(p)}" data-s="${a?"a":"b"}" title="${a?"Buy":"Sell"} ${sz}M USD of ${sc.pair} at ${fp(p)}% · Immediate or cancel">${a?"<span></span><b>"+fp(p)+"<small>%</small></b><small>"+fM(s)+"</small>":"<small>"+fM(s)+"</small><b>"+fp(p)+"<small>%</small></b><span></span>"}</div>`};
+  let h="";for(let k=4;k>=0;k--)h+=row(true,k);h+=`<div class="fsp">Spread <b style="color:var(--tx)">${((yld(bidP())-yld(askP()))*100).toFixed(1)}</b> bp</div>`;for(let k=0;k<=4;k++)h+=row(false,k);return h}
+function renderFI(){const sc=S.sc,y=yld(S.mid),md=bdur(y,sc.cpn,sc.yrs,sc.frq),cx=bcvx(y,sc.cpn,sc.yrs,sc.frq),d=dv01(S.pos),u=unreal(),dd=S.pos?sK(d):"0";
+  const r=(n)=>`<tr><td><b>${n}</b></td><td>${dd}</td><td class="${cu(S.real)}">${S.real?fU(S.real):"0"}</td><td class="${cu(u)}">${u?fU(u):"0"}</td></tr>`;
+  const kv=(a,b)=>`<div class="kv"><span>${a}</span><b>${b}</b></div>`;
+  $("riskB").innerHTML=`<table><thead><tr><th></th><th>DV01</th><th>REALIZED</th><th>UNREALIZED</th></tr></thead><tbody>${r(sc.pair)}${r("Total")}</tbody></table>`+
+   `<div style="margin-top:8px">${kv("Price / Yield",S.mid.toFixed(4)+" / "+y.toFixed(3)+"%")}${kv("Modified duration",md.toFixed(3))}${kv("PV01 (per 100 face)",pv01().toFixed(4))}${kv("DV01 posisi","$"+Math.round(d).toLocaleString())}${kv("Convexity",cx.toFixed(2))}${sc.move?kv("Rate-vol hari ini",sc.dvol+" bp/hari ≈ MOVE "+sc.move):""}</div>`}
+function initCalc(){const sc=S.sc;$("calcT").innerHTML=`${sc.pair} <span>Calculator</span>`;
+  const row=(a,b)=>`<div class="crw"><span class="mu">${a}</span><span>${b}</span></div>`;
+  $("calcB").innerHTML=row("Face value",100)+row("Coupon",sc.cpn+'<small class="mu">%</small>')+row("Issue date",sc.iss)+row("Years",sc.yrs)+row("Frequency","Semiannual")+
+   `<div style="border-top:1px solid var(--ln);margin-top:6px;padding-top:6px"><div class="crw"><span class="mu">Yield %</span><input id="cy" type="number" step="any"></div><div class="crw"><span class="mu">Price</span><input id="cpx" type="number" step="any"></div><button class="lnk" id="clive">Use live market</button></div>`+
+   `<div style="border-top:1px solid var(--ln);margin-top:6px;padding-top:6px"><div class="crw"><span class="mu">Notional (M)</span><input id="cn" type="number" step="any" value="100"></div><div id="cout"></div><div class="crw"><span class="mu">Target DV01 ($)</span><input id="cdd" type="number" step="any" value="20000"></div><div id="cout2"></div><div class="hint">MD = (P − P₁)/(P·Δy), Δy = −1bp · PV01 = P·MD·0.01% · DV01 = N·(P/100)·MD·0.01% · Notional = DV01 / ((P/100)·0.01%·MD)</div></div>`;
+  const calc=()=>{const y=+$("cy").value,P=bpx(y,sc.cpn,sc.yrs,sc.frq),md=bdur(y,sc.cpn,sc.yrs,sc.frq),cx=bcvx(y,sc.cpn,sc.yrs,sc.frq),N=(+$("cn").value||0)*1e6,dd=+$("cdd").value||0;
+    $("cout").innerHTML=row("Mod. duration",md.toFixed(4))+row("PV01 (per 100)",(P*md*1e-4).toFixed(4))+row("DV01 ($)",Math.round(N*(P/100)*md*1e-4).toLocaleString())+row("Convexity",cx.toFixed(2));
+    $("cout2").innerHTML=row("Notional for target (M)",(dd/((P/100)*1e-4*md)/1e6).toFixed(2))};
+  const live=()=>{const y=yld(S.mid);$("cy").value=y.toFixed(4);$("cpx").value=bpx(y,sc.cpn,sc.yrs,sc.frq).toFixed(4);calc()};live();
+  $("cy").oninput=()=>{const y=+$("cy").value;if(y>-5)$("cpx").value=bpx(y,sc.cpn,sc.yrs,sc.frq).toFixed(4);calc()};
+  $("cpx").oninput=()=>{const p=+$("cpx").value;if(p>0){$("cy").value=byld(p,sc.cpn,sc.yrs,sc.frq).toFixed(4);calc()}};
+  $("cn").oninput=calc;$("cdd").oninput=calc;$("clive").onclick=live}
+/* ---------- chart ---------- */
+let CG=null,IND={},DRW={tool:null,magnet:1,lock:0,hide:0,tmp:[],mv:null};
+const YC=new WeakMap(),lsG=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsS=(k,v)=>{try{v===null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+function loadInd(){IND=lsG("mts_ind_all")||lsG("mts_ind_"+S.sc.pair)||{};DRW.tmp=[];DRW.tool=null}
+function saveInd(){if(IND.all)lsS("mts_ind_all",IND);else{lsS("mts_ind_all",null);lsS("mts_ind_"+S.sc.pair,IND)}}
+const EMAS=[["e14",14,"#f5a623",[]],["e50",50,"#b07cff",[5,3]],["e200",200,"#3fd0c9",[2,3]]];
+const TOOLS=[["x","✛","Select"],["tl","╱","Trend line"],["ray","↗","Ray"],["h","─","Horizontal line"],["v","│","Vertical line"],["ch","▱","Parallel channel"],["fib","Fib","Fib retracement"],["rng","▭","Range"]];
+const TN={tl:"Trend line",ray:"Ray",h:"Horizontal line",v:"Vertical line",ch:"Parallel channel",fib:"Fib retracement",rng:"Range"},NEED={tl:2,ray:2,h:1,v:1,ch:3,fib:2,rng:2};
+const HINT={tl:["Click where the line starts","Click where the line ends"],ray:["Click where the ray starts","Click a second point for direction"],h:["Click to place the line"],v:["Click to place the line"],ch:["Click where the channel starts","Click where it ends","Click to set channel width"],fib:["Click the swing start","Click the swing end"],rng:["Click the first corner","Click the opposite corner"]};
+function drawTB(){const n=(S.dr||[]).length;$("dtb").innerHTML=TOOLS.map(([k,i,t])=>`<button data-t="${k}" title="${t}" class="${(DRW.tool||"x")===k?"on":""}">${i}</button>`).join("")+`<button data-m="magnet" title="Magnet (snap to price)" class="${DRW.magnet?"on":""}">🧲</button><button data-m="lock" title="Lock drawings" class="${DRW.lock?"on":""}">${DRW.lock?"🔒":"🔓"}</button><button data-m="hide" title="Show / hide drawings" class="${DRW.hide?"on":""}">👁</button><button data-m="clear" title="Delete all drawings" ${DRW.lock||!n?"disabled":""}>🗑</button><b style="margin-left:6px">${DRW.tool?TN[DRW.tool]:""}</b> <span class="mu">${DRW.tool?HINT[DRW.tool][DRW.tmp.length]||"":""}</span>`;$("cv").style.cursor=DRW.tool?"crosshair":"default"}
+function indHTML(){const row=(k,l)=>`<label><span><input type="checkbox" data-i="${k}" ${IND[k]?"checked":""}> ${l}</span><span class="mu" data-ev="${k}"></span></label>`;
+  return `<div class="mu">Moving averages</div>${row("e14","EMA 14")}${row("e50","EMA 50")}${row("e200","EMA 200")}<div class="mu" style="margin-top:6px">Levels</div>${row("sr","Support and resistance")}${row("fib","Auto Fibonacci")}<div class="mu" style="margin-top:8px;display:flex;justify-content:space-between"><span>Kept for ${S.sc.pair}</span><label style="display:inline"><input type="checkbox" id="indAll" ${IND.all?"checked":""}> Use on every chart</label></div>`}
+function drawChart(){
+  const cvs=$("cv"),dpr=devicePixelRatio||1,W=cvs.clientWidth,H=cvs.clientHeight;
+  if(cvs.width!==Math.round(W*dpr)||cvs.height!==Math.round(H*dpr)){cvs.width=Math.round(W*dpr);cvs.height=Math.round(H*dpr)}
+  const g=cvs.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  const cs=getComputedStyle(document.documentElement),C=n=>cs.getPropertyValue(n).trim(),typ=$("ctype").value,fi=!!S.sc.fi;
+  const T=Math.max(60,S.sim),pr=58,pbm=22,pt=8,w=W-pr,h=H-pbm-pt,raw=S.hist.concat([[S.sim,S.disp]]);
+  let yc=YC.get(S.hist);if(!yc){yc=[];YC.set(S.hist,yc)}
+  const hs=raw.map(([t,p],i)=>{if(!fi)return[t,p];if(i===raw.length-1)return[t,yld(p)];if(yc[i]===undefined)yc[i]=yld(p);return[t,yc[i]]});
+  let cd=[];if(typ==="candle"){const B=Math.max(10,Math.ceil(T/70));hs.forEach(([t,p])=>{const k=Math.floor(t/B),c=cd[cd.length-1];if(c&&c.k===k){c.h=Math.max(c.h,p);c.l=Math.min(c.l,p);c.c=p}else cd.push({k,t0:k*B,B,o:p,h:p,l:p,c:p})})}
+  let lo=Infinity,hi=-Infinity;hs.forEach(([,p])=>{lo=Math.min(lo,p);hi=Math.max(hi,p)});const gl=lo,gh=hi,pd=Math.max((hi-lo)*.15,fi?.0004:S.sc.pip*4);lo-=pd;hi+=pd;
+  const X=t=>t/T*w,Y=p=>pt+(hi-p)/(hi-lo)*h;CG={T,pr,pt,w,h,lo,hi,hs};g.font="11.5px system-ui";g.lineWidth=1;
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,y=Math.round(Y(v))+.5;g.strokeStyle=C("--ln");g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke();g.fillStyle=C("--mu");g.fillText(fpv(v)+(fi?"%":""),w+6,y+4)}
+  g.fillStyle=C("--mu");["Start",...[1,2,3].map(i=>TT(T*i/4))].forEach((t,i)=>g.fillText(t,i===0?0:w*i/4-18,H-6));
+  if(typ==="candle"){const bw=Math.max(2,w/cd.length*.65);cd.forEach(c=>{const x=X(c.t0+c.B/2),up=c.c>=c.o;g.strokeStyle=g.fillStyle=up?C("--up"):C("--dn");g.beginPath();g.moveTo(x,Y(c.h));g.lineTo(x,Y(c.l));g.stroke();g.fillRect(x-bw/2,Math.min(Y(c.o),Y(c.c)),bw,Math.max(1,Math.abs(Y(c.o)-Y(c.c))))})}
+  else{g.beginPath();hs.forEach(([t,p],i)=>i?g.lineTo(X(t),Y(p)):g.moveTo(X(t),Y(p)));
+    if(typ==="area"){g.save();g.lineTo(X(S.sim),pt+h);g.lineTo(0,pt+h);g.closePath();const gr=g.createLinearGradient(0,pt,0,pt+h);gr.addColorStop(0,"rgba(79,143,247,.35)");gr.addColorStop(1,"rgba(79,143,247,0)");g.fillStyle=gr;g.fill();g.restore();g.beginPath();hs.forEach(([t,p],i)=>i?g.lineTo(X(t),Y(p)):g.moveTo(X(t),Y(p)))}
+    g.strokeStyle=C("--bl");g.lineWidth=1.6;g.stroke();g.lineWidth=1}
+  /* --- indicators --- */
+  const hl=(v,col,dash,lab)=>{const y=Y(v);if(y<pt-2||y>pt+h+2)return;g.save();g.strokeStyle=col;g.fillStyle=col;g.setLineDash(dash);g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke();if(lab)g.fillText(lab,4,y-3);g.restore()};
+  EMAS.forEach(([k,n,col,ds])=>{const el=document.querySelector(`[data-ev="${k}"]`);if(hs.length<n){if(el)el.textContent="in "+mm(n-hs.length);return}
+    const a=2/(n+1);let e=null;const arr=hs.map(x=>e=e==null?x[1]:e+a*(x[1]-e));if(el)el.textContent=fpv(e)+(fi?"%":"");
+    if(!IND[k])return;g.save();g.strokeStyle=col;g.setLineDash(ds);g.lineWidth=1.3;g.beginPath();arr.forEach((v,i)=>i?g.lineTo(X(hs[i][0]),Y(v)):g.moveTo(X(hs[i][0]),Y(v)));g.stroke();g.restore()});
+  if(IND.sr&&hs.length>30){const k=12,P=[];for(let i=k;i<hs.length-k;i++){let mx=1,mn=1;for(let j=i-k;j<=i+k;j++){if(hs[j][1]>hs[i][1])mx=0;if(hs[j][1]<hs[i][1])mn=0}if(mx||mn)P.push(hs[i][1])}
+    const last=hs[hs.length-1][1],tol=(gh-gl)*.03+1e-9,cl=[];P.sort((a,b)=>a-b).forEach(v=>{const c=cl[cl.length-1];if(c&&v-c.s/c.n<tol){c.s+=v;c.n++}else cl.push({s:v,n:1})});
+    const Lv=cl.map(c=>c.s/c.n);Lv.filter(v=>v>last).slice(0,2).forEach(v=>hl(v,C("--dn"),[6,4],"R "+fpv(v)));Lv.filter(v=>v<=last).slice(-2).forEach(v=>hl(v,C("--up"),[6,4],"S "+fpv(v)))}
+  if(IND.fib&&hs.length>10){let ih=0,il=0;hs.forEach((x,i)=>{if(x[1]>=hs[ih][1])ih=i;if(x[1]<=hs[il][1])il=i});const down=il>ih;
+    [0,.236,.382,.5,.618,.786,1].forEach(r=>hl(down?gl+(gh-gl)*r:gh-(gh-gl)*r,"#8ab4ff",[2,3],r+"  "+fpv(down?gl+(gh-gl)*r:gh-(gh-gl)*r)))}
+  /* --- drawings --- */
+  const drawObj=(o,pv)=>{const p=o.p,P=p.map(([t,v])=>[X(t),Y(v)]);g.save();g.strokeStyle=g.fillStyle="#ffd166";g.lineWidth=1.4;if(pv)g.setLineDash([4,3]);
+    const ln=(a,b)=>{g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke()};
+    if(o.k==="h"){ln([0,P[0][1]],[w,P[0][1]]);g.fillText(fpv(p[0][1]),w+4,P[0][1]+4)}
+    else if(o.k==="v")ln([P[0][0],pt],[P[0][0],pt+h]);
+    else if(P.length>=2){const [a,b]=P,dx=b[0]-a[0];
+      if(o.k==="tl")ln(a,b);
+      else if(o.k==="ray")ln(a,dx?[w,a[1]+(b[1]-a[1])*(w-a[0])/dx]:b);
+      else if(o.k==="ch"){ln(a,b);if(P[2]){const off=P[2][1]-(a[1]+(b[1]-a[1])*((P[2][0]-a[0])/(dx||1)));ln([a[0],a[1]+off],[b[0],b[1]+off])}}
+      else if(o.k==="fib")[0,.236,.382,.5,.618,.786,1].forEach(r=>{const v=p[0][1]+(p[1][1]-p[0][1])*r,y=Y(v),x0=Math.min(a[0],b[0]);ln([x0,y],[w,y]);g.fillText(r+"  "+fpv(v),x0+3,y-3)});
+      else if(o.k==="rng"){g.globalAlpha=.15;g.fillRect(a[0],a[1],dx,b[1]-a[1]);g.globalAlpha=1;g.strokeRect(a[0],a[1],dx,b[1]-a[1]);const d=p[1][1]-p[0][1];g.fillText((fi?(d*100).toFixed(1)+" bp":(d/S.sc.pip).toFixed(0)+" pips")+" · "+TT(Math.abs(p[1][0]-p[0][0])),Math.min(a[0],b[0])+4,Math.min(a[1],b[1])+14)}}
+    g.restore()};
+  if(!DRW.hide)(S.dr||[]).forEach(o=>drawObj(o,0));
+  if(DRW.tool&&DRW.tmp.length){const pts=DRW.tmp.concat(DRW.mv?[DRW.mv]:[]);if(pts.length>=1)drawObj({k:DRW.tool,p:pts},1)}
+  S.trades.forEach(t=>{const x=X(t.t),y=Y(fi?yld(t.p):t.p),u=t.q>0;g.fillStyle=u?C("--up"):C("--dn");g.beginPath();g.moveTo(x,y+(u?-4:4));g.lineTo(x-5,y+(u?6:-6));g.lineTo(x+5,y+(u?6:-6));g.fill()});
+  const ly=Y(hs[hs.length-1][1]),lv=fi?yld(S.mid):S.mid;g.strokeStyle=C("--tx");g.setLineDash([2,3]);g.beginPath();g.moveTo(0,ly);g.lineTo(w,ly);g.stroke();g.setLineDash([]);
+  g.fillStyle="#fff";g.fillRect(w,ly-9,pr,18);g.fillStyle="#000";g.fillText(fpv(lv)+(fi?"%":""),w+4,ly+4);
+  if(fi){const dp=(lv-yld(S.start))*100;$("last").textContent=fpv(lv)+"%";$("dlt").innerHTML=`<span class="${dp>=0?"up":"dn"}">${dp>=0?"↑":"↓"} ${dp>=0?"+":""}${dp.toFixed(1)} bp</span>`}
+  else{const dp=pips(S.mid-S.start);$("last").textContent=fp(S.mid);$("dlt").innerHTML=`<span class="${cu(dp)}">${dp>=0?"↑":"↓"} ${dp>=0?"+":""}${dp.toFixed(0)} pips</span> <span class="mu">${dp>=0?"+":""}${((S.mid/S.start-1)*100).toFixed(2)}%</span>`}
+  $("chR").textContent=`T+00:00 to ${S.sim?TT(S.sim):"now"}`;
+}
+(()=>{const cvs=$("cv");
+  const cpt=e=>{const r=cvs.getBoundingClientRect(),G=CG,x=e.clientX-r.left,y=e.clientY-r.top;let t=Math.max(0,Math.min(G.T,x/G.w*G.T)),v=G.lo+(G.hi-G.lo)*(1-(y-G.pt)/G.h);
+    if(DRW.magnet){let b=0,bd=1e9;G.hs.forEach(([tt],i)=>{const d=Math.abs(tt-t);if(d<bd){bd=d;b=i}});t=G.hs[b][0];const sv=G.hs[b][1];if(Math.abs((sv-v)/(G.hi-G.lo)*G.h)<16)v=sv}return[t,v]};
+  cvs.onclick=e=>{if(!DRW.tool||DRW.lock||!CG)return;DRW.tmp.push(cpt(e));if(DRW.tmp.length>=NEED[DRW.tool]){(S.dr=S.dr||[]).push({k:DRW.tool,p:DRW.tmp});DRW.tmp=[];DRW.mv=null}drawTB();drawChart()};
+  cvs.onmousemove=e=>{if(DRW.tool&&DRW.tmp.length&&CG){DRW.mv=cpt(e);drawChart()}};
+  $("dtb").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.t){DRW.tool=b.dataset.t==="x"?null:b.dataset.t;DRW.tmp=[];DRW.mv=null}else{const m=b.dataset.m;if(m==="clear"){if(!DRW.lock)S.dr=[]}else DRW[m]=DRW[m]?0:1}drawTB();drawChart()};
+  $("drwB").onclick=()=>{const d=$("dtb");d.style.display=d.style.display==="flex"?"none":"flex";drawTB()};
+  $("indB").onclick=e=>{e.stopPropagation();const m=$("indM");if(m.style.display==="block"){m.style.display="none";return}m.innerHTML=indHTML();m.style.display="block"};
+  $("indM").onclick=e=>e.stopPropagation();
+  $("indM").onchange=e=>{const t=e.target;if(t.dataset.i)IND[t.dataset.i]=t.checked?1:0;else if(t.id==="indAll")IND.all=t.checked?1:0;saveInd();drawChart()};
+  document.addEventListener("click",()=>{$("indM").style.display="none"});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&DRW.tool){DRW.tool=null;DRW.tmp=[];DRW.mv=null;drawTB();drawChart()}})})();
+
+/* ---------- dashboard ---------- */
+function showDash(title){
+  const AG=agg(),TR=ALL.flatMap(t=>t.trades),pl=AG.r+AG.u,cl=TR.filter(t=>t.r),w=cl.filter(t=>t.r>0).length,ch={ladder:0,limit:0,rfq:0};TR.forEach(t=>ch[t.ch]++);
+  const rows=ALL[0].bots.map(b=>({n:b.n,p:b.pnl})).concat([{n:nameU+" (you)",p:pl,me:1}]).sort((a,b)=>b.p-a.p);
+  const sm=f=>ALL.reduce((a,t)=>a+f(t),0),sent=sm(t=>t.st.sent),card=(l,v)=>`<div style="border:1px solid var(--ln);border-radius:6px;padding:8px 10px"><div class="mu" style="font-size:12px">${l}</div><b style="font-size:16px">${v}</b></div>`;
+  $("dc").innerHTML=`<h2 style="margin:0 0 4px">${title||"Dashboard"}</h2><div class="mu" style="margin-bottom:12px">${S.sc.title} · ${S.sc.pair} · ${TT(S.sim)}</div>
+   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px">
+   ${card("Total P&L (USD)",`<span class="${cu(pl)}">${fU(pl)}</span>`)}${card("Realized / Unrealized",`${fU(AG.r)} / ${fU(AG.u)}`)}${card("Win rate (closing trades)",cl.length?Math.round(w/cl.length*100)+"% ("+w+"/"+cl.length+")":"—")}
+   ${card("Trades (ladder / limit / client)",`${ch.ladder} / ${ch.limit} / ${ch.rfq}`)}${card("Avg trade size",TR.length?fM(TR.reduce((a,t)=>a+Math.abs(t.q),0)/TR.length):"—")}${card("Peak position",`${fM(S.maxPos)} (${Math.round(S.maxPos/S.sc.limit*100)}% of limit)`)}
+   ${card("Max drawdown",fU(-S.dd))}${card("Quotes sent / filled",`${sent} / ${sm(t=>t.st.hit)}`)}${card("Client passed / missed calls",`${sm(t=>t.st.pass)} / ${sm(t=>t.st.exp)}`)}${card("Bank's view score",sm(t=>t.bank)+" pts")}</div>
+   <h3 style="margin:16px 0 6px">Leaderboard</h3><table><tbody>${rows.map((r,i)=>`<tr style="${r.me?"font-weight:700":""}"><td>${i+1}. ${r.n}</td><td class="${cu(r.p)}">${fU(r.p)}</td></tr>`).join("")}</tbody></table>
+   <p class="hint">Peserta lain adalah bot simulasi. P&L dalam USD (pair cross dikonversi lewat USD/IDR).</p>`;$("dlg").showModal();
+}
+function showBrief(start){
+  $("dc").innerHTML=`<h2 style="margin:0 0 6px">Morning brief · ${S.sc.title}</h2><div class="mu" style="margin-bottom:10px">${S.sc.pair} · ${SESSION/60}-minute session · position limit ${S.sc.limit}M ${S.sc.base}</div><p>${S.sc.brief}</p>
+   <p class="hint">Client calls arrive on the Calls panel: send a two-way quote or accept/decline a directional request. Use the broker screen to adjust inventory. Vote on the bank's view before each major release.</p>`+(start?`<div style="display:flex;justify-content:space-between"><button id="gs">⚙ Settings</button><button id="go" style="background:var(--bl);color:#fff;border-color:var(--bl)">Start session</button></div>`:"");$("dlg").showModal();
+  if(start){$("gs").onclick=()=>showSettings(true);$("go").onclick=()=>{$("dlg").close();toggleRun(true)}}
+}
+const NEWS={std:"Standar",calm:"Tenang",vol:"Volatil",off:"Tanpa berita"};
+const rulesHTML=r=>[...(r.scn?[["Skenario",r.scn]]:[]),["Pasangan",r.pair],["Durasi",r.dur+" menit"],["Call RFQ","rata-rata tiap "+r.int+" dtk"],["Kesabaran klien",r.ans+" dtk"],["Tiket besar",r.large+"%"],["Two-way / klien ajukan harga",r.two+"% / "+r.prop+"%"],["Batas posisi",r.limit+"M "+baseOf(r.pair)],["MAT",r.mat+"% dari limit"],["Jeda saat breach",r.br?r.pl+" dtk ×"+r.pm:"nonaktif"],["Call interbank",r.ib?"aktif":"nonaktif"],["Skenario berita",NEWS[r.news]],["Seed pasar",r.seed],["Checksum",r.hash]].map(([a,b])=>`<div class="kv"><span>${a}</span><b>${b}</b></div>`).join("");
+function showSettings(start){$("dc").innerHTML=`<h2 style="margin:0 0 4px">🔒 Aturan Server</h2><div class="mu" style="margin-bottom:8px">Dikunci oleh host${S.room?" ("+S.room.name+" · "+S.room.code+")":""}. Tidak bisa diubah selama sesi.</div>${S.room?rulesHTML(S.room):""}<div style="text-align:right;margin-top:12px">${start?'<button id="sok" class="pri">Kembali</button>':""}</div>`;
+  if($("sok"))$("sok").onclick=()=>{$("dlg").close();showBrief(true)};if(!$("dlg").open)$("dlg").showModal()}
+function showHelp(){
+  $("dc").innerHTML=`<h2 style="margin:0 0 8px">Cara pakai</h2><ul style="padding-left:18px;margin:0">
+   <li><b>Valas</b>: pilih pair di dropdown kiri atas (USD/IDR, CNY/IDR, EUR/IDR, CHF/IDR). Satu sesi = satu valas; mengganti valas memulai sesi baru.</li>
+   <li><b>Position</b>: posisi bersih, P&L belum/sudah terealisasi, dan pemakaian limit posisi.</li>
+   <li><b>Broker</b>: SELL/BUY menyapu likuiditas di layar (harga bisa bergeser kalau size besar). Isi harga lalu tekan Bid/Ask untuk memasang order limit sendiri. Klik harga di ladder untuk mengisi kolom harga.</li>
+   <li><b>Calls</b>: klien meminta kuotasi. <i>Two-way</i>: kamu isi Bid dan Ask, klien memilih sisi atau menolak (makin lebar dari pasar, makin kecil peluang terisi). <i>They sell/buy</i>: harga sudah ditentukan klien, pilih Accept atau Decline. Waktu terbatas. Hedge fund cenderung "informed" (harga sering bergerak searah mereka setelah transaksi), korporasi tidak. Auto-quote mengirim kuotasi otomatis dengan skew sesuai posisi.</li>
+   <li><b>News & Calendar</b>: rilis data memicu pergerakan sesuai kejutan (actual vs forecast) dan spread melebar. Sebelum rilis besar ada voting <i>Your bank's view</i>; skor 2 poin kalau tepat, 1 poin kalau arahnya benar.</li>
+   <li><b>Kontrol sesi</b>: Resume/Pause dan kecepatan 1x–8x (kamu jadi trainer sendiri). Saat pause semua aksi ditolak seperti di aslinya.</li>
+   <li><b>Dashboard</b>: laporan performa dan leaderboard (bot). Muncul otomatis saat sesi selesai.</li></ul>`;$("dlg").showModal();
+}
+
+/* ---------- kontrol ---------- */
+function toggleRun(force){if(S.fin)return;const p=force===true?false:!S.paused;ALL.forEach(t=>{t.paused=p;t.speed=+$("spd").value});$("run").textContent=p?"▶ Resume":"⏸ Pause";render()}
+$("run").onclick=()=>toggleRun();$("spd").onchange=()=>ALL.forEach(t=>t.speed=+$("spd").value);
+$("mBuy").onclick=()=>market(+$("size").value,"ladder");$("mSell").onclick=()=>market(-$("size").value,"ladder");
+$("bBid").onclick=()=>post(1);$("bAsk").onclick=()=>post(-1);
+["pb","pa"].forEach(i=>$(i).oninput=()=>$(i).dataset.d="1");
+$("best").onclick=()=>{["pb","pa"].forEach(i=>$(i).dataset.d="")};
+$("lad").onclick=e=>{const d=e.target.closest("[data-p]");if(!d)return;if(S.sc.fi){market((d.dataset.s==="a"?1:-1)*(+$("size").value),"ladder");return}const el=$(d.dataset.s==="b"?"pb":"pa");el.value=d.dataset.p;el.dataset.d="1"};
+$("ordB").onclick=e=>{const id=e.target.dataset.x;if(!id||!guard())return;S.orders=S.orders.filter(o=>o.id!=id);L("info","Order cancelled")};
+$("cmm").onclick=()=>{if(!guard())return;const z=+$("size").value;if(!(z>0))return void err("Enter a size.");if(S.calls.some(c=>c.mm&&c.st==="active"))return void err("You already have a market-maker call open.");S.calls.unshift({id:S.cid++,cl:{n:pick(MMN),ty:"Interbank",inf:0},mm:1,size:z,st:"active",pend:true,wait:rnd(2,5),left:0,at:S.sim});S.tab="active";S.v2++};
+$("tA").onclick=()=>{S.tab="active";S.v2++};$("tR").onclick=()=>{S.tab="recent";S.v2++};
+$("nT").onclick=()=>{S.ntab="news";S.v2++};$("cT").onclick=()=>{S.ntab="cal";S.v2++};
+$("auto").onclick=()=>{S.auto=!S.auto;$("auto").classList.toggle("on",S.auto);$("auto").setAttribute("aria-checked",S.auto)};
+$("clist").onclick=e=>{const el=e.target.closest("[data-id]");if(!el)return;const c=S.calls.find(x=>x.id==el.dataset.id);if(!c||c.st!=="active"||c.pend)return;const d=e.target.dataset;
+  if(d.mhit!==undefined||d.mlift!==undefined){const buy=d.mlift!==undefined,q=buy?c.size:-c.size,px=buy?c.ma:c.mb;if(!guard())return;if(!limOK(q))return void err(`Position limit of ${S.sc.limit}M ${S.sc.base} would be exceeded.`);fill(q,px,"ladder");finish(c,`Traded: ${buy?"bought":"sold"} @ ${fu(px)}`,"up")}
+  else if(d.send1!==undefined){const v=ip(+el.querySelector("[data-cp]").value);sendQuote(c,v,v)}
+  else if(d.mkt1!==undefined)el.querySelector("[data-cp]").value=fp(c.d>0?askP():bidP());
+  else if(d.send!==undefined)sendQuote(c,ip(+el.querySelector("[data-cb]").value),ip(+el.querySelector("[data-ca]").value));
+  else if(d.pass!==undefined){if(guard())finish(c,"Passed","mu")}
+  else if(d.acc!==undefined)accept(c);
+  else if(d.dec!==undefined){if(guard())finish(c,"Declined","mu")}
+  else if(d.mkt!==undefined){el.querySelector("[data-cb]").value=fp(bidP());el.querySelector("[data-ca]").value=fp(askP())}};
+$("nbody").onclick=e=>{const d=e.target.dataset;
+  if(d.tg!==undefined){S.feed[d.tg].open=!S.feed[d.tg].open;S.v2++}
+  else if(d.v!==undefined){if(!guard())return;S.votes[S.vw]=+d.v;S.v2++}
+  else if(e.target.id==="brief")showBrief(false)};
+$("brief2").onclick=()=>showBrief(false);$("dashB").onclick=()=>showDash("Dashboard");$("helpB").onclick=showHelp;$("setB").onclick=()=>showSettings(false);$("dx").onclick=()=>$("dlg").close();
+$("thmB").onclick=()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme==="dark"?"light":"dark"};
+$("ctype").onchange=drawChart;
+const PAN={"p-pos":"Position","p-brk":"Broker","p-calls":"Calls","p-chart":"Chart","p-ord":"Orders","p-log":"Log","p-news":"News & calendar","p-watch":"Scenario watch","p-risk":"Bond risk (FI)","p-calc":"Calculator (FI)"};
+$("lay").innerHTML=Object.entries(PAN).map(([k,v])=>`<label><input type="checkbox" data-k="${k}" checked> ${v}</label>`).join("");
+$("lay").onchange=e=>{$(e.target.dataset.k).style.display=e.target.checked?"":"none"};
+$("layB").onclick=e=>{e.stopPropagation();const m=$("lay");m.style.display=m.style.display==="block"?"none":"block"};document.addEventListener("click",e=>{if(!e.target.closest("#lay"))$("lay").style.display="none"});
+$("who").textContent=nameU;$("notyou").onclick=()=>{const n=prompt("Trading as:",nameU);if(n&&n.trim()){nameU=n.trim().slice(0,30);localStorage.setItem("mts_name",nameU);$("who").textContent=nameU}};
+SCB.forEach((c,i)=>{const o=document.createElement("option");o.value=i;o.textContent=c.title+" · "+c.pair;$("scn").appendChild(o)});
+$("scn").onchange=()=>{if(S.sim>0&&!S.fin&&!confirm("Ganti valas akan memulai sesi baru. Lanjut?")){$("scn").value=pi;return}init(+$("scn").value);showBrief(true)};
+/* ---------- drag & drop panel ---------- */
+const LK="mts_layout2",COLS=()=>[...document.querySelectorAll("main .col")],ids=c=>[...c.querySelectorAll(":scope>.pn")].map(p=>p.id);
+const DEF=COLS().map(ids);
+const saveLay=()=>{try{localStorage.setItem(LK,JSON.stringify(COLS().map(ids)))}catch(e){}};
+const applyLay=L=>{const cs=COLS();if(!L||L.length!==cs.length)return;L.forEach((a,i)=>a.forEach(id=>{const p=$(id);if(p)cs[i].appendChild(p)}))};
+document.querySelectorAll(".pn").forEach(p=>{const g=document.createElement("span");g.className="gr";g.textContent="⠿";g.title="Drag to move panel";p.appendChild(g)});
+try{applyLay(JSON.parse(localStorage.getItem(LK)))}catch(e){}
+document.addEventListener("pointerdown",e=>{
+  const g=e.target.closest(".gr");if(!g)return;e.preventDefault();
+  const p=g.parentElement,r=p.getBoundingClientRect(),ph=document.createElement("div"),ox=e.clientX-r.left,oy=e.clientY-r.top;
+  ph.className="phd";ph.style.height=r.height+"px";p.after(ph);
+  p.classList.add("drag");p.style.width=r.width+"px";p.style.left=r.left+"px";p.style.top=r.top+"px";
+  const mv=ev=>{p.style.left=ev.clientX-ox+"px";p.style.top=ev.clientY-oy+"px";
+    const el=document.elementFromPoint(ev.clientX,ev.clientY),col=el&&el.closest("main .col");if(!col)return;
+    let before=null;for(const k of col.children){if(k===p||k===ph)continue;const b=k.getBoundingClientRect();if(ev.clientY<b.top+b.height/2){before=k;break}}
+    if(before)col.insertBefore(ph,before);else col.appendChild(ph)};
+  const up=()=>{document.removeEventListener("pointermove",mv);document.removeEventListener("pointerup",up);
+    ph.replaceWith(p);p.classList.remove("drag");p.style.left=p.style.top=p.style.width="";saveLay()};
+  document.addEventListener("pointermove",mv);document.addEventListener("pointerup",up)});
+$("lay").insertAdjacentHTML("beforeend",'<button id="lrst" style="margin-top:6px">Reset layout</button>');
+$("lrst").onclick=()=>{applyLay(DEF);saveLay()};
+/* ================= ONLINE LAYER (Supabase) ================= */
+const sb=(window.supabase&&!/ISI_/.test(SUPABASE_URL+SUPABASE_ANON_KEY))?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}):null;
+let SESS=null,saving=0,KIND="",finishing=0,CH=[],LBD=[],LBS="pnl",LBF=false;
+const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));v===null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const snap=()=>({pi,usd:USDIDR,S:Object.assign({},S,{log:S.log.slice(0,150)})});
+const ordn=n=>{n=Math.round(n);const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
+
+/* --- hooks into the original engine (no original logic removed) --- */
+const _fill=fill,_ev=evalQuote,_acc=accept,_sq=sendQuote,_step=step,_tr=toggleRun,_rn=render;
+fill=function(q,p,ch,cl){const m=S.mid,c=cv();_fill(q,p,ch,cl);const t=S.trades[S.trades.length-1];if(t){t.m=m;t.c=c;if(KIND)t.k=KIND}};
+evalQuote=function(c){KIND="q";try{_ev(c)}finally{KIND=""}};
+accept=function(c){const a=c.st;KIND="prop";try{_acc(c)}finally{KIND=""}if(a==="active"&&c.st==="done"&&c.qt===undefined)c.qt=S.sim-c.at};
+sendQuote=function(c,b,a){const p=c.pend;_sq(c,b,a);if(c.pend&&!p&&c.qt===undefined)c.qt=S.sim-c.at};
+step=function(dt){RK="m";try{_stp2(dt)}finally{RK="a"}};const _stp2=function(dt){const z=S.vz||1;S.vz=Math.max(.6,Math.min(2.2,z+(1-z)*.004*dt+.025*randn()*Math.sqrt(dt)));if(S.sim<(S.wide||0))S.vz=Math.max(S.vz,1.3);_step(dt);if(S.lts===undefined||S.sim-S.lts>=5){S.lts=S.sim;(S.ts=S.ts||[]).push([+S.sim.toFixed(1),Math.round(S.real),Math.round(unreal()),+S.pos.toFixed(2)])}};
+toggleRun=function(f){if(SESS&&SESS.dead)return;_tr(f);if(S.paused&&SESS)saveNow()};
+render=function(){_rn();document.body.classList.toggle("lock",!!S&&S.paused&&!S.fin)};
+$("clist").addEventListener("click",e=>{const d=e.target.dataset;KIND=(d.mhit!==undefined||d.mlift!==undefined)?"mm":"";setTimeout(()=>KIND="")},true);
+$("spd").style.display="none";
+
+/* --- save / sync --- */
+const nowS=()=>Math.max(0,Math.round(SESSION-S.sim));
+async function saveNow(fin,M){
+  if(!sb||!SESS||SESS.dead||(S.fin&&!fin)||(saving&&!fin))return false;saving=1;let ok=false;
+  try{const r=await sb.rpc("dealer_save",{p_id:SESS.id,p_token:SESS.token,p_remaining:nowS(),p_used:Math.round(S.sim),p_pnl:+(S.real+unreal()).toFixed(2),p_state:snap(),p_paused:!!S.paused,p_finish:!!fin,p_metrics:M||null,p_pct:M?M.pct:0,p_hash:S.room?liveH():null});
+    ok=!!(r.data&&r.data.ok);if(r.data&&r.data.ok===false&&!fin)kick();else if(ok&&!fin)LS("mts_sess",{...SESS,rem:nowS()})}catch(e){}
+  saving=0;return ok}
+async function ping(){ /* ringan: P&L + waktu + status ke leaderboard tiap 5 detik */
+  if(!sb||!SESS||SESS.dead||S.fin||finishing)return;
+  try{const r=await sb.rpc("dealer_ping",{p_id:SESS.id,p_token:SESS.token,p_pnl:+(S.real+unreal()).toFixed(2),p_used:Math.round(S.sim),p_remaining:nowS(),p_paused:!!S.paused,p_hash:S.room?liveH():null});if(r.data&&r.data.ok===false)kick()}catch(e){}}
+function kick(){if(SESS.dead)return;SESS.dead=true;ALL.forEach(t=>t.paused=true);$("run").textContent="▶ Resume";
+  $("dc").innerHTML='<h2 style="margin:0 0 8px">Game paused</h2><p>This game was opened in another tab or device (or deleted), so this tab was paused to prevent conflicts.</p><button id="kr">Back to lobby</button>';
+  $("dx").style.display="none";$("dlg").showModal();$("kr").onclick=()=>location.reload()}
+$("dlg").addEventListener("cancel",e=>{if(SESS&&SESS.dead)e.preventDefault()});
+setInterval(()=>{if(SESS&&S&&!S.fin&&!finishing&&!SESS.dead)saveNow()},10000);
+setInterval(ping,5000);
+addEventListener("beforeunload",()=>{if(SESS&&S&&!S.fin&&!SESS.dead&&!finishing){S.paused=true;LS("mts_bk",{id:SESS.id,st:snap()});saveNow()}});
+
+/* --- lobby: profile -> many games --- */
+let PROF=null;
+const msg=t=>{$("lmsg").textContent=t||""};
+$("lt1").onclick=()=>{$("lp1").style.display="";$("lp2").style.display="none";$("lt1").className="on";$("lt2").className=""};
+$("lt2").onclick=()=>{$("lp2").style.display="";$("lp1").style.display="none";$("lt2").className="on";$("lt1").className=""};
+const ERR={name_taken:"That name is already taken.",bad_name:"Name: 2-24 characters (letters, digits, space . _ -).",bad_pin:"PIN must be 4-6 digits.",invalid:"Wrong name or PIN.",finished:"This game is finished and locked. Use View Report.",not_found:"Game not found.",no_room:"Server tidak ditemukan atau sudah ditutup.",room_limit:"Maksimal 10 server aktif per profil.",code_taken:"Kode bentrok, coba lagi.",bad_config:"Konfigurasi tidak valid.",room_limit:"Maksimal 10 server per profil. Hapus server lama dulu.",bad_room:"Konfigurasi server tidak valid.",code_taken:"Kode bentrok, coba buat lagi.",limit:"Maximum 30 games per profile. Delete an old game first."};
+const stl=g=>g.status==="finished"?["✓ Finished","mu"]:g.status==="active"&&Date.now()-Date.parse(g.updated_at)<30000?["● Live","up"]:["❚❚ Paused","am"];
+function enter(r,pin,pair,room){
+  SESS={id:r.id,name:r.name,pin,token:r.token,no:r.no};nameU=r.name;$("who").textContent=nameU+" · Game #"+r.no;
+  let st=r.state;const bk=LS("mts_bk");if(bk&&bk.id===r.id&&bk.st&&bk.st.S&&(!st||!st.S||bk.st.S.sim>st.S.sim))st=bk.st;
+  $("lobby").style.display="none";$("scn").disabled=true;
+  if(st&&st.S){const rm=r.room||st.S.room;if(!rm||rh(rm)!==rm.hash||!OK(rm)){alert("Game ini tidak punya konfigurasi server yang valid (game versi lama?). Mulai game baru lewat Create/Join Server.");return location.reload()}pi=st.pi||0;USDIDR=st.usd||USDIDR;SESSION=rm.dur*60;ALL=[Object.assign(mk(pi,rm),st.S)];S=ALL[0];S.cfg=cfgOf(rm);S.sc.limit=rm.limit;S.room=rm;fd=0;$("scn").value=pi;sel(0);S.paused=true;S.speed=1;S.lv=-1;S.v2++;$("run").textContent="▶ Resume";render()}
+  else{USDIDR=room.usd||USDIDR;SESSION=room.dur*60;pi=pair;ALL=[mk(pair,room)];fd=0;sel(0);$("run").textContent="▶ Resume";$("scn").value=pair;showBrief(true)}
+  LS("mts_sess",{...SESS,rem:nowS()});LS("mts_prof",{name:r.name,pin});LS("mts_bk",null);saveNow()}
+async function profLogin(n,p,silent){
+  if(!sb)return msg("Supabase is not configured.");if(!silent)msg("Signing in…");
+  let r0;try{r0=await Promise.race([sb.rpc("dealer_login",{p_name:n,p_pin:p}),new Promise((_,j)=>setTimeout(()=>j(new Error("Server tidak merespons (timeout 15 dtk). Pastikan supabase_setup_v2.sql sudah dijalankan sampai selesai.")),15000))])}catch(e){return msg(e.message)}const {data,error}=r0;
+  if(error||!data||!data.ok){if(silent)LS("mts_prof",null);return msg(error?error.message:ERR[data.error]||"Login failed.")}
+  PROF={name:data.name,pin:p,games:data.games||[]};LS("mts_prof",{name:data.name,pin:p});msg("");showProf()}
+function showProf(){loadRooms();$("auth").style.display="none";$("prof").style.display="block";$("pnm").textContent=PROF.name;drawGames()}
+function drawGames(){
+  const G=PROF.games,q=LS("mts_sess"),qg=q&&G.find(g=>g.id===q.id&&g.status!=="finished");
+  $("qc").innerHTML=qg?`<button data-o="${qg.id}" class="pri" style="width:100%;margin:8px 0">Continue as ${PROF.name} (Game #${qg.game_no} · Sisa waktu: ${mm(qg.remaining_time)})</button>`:"";
+  $("glist").innerHTML=G.length?`<table><thead><tr><th>Game</th><th>Pair</th><th>Status</th><th>P&amp;L (USD)</th><th>Time left</th><th></th></tr></thead><tbody>${G.map(g=>`<tr><td>#${g.game_no}</td><td>${g.pair}</td><td class="${stl(g)[1]}">${stl(g)[0]}</td><td class="${cu(g.pnl)}">${fU(g.pnl)}</td><td>${g.status==="finished"?"—":mm(g.remaining_time)}</td><td style="white-space:nowrap">${g.status==="finished"?`<button data-v="${g.id}">View Report</button>`:`<button data-o="${g.id}" class="pri">Continue</button>`} <button data-d="${g.id}">Delete</button></td></tr>`).join("")}</tbody></table>`:'<p class="mu">No games yet. Start your first 60-minute dealing game.</p>'}
+$("prof").onclick=async e=>{const d=e.target.dataset;if(!sb)return;
+  if(d.v)showReport(d.v);
+  else if(d.o){msg("Opening game…");const {data,error}=await sb.rpc("dealer_open_game",{p_name:PROF.name,p_pin:PROF.pin,p_id:d.o});
+    if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Could not open game.");msg("");enter({id:data.id,name:PROF.name,token:data.token,no:data.game_no,state:data.state,room:data.room?roomOf(data.room):null},PROF.pin)}
+  else if(d.d){const g=PROF.games.find(x=>x.id===d.d);if(!g||!confirm(`Delete Game #${g.game_no} (${g.pair}, ${g.status})? This cannot be undone and it will be removed from the leaderboard.`))return;
+    const {data}=await sb.rpc("dealer_delete_game",{p_name:PROF.name,p_pin:PROF.pin,p_id:d.d});if(!data||!data.ok)return msg("Delete failed.");
+    PROF.games=data.games;if((LS("mts_sess")||{}).id===d.d)LS("mts_sess",null);drawGames();loadLB($("lbBox"),1)}};
+/* ================= SERVER / ROOM (Host & Join) ================= */
+const RF=["v","code","name","pair","dur","int","ans","large","two","prop","ib","limit","mat","br","pl","pm","ref","news","seed","px","usd"];
+const LIM={dur:[10,120],int:[5,120],ans:[6,30],large:[0,100],two:[0,100],prop:[0,100],limit:[.1,5000],mat:[.05,2],pl:[5,300],pm:[1,5],ref:[1,30]};
+const H53=(t,sd=0)=>{let a=0xdeadbeef^sd,b=0x41c6ce57^sd;for(let i=0,c;i<t.length;i++){c=t.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677)}a=Math.imul(a^a>>>16,2246822507)^Math.imul(b^b>>>13,3266489909);b=Math.imul(b^b>>>16,2246822507)^Math.imul(a^a>>>13,3266489909);return(4294967296*(2097151&b)+(a>>>0)).toString(36)};
+const rh=r=>H53(RF.map(k=>r[k]).join("|")+"|dlr-room-v1");
+const OK=r=>r&&r.v===1&&SCB.some(c=>c.pair===r.pair)&&NEWS[r.news]&&Object.entries(LIM).every(([k,[a,b]])=>r[k]>=a&&r[k]<=b)&&r.two+r.prop===100;
+const b64=t=>btoa(unescape(encodeURIComponent(t))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""),ub64=t=>decodeURIComponent(escape(atob(t.replace(/-/g,"+").replace(/_/g,"/"))));
+const tokOf=r=>"DLR1."+b64(JSON.stringify(RF.reduce((o,k)=>(o[k]=r[k],o),{})))+"."+rh(r);
+function parseTok(t){try{const [p,b,h]=t.trim().split(".");if(p!=="DLR1")return null;const r=JSON.parse(ub64(b));if(rh(r)!==h||!OK(r))return null;r.hash=h;return r}catch(e){return null}}
+const BC=window.BroadcastChannel?new BroadcastChannel("dealer-rooms"):null;
+const pubRoom=r=>{const L=LS("dlr_rooms")||{};L[r.code]={tok:tokOf(r),t:Date.now()};LS("dlr_rooms",L);BC&&BC.postMessage("r")};
+const liveH=()=>rh({...S.room,pair:S.sc.pair,dur:SESSION/60,int:S.cfg.int,ans:S.cfg.ans,large:S.cfg.large,two:S.cfg.two,prop:S.cfg.prop,ib:S.cfg.ib,limit:S.sc.limit,br:S.cfg.br,pl:S.cfg.pl,pm:S.cfg.pm,ref:S.cfg.ref});
+function tamper(){if(SESS.dead)return;SESS.dead=true;ALL.forEach(t=>t.paused=true);$("dc").innerHTML='<h2 style="margin:0 0 8px">Game dihentikan</h2><p>Pengaturan di browser ini tidak cocok dengan aturan server (checksum gagal). Game dikunci demi keadilan kompetisi.</p><button id="kr">Kembali ke lobby</button>';$("dx").style.display="none";$("dlg").showModal();$("kr").onclick=()=>location.reload()}
+setInterval(()=>{if(S&&S.room&&SESS&&!SESS.dead&&!S.fin&&liveH()!==S.room.hash)tamper()},2000);
+const num=(k,l,v)=>`<label class="fl">${l}<input id="h_${k}" type="number" step="any" value="${v}" min="${LIM[k][0]}" max="${LIM[k][1]}"></label>`;
+const sel2=(k,l,o)=>`<label class="fl">${l}<select id="h_${k}">${o.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")}</select></label>`;
+const CLSN={FX:"FX",EQ:"Equity/Index",FI:"Bond",CM:"Commodity",FXSWP:"FX Swap",IRS:"IRS",BFUT:"Bond Futures",CDS:"CDS"};
+const DP={easy:{int:20,ans:25,large:10,two:80,br:1,pl:20,pm:2,ib:1,news:"calm",lf:1.5},medium:{int:15,ans:15,large:20,two:70,br:1,pl:30,pm:2,ib:1,news:"std",lf:1},hard:{int:8,ans:9,large:30,two:55,br:1,pl:45,pm:3,ib:1,news:"vol",lf:.7}};
+let PICK=null,PLEG=null;
+const scnLabel=c=>PICK?(PICK.ins.length>1?PICK.n+" · "+c.pair:PICK.n).slice(0,60):"Custom";
+const baseOf=p=>(SCB.find(c=>c.pair===p)||{}).base||p.slice(0,3);
+function drawPick(){const s=PICK;$("c_pick").innerHTML=s?`✔ <b>${esc(s.n)}</b> · ${s.d} mnt · ${s.df}${s.ins.length>1?`<div style="margin-top:6px">Skenario ini punya ${s.ins.length} instrumen, tapi satu server mensimulasikan 1 pasar. Pilih yang dimainkan:<br>${s.ins.map(x=>`<button class="${x===PLEG?"pri":""}" data-leg="${esc(x)}" style="margin:3px 3px 0 0">${esc(x)}</button>`).join("")}</div>`:""}`:"Custom — atur sendiri di form bawah."}
+function fillScn(s,i){const P=DP[s.df],c=SCB[i],set=(a,v)=>{$("h_"+a).value=v};
+  set("name",s.n.slice(0,30));set("pair",i);set("dur",s.d);["int","ans","large","two","br","pl","pm","ib","news"].forEach(a=>set(a,P[a]));
+  set("mat",.25);set("ref",5);set("limit",Math.max(.1,+(c.limit*P.lf).toFixed(2)));$("h_px").value="";$("h_px").placeholder=c.px;drawPick()}
+const CTAG={FX:"FX",EQ:"EQ",FI:"FI",CM:"CM",FXSWP:"FXSWP",IRS:"IRS",BFUT:"FUT",CDS:"CDS"},CTC={FI:"FI",IRS:"FI",BFUT:"FI",FX:"FX",FXSWP:"FX",EQ:"EQ",CM:"CM"};
+const fdur=m=>m>=60?(Math.floor(m/60)+"h"+(m%60?" "+(m%60)+"m":"")):m+"m";
+const ALLINS=[...new Set(CAT.flatMap(s=>s.ins))].sort();
+function drawCat(){const q=$("c_q").value.trim().toLowerCase(),a=[1,2,3].map(n=>$("c_a"+n).value).filter(Boolean),d=$("c_d").value;
+  const L=CAT.map((s,k)=>[s,k]).filter(([s])=>(!q||(s.n+" "+s.ins.join(" ")+" "+s.cls.join(" ")).toLowerCase().includes(q))&&a.every(x=>s.ins.includes(x))&&(!d||s.df===d));
+  $("c_n").textContent=L.length+" scenarios";
+  $("c_list").innerHTML=L.map(([s,k])=>`<div class="scc${PICK===s?" on":""}"><div><div class="sct"><b>${esc(s.n)}</b><span class="du">🕐 ${fdur(s.d)}</span></div><div class="tg">${s.ins.map(x=>{const c=(SCB[scIdx(x)]||{}).cls;return `<span class="cl cl-${CTC[c]||"OT"}">${CTAG[c]||c}</span>`}).join("")}${s.ins.map(x=>`<span>${esc(x)}</span>`).join("")}<span>${s.df[0].toUpperCase()+s.df.slice(1)}</span></div></div><button class="prc" data-k="${k}">▷ Practice</button></div>`).join("")||`<div class="mu" style="padding:10px">No scenarios match.</div>`}
+function showHost(){const p=SCB[0];PICK=null;PLEG=null;
+  const grp={};SCB.forEach((c,i)=>(grp[c.cls]=grp[c.cls]||[]).push([i,c.pair]));
+  const opts=Object.entries(grp).map(([k,v])=>`<optgroup label="${CLSN[k]||k}">${v.map(([i,n])=>`<option value="${i}">${esc(n)}</option>`).join("")}</optgroup>`).join("");
+  $("rm").innerHTML=`<div class="rm2"><h2 style="margin-top:0">Create Server (Host)</h2><div class="mu">Pilih skenario dari katalog → aturan terisi otomatis sesuai tingkat kesulitan & durasinya. Boleh diubah (jadi "Custom") atau dibuat dari nol. Aturan dikunci untuk semua pemain: pasar, berita, dan urutan call RFQ identik (seed sama).</div>
+ <h3 style="margin:14px 0 0">Scenarios</h3><div class="scf"><input id="c_q" placeholder="Search scenario or instrument…" autocomplete="off">${[1,2,3].map(n=>`<select id="c_a${n}"><option value="">Asset ${n}</option>${ALLINS.map(x=>`<option>${esc(x)}</option>`).join("")}</select>`).join("")}<select id="c_d"><option value="">All difficulties</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select><span class="hint" id="c_n"></span><button class="lnk" id="c_clr">Clear filters</button></div><div id="c_list" class="scg"></div><div id="c_pick" class="hint" style="margin-bottom:8px"></div>
+ <label class="fl">Nama server<input id="h_name" maxlength="30" value="Server ${PROF.name}"></label><label class="fl">Instrumen<select id="h_pair">${opts}</select></label>
+ ${num("dur","Durasi sesi (menit)",60)}${num("int","Frekuensi call RFQ: rata-rata tiap … detik",15)}${num("ans","Kesabaran klien (detik)",12)}${num("large","Klien tiket besar (%)",20)}${num("two","Porsi RFQ two-way (%) — sisanya klien mengajukan harga",70)}
+ ${num("limit","Batas limit posisi (juta)",p.limit)}${num("mat","MAT (% dari nilai limit)",.25)}${sel2("br","Jeda trading saat breach limit",[[1,"Aktif"],[0,"Nonaktif"]])}${num("pl","Lama jeda breach pertama (dtk)",30)}${num("pm","Pengali jeda breach berulang",2)}${num("ref","Interval refresh kurs (dtk)",5)}
+ ${sel2("ib","Call interbank (market maker)",[[1,"Aktif"],[0,"Nonaktif"]])}${sel2("news","Skenario berita ekonomi",Object.entries(NEWS))}
+ <label class="fl">Harga awal (kosong = bawaan instrumen; harga bawaan hanya perkiraan)<input id="h_px" type="number" step="any" placeholder="${p.px}"></label>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button data-a="mk" class="pri" style="padding:10px">Buat server</button><button data-a="mkplay" class="pri" style="padding:10px">Buat &amp; langsung main (practice)</button></div><div id="h_out"></div></div>`;
+  drawCat();drawPick();
+  ["c_q","c_a1","c_a2","c_a3","c_d"].forEach(id=>{$(id).oninput=drawCat});$("c_clr").onclick=()=>{["c_q","c_a1","c_a2","c_a3","c_d"].forEach(id=>$(id).value="");drawCat()};
+  $("c_list").onclick=e=>{const r=e.target.closest("[data-k]");if(!r)return;const s=CAT[+r.dataset.k];PICK=s;PLEG=s.ins[0];fillScn(s,scIdx(PLEG));drawCat();$("c_pick").scrollIntoView({block:"center"})};
+  $("c_pick").onclick=e=>{const g=e.target.dataset.leg;if(g&&PICK){PLEG=g;fillScn(PICK,scIdx(g))}};
+  $("rm").oninput=e=>{const id=e.target.id||"";if(PICK&&/^h_/.test(id)&&id!=="h_name"){PICK=null;drawPick()}};
+  $("h_pair").onchange=()=>{const c=SCB[+$("h_pair").value];$("h_limit").value=c.limit;$("h_px").placeholder=c.px}}
+
+function mkRoom(){const g=k=>+$("h_"+k).value,c=SCB[+$("h_pair").value],r={v:1,name:$("h_name").value.trim().slice(0,30)||"Server",pair:c.pair,scn:scnLabel(c)};
+  ["dur","int","ans","large","two","limit","mat","br","pl","pm","ref","ib"].forEach(k=>r[k]=g(k));r.news=$("h_news").value;r.two=Math.max(0,Math.min(100,Math.round(r.two)));r.prop=100-r.two;
+  for(const [k,[a,b]] of Object.entries(LIM))if(!(r[k]>=a&&r[k]<=b)){msg(`Nilai ${k} harus ${a}–${b}.`);return null}
+  r.dur=Math.round(r.dur);r.seed=Math.floor(Math.random()*4294967296);r.px=+$("h_px").value||c.px;r.usd=USDIDR;r.code=H53(String(r.seed)+r.name).slice(0,6).toUpperCase();r.hash=rh(r);return r}
+let RMS=null,RL=[];
+const ago=t=>{const m=Math.round((Date.now()-Date.parse(t))/6e4);return m<1?"baru saja":m<60?m+" mnt lalu":Math.round(m/60)+" jam lalu"};
+const roomOf=x=>({...x.config,code:x.code,name:x.name,hash:x.cfg_hash});
+const preview=r=>`<div class="rm2"><b>${r.name}</b> <span class="mu">· kode ${r.code}</span>${rulesHTML(r)}<button data-a="play" class="pri" style="width:100%;margin-top:10px;padding:10px">Join &amp; mulai main</button></div>`;
+function pickRoom(c){const x=RL.find(r=>r.code===c);if(!x)return null;const r=roomOf(x);if(rh(r)!==r.hash||!OK(r)){msg("Config server tidak valid (checksum gagal).");return null}return r}
+async function loadRooms(){if(!sb||!PROF)return;
+  try{const [a,b]=await Promise.all([sb.from("dealer_rooms").select("code,name,host_name,config,cfg_hash,created_at").eq("closed",false).order("created_at",{ascending:false}).limit(50),sb.from("dealer_sessions").select("room_code,status,updated_at").not("room_code","is",null)]);
+    if(a.error){$("rl").innerHTML='<div class="dn">Tabel server belum ada. Jalankan supabase_setup_v2.sql di Supabase.</div>';return}
+    RL=a.data||[];const cnt={};(b.data||[]).forEach(g=>{const o=cnt[g.room_code]=cnt[g.room_code]||[0,0];o[0]++;if(g.status==="active"&&Date.now()-Date.parse(g.updated_at)<30000)o[1]++});
+    $("rl").innerHTML=RL.length?`<table><thead><tr><th>Server</th><th>Host</th><th>Pair</th><th>Durasi</th><th>Pemain</th><th>Dibuat</th><th></th></tr></thead><tbody>${RL.map(x=>{const r=roomOf(x),c=cnt[x.code]||[0,0],me=x.host_name===PROF.name;return `<tr><td>${x.name}<br><span class="mu">${x.code}${x.config&&x.config.scn?" · "+esc(x.config.scn):""}</span></td><td>${x.host_name}${me?" (kamu)":""}</td><td>${r.pair}</td><td>${r.dur}m</td><td>${c[0]} (${c[1]} live)</td><td>${ago(x.created_at)}</td><td style="white-space:nowrap"><button data-a="det" data-c="${x.code}">Lihat</button> <button data-a="play" class="pri" data-c="${x.code}">Join</button>${me?` <button data-a="close" data-c="${x.code}">Tutup</button>`:""}</td></tr>`}).join("")}</tbody></table>`:'<div class="mu">Belum ada server. Buat yang pertama.</div>'}catch(e){}}
+setInterval(()=>{if(PROF&&$("lobby").style.display!=="none")loadRooms()},5000);
+async function startRoom(room){msg("Membuat game…");const k=SCB.findIndex(c=>c.pair===room.pair);
+  const {data,error}=await sb.rpc("dealer_new_game",{p_name:PROF.name,p_pin:PROF.pin,p_room:room.code});
+  if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Failed.");msg("");enter({id:data.id,name:PROF.name,token:data.token,no:data.game_no},PROF.pin,k,room)}
+async function mkHost(play){const r=mkRoom();if(!r)return;msg("Membuat server…");const cfg={};RF.forEach(k=>{if(k!=="code"&&k!=="name")cfg[k]=r[k]});cfg.scn=r.scn;cfg.cls=(SCB.find(x=>x.pair===r.pair)||{}).cls||"FX";
+  const {data,error}=await sb.rpc("dealer_create_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:r.code,p_roomname:r.name,p_config:cfg,p_hash:r.hash});
+  if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Gagal.");msg("");RMS=r;if(play)return startRoom(r);
+  $("rm").innerHTML=`<div class="rm2">Server <b>${r.name}</b> (${r.code}) sudah dibuat dan tampil untuk semua pemain. <button data-a="play" class="pri">Main di server ini</button></div>`;loadRooms()}
+$("hostB").onclick=showHost;$("joinB").onclick=()=>{$("rm").innerHTML="";loadRooms()};
+$("prof").addEventListener("click",async e=>{const d=e.target.dataset;if(!d.a||!sb)return;
+  if(d.a==="mk")mkHost();else if(d.a==="mkplay")mkHost(true);
+  else if(d.a==="det"){const r=pickRoom(d.c);if(r){RMS=r;$("rm").innerHTML=preview(r)}}
+  else if(d.a==="play"){const r=d.c?pickRoom(d.c):RMS;if(r)startRoom(r)}
+  else if(d.a==="close"){if(!confirm("Tutup server ini? Server hilang dari daftar (game yang sedang berjalan tetap bisa dilanjutkan)."))return;
+    const {data}=await sb.rpc("dealer_close_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:d.c});if(!data||!data.ok)return msg("Gagal menutup server.");loadRooms()}});
+
+$("pout").onclick=()=>{$("rm").innerHTML="";PROF=null;LS("mts_prof",null);LS("mts_sess",null);$("prof").style.display="none";$("auth").style.display="";msg("")};
+$("nGo").onclick=async()=>{
+  const n=$("nn").value.trim(),p=$("np").value.trim();if(!sb)return msg("Supabase is not configured.");
+  if(!/^[A-Za-z0-9 ._-]{2,24}$/.test(n))return msg(ERR.bad_name);if(!/^\d{4,6}$/.test(p))return msg(ERR.bad_pin);
+  msg("Creating profile…");const {data,error}=await sb.rpc("dealer_create_profile",{p_name:n,p_pin:p});
+  if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Failed.");profLogin(n,p)};
+$("cGo").onclick=()=>profLogin($("cn").value.trim(),$("cp").value.trim());
+function lobbyInit(){
+  if(!sb)$("cfgw").style.display="block";
+  const pr=LS("mts_prof");if(pr&&pr.name&&pr.pin&&sb)profLogin(pr.name,pr.pin,true);
+  loadLB($("lbBox"));
+  setInterval(()=>{if($("lobby").style.display!=="none"){loadLB($("lbBox"),1);if(PROF)loadRooms()};const b=$("lbBox2");if(b&&$("rep").style.display==="block"&&b.isConnected)loadLB(b,1)},5000)}
+$("notyou").textContent="Exit to lobby";$("notyou").onclick=async()=>{if(SESS&&!S.fin&&!SESS.dead){S.paused=true;await saveNow()}location.reload()};
+$("finB").onclick=()=>finishSession(true);
+
+/* --- leaderboard (semua game: live, paused, finished) --- */
+async function loadLB(b,quiet){
+  if(!b)return;if(!sb){b.innerHTML="";return}if(!quiet)b.innerHTML='<span class="mu">Loading…</span>';
+  try{const {data}=await sb.from("dealer_sessions").select("id,player_name,game_no,pair,status,pnl,overall_percentile,time_used,updated_at,room_code,flagged").order("updated_at",{ascending:false}).limit(500);LBD=data||[]}catch(e){}drawLB(b)}
+function drawLB(b){
+  const key={pnl:r=>r.pnl,pct:r=>r.status==="finished"?r.overall_percentile:-1,eff:r=>r.pnl/Math.max(1,r.time_used/60)}[LBS],rows=LBD.filter(r=>!r.flagged&&(!LBF||r.status==="finished")).sort((x,y)=>key(y)-key(x));
+  b.innerHTML=`<div class="tabs" style="margin:6px 0;align-items:center">${[["pnl","Total P&amp;L (USD)"],["pct","Overall Index"],["eff","Efficiency (P&amp;L / min)"]].map(([s,l])=>`<button data-s="${s}" class="${LBS===s?"on":""}">${l}</button>`).join("")}<label style="margin-left:12px;white-space:nowrap"><input type="checkbox" data-f style="width:auto" ${LBF?"checked":""}> Finished only</label></div>
+  <div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Player</th><th>Server</th><th>Pair</th><th>Status</th><th>Time</th><th>P&amp;L (USD)</th><th>Index</th><th>P&amp;L / min</th><th></th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.player_name} <span class="mu">#${r.game_no}</span></td><td>${r.room_code||"—"}</td><td>${r.pair}</td><td class="${stl(r)[1]}">${stl(r)[0]}</td><td>${mm(r.time_used)}</td><td class="${cu(r.pnl)}">${fU(r.pnl)}</td><td>${r.status==="finished"?ordn(r.overall_percentile):"—"}</td><td class="${cu(r.pnl)}">${fU(r.pnl/Math.max(1,r.time_used/60))}</td><td>${r.status==="finished"?`<button data-r="${r.id}">View Report</button>`:""}</td></tr>`).join("")||'<tr><td colspan="9" class="mu">No games yet.</td></tr>'}</tbody></table></div>`;
+  b.onclick=e=>{const d=e.target.dataset;if(d.s){LBS=d.s;drawLB(b)}else if(d.f!==undefined){LBF=e.target.checked;drawLB(b)}else if(d.r)showReport(d.r)}}
+
+/* --- scoring --- */
+const PIL=[["perf","Performance"],["eng","Engagement"],["mm","Market making"],["mt","Market taking"],["cd","Client dealing"],["mac","Macro"],["dd","Risk management – drawdown"],["pm","Position management"]];
+const FB={perf:"Review pricing discipline: widen quotes when volatility rises and size risk to what you can earn.",eng:"Get involved on every channel: answer every client call, price quickly and vote on each news release.",mm:"Improve price making: quote tighter on small tickets, skew with your inventory and use resting orders to earn the spread.",mt:"Choose your moments: take liquidity when the price is about to move your way, not just because it is live.",cd:"Convert more client flow: answer faster and keep quotes competitive against the screen.",mac:"Read the calendar: vote before every release and position ahead of the surprise.",dd:"Cut unrealized losses earlier: define your exit before you enter.",pm:"Keep inventory in the comfort zone: hedge on the broker screen before you approach the limit."};
+function blend(x,a,arr){arr=arr.filter(Number.isFinite);if(!Number.isFinite(x)||a==null)return null;if(!arr.length)return Math.round(a);
+  const r=(arr.filter(v=>v<x).length+.5*arr.filter(v=>v===x).length)/arr.length*100;return Math.round((r*arr.length+a*3)/(arr.length+3))}
+function score(M,O){const sc={};PIL.forEach(([k])=>sc[k]=blend(M.raw[k],M.abs[k],O.map(o=>o.raw[k])));
+  const v=Object.values(sc).filter(x=>x!=null),idx=v.reduce((a,b)=>a+b,0)/(v.length||1);return{sc,idx,pct:blend(idx,idx,O.map(o=>o.idx))}}
+
+/* --- metrics from the live game state --- */
+function buildReport(){
+  const sc=S.sc,T=S.trades,ts=S.ts||[],C=S.calls.filter(c=>!c.mm),sim=S.sim,g=o=>o||0;
+  const usd=(sc.id==="idr"||sc.base==="USD")?1:sc.qv!=null?S.mid*sc.qv:S.mid/USDIDR,MAT=-(((S.room&&S.room.mat)||.25)/100)*sc.limit*1e6*usd,pl=S.real+unreal();
+  const kd=t=>t.k||t.ch,ed=t=>t.q*(t.m-t.p)*t.c*1e6,E={},V={};
+  T.forEach(t=>{const k=kd(t);E[k]=g(E[k])+ed(t);V[k]=g(V[k])+Math.abs(t.q)});
+  const maker=g(E.q)+g(E.prop)+g(E.limit),taker=g(E.ladder)+g(E.mm),inv=pl-maker-taker;
+  const vC=g(V.q)+g(V.prop),vM=g(V.limit),vT=g(V.ladder)+g(V.mm),vA=vC+vM+vT,volU=vA*1e6*usd;
+  const wp=f=>{let a=0,b=0;T.filter(f).forEach(t=>{a+=Math.sign(t.q)*(t.m-t.p)/sc.pip*Math.abs(t.q);b+=Math.abs(t.q)});return b?a/b:null};
+  const mkr=wp(t=>["q","prop","limit"].includes(kd(t))),hp=t=>{const h=S.hist;return h[Math.min(h.length-1,Math.max(0,Math.round(t)))][1]};
+  let a=0,b=0;T.filter(t=>["ladder","mm"].includes(kd(t))).forEach(t=>{a+=Math.sign(t.q)*(hp(t.t+30)-t.p)/sc.pip*Math.abs(t.q);b+=Math.abs(t.q)});const mo30=b?a/b:null;
+  const mean=x=>x.length?x.reduce((p,q)=>p+q,0)/x.length:0,sd=x=>{const m=mean(x);return Math.sqrt(mean(x.map(v=>(v-m)**2)))};
+  const tt=ts.map(x=>x[0]),tot=ts.map(x=>x[1]+x[2]),at=t=>{const i=tt.findIndex(x=>x>=t);return tot[i<0?tot.length-1:i]||0};
+  const df=tot.slice(1).map((v,i)=>v-tot[i]),tst=df.length>2&&sd(df)>0?mean(df)/(sd(df)/Math.sqrt(df.length)):0;
+  const ap=ts.map(x=>Math.abs(x[3])),avgAbs=mean(ap),hi=ap.filter(x=>x>=.9*sc.limit).length/(ap.length||1),lo=ap.filter(x=>x<.25*sc.limit).length/(ap.length||1),sa=ap.reduce((p,q)=>p+q,0),dir=sa?50+50*ts.reduce((p,x)=>p+x[3],0)/sa:50;
+  const ans=C.filter(c=>c.qt!==undefined),con=ans.filter(c=>c.rc==="up"),ttq=ans.length?mean(ans.map(c=>c.qt)):null,ar=C.length?ans.length/C.length:0,conv=ans.length?con.length/ans.length:0;
+  const two=ans.filter(c=>!c.one&&c.qa>c.qb),avgSp=two.length?mean(two.map(c=>(c.qa-c.qb)/sc.pip)):null;
+  /* events */
+  const rows={bull:[0,0,0,0],bear:[0,0,0,0],neu:[0,0,0,0]};
+  const evl=sc.ev.map((e,i)=>({e,i})).filter(x=>x.e.fired).map(({e,i})=>{const im=(e.act-e.fc)*e.s,dr=Math.abs(im)<sc.weak?"neu":im>0?"bull":"bear",earn=at(e.t+120)-at(e.t),deals=T.filter(t=>t.t>=e.t&&t.t<=e.t+120).length,v=S.votes[i]==null?null:S.votes[i],r=rows[dr];
+    r[0]++;r[1]+=v!=null?1:0;r[2]+=deals;r[3]+=earn;return{n:e.n,c:e.c,dir:dr,earn,deals,v}});
+  const voted=evl.filter(x=>x.v!=null).length,vr=evl.length?voted/evl.length:0,vacc=voted?S.bank/(2*voted):0,evP=evl.reduce((p,x)=>p+x.earn,0),se=evl.slice().sort((x,y)=>y.earn-x.earn);
+  /* holding behaviour (FIFO lots) */
+  const lots=[],H={w:[],l:[]};
+  T.forEach(t=>{let q=t.q;while(Math.abs(q)>1e-9&&lots.length&&Math.sign(lots[0].q)!==Math.sign(q)){const L0=lots[0],c=Math.min(Math.abs(q),Math.abs(L0.q)),pn=Math.sign(L0.q)*(t.p-L0.p);(pn>=0?H.w:H.l).push([t.t-L0.t,c]);L0.q-=Math.sign(L0.q)*c;q-=Math.sign(q)*c;if(Math.abs(L0.q)<1e-9)lots.shift()}
+    if(Math.abs(q)>1e-9)lots.push({t:t.t,q,p:t.p})});
+  const avgH=x=>{let n=0,d=0;x.forEach(([h,c])=>{n+=h*c;d+=c});return d?n/d:null},hw=avgH(H.w),hl=avgH(H.l),hAll=avgH(H.w.concat(H.l));
+  const gaps=T.slice(1).map((t,i)=>t.t-T[i].t).sort((x,y)=>x-y),med=gaps.length?gaps[gaps.length>>1]:null,cp=x=>Math.max(0,Math.min(100,Math.round(x)));
+  const sty={risk:cp(S.maxPos/sc.limit*50+avgAbs/sc.limit*200),hold:hAll==null?50:cp(hAll/600*100),dir:cp(dir),tempo:cp(T.length/(Math.max(sim,60)/60)/6*100),liq:vA?cp((vC+vM)/vA*100):50,pat:med==null?null:cp(med/120*100)};
+  /* pillars */
+  const th=(x,s)=>Math.round(50+50*Math.tanh(x/s));
+  const raw={perf:pl,eng:.5*ar+.3*vr+.2*Math.min(1,T.length/60),mm:maker,mt:mo30,cd:.5*conv+.3*ar+.2*Math.max(0,1-(ttq==null?20:ttq)/20),mac:.5*vacc+.5*(.5+.5*Math.tanh(evP/50000)),dd:-S.dd,pm:(1-hi)*Math.exp(-(S.nbr||0)*.3)};
+  const abs={perf:th(pl,80000),eng:raw.eng*100,mm:th(maker,60000),mt:mo30==null?null:th(mo30,1.5),cd:raw.cd*100,mac:raw.mac*100,dd:100*Math.exp(-S.dd/100000),pm:raw.pm*100};
+  return{v:1,srv:S.room?S.room.name+" · "+S.room.code:"",name:SESS?SESS.name:nameU,game:SESS?SESS.no:0,pair:sc.pair,title:sc.title,used:Math.round(sim),pnl:pl,rov:volU?pl/volU*100:0,t:tst,raw,abs,
+    vol:{c:vC,m:vM,t:vT,usd:volU},att:{maker,inv,taker},ch:{prop:g(E.prop),q:g(E.q),mm:g(E.mm),lim:g(E.limit),lad:g(E.ladder)},
+    cs:{rel:(()=>{const v=Object.values(S.rel||{});return v.length?v.reduce((a,r)=>a+(r[1]+1)/(r[0]+2),0)/v.length:null})(),n:C.length,ans:ans.length,con:con.length,ttq,avgSp,mkr,mo30,cvol:con.reduce((p,c)=>p+c.size,0),nmm:S.calls.filter(c=>c.mm).length},
+    sty,bias:{dispo:hw&&hl?hl/hw:null,over:avgAbs>.01?vA/avgAbs:null},
+    mac:{rows,vr,vacc,evP,best:se.slice(0,3),worst:se.slice(-3).reverse().filter(x=>x.earn<0),n:evl.length},
+    rk:{dd:S.dd,br:S.nbr||0,pv:df.length?sd(df)/Math.abs(MAT)*100:0,rar:pl/(S.dd||1),hi,lo,avgAbs,pos:S.pos},
+    ser:{t:tt,r:ts.map(x=>x[1]),u:ts.map(x=>x[2]),p:ap,ttq:ans.map(c=>[Math.round(c.at),+c.qt.toFixed(1)])},mat:MAT,lim:sc.limit,base:sc.base}}
+
+/* --- finish --- */
+async function finishSession(manual){
+  if(finishing||!SESS||SESS.dead)return;
+  if(manual&&!confirm("Finish & record this session? The profile will be locked and cannot be continued."))return;
+  finishing=1;S.fin=true;S.paused=true;fd=1;ALL.forEach(t=>t.paused=true);$("run").textContent="Ended";render();
+  const M=buildReport();let O=[];
+  try{const {data}=await sb.from("dealer_sessions").select("id,raw:report_metrics->raw,idx:report_metrics->idx").eq("status","finished");O=(data||[]).filter(o=>o.raw)}catch(e){}
+  const R=score(M,O);M.idx=R.idx;M.pct=R.pct;
+  if(!await saveNow(true,M)){finishing=0;S.fin=false;S.paused=true;alert("Could not save to the server. Check your connection and press Finish again.");return}
+  LS("mts_sess",null);LS("mts_bk",null);showReport(SESS.id,M)}
+
+/* --- report --- */
+async function showReport(id,M){
+  const rep=$("rep");rep.style.display="block";rep.scrollTop=0;rep.innerHTML='<div class="pg">Loading report…</div>';
+  try{const {data:o}=await sb.from("dealer_sessions").select("id,raw:report_metrics->raw,idx:report_metrics->idx").eq("status","finished");
+    if(!M){const {data}=await sb.from("dealer_sessions").select("report_metrics").eq("id",id).single();M=data&&data.report_metrics}
+    if(!M)throw new Error("no report");drawReport(M,(o||[]).filter(x=>x.id!==id&&x.raw))}
+  catch(e){console.error(e);rep.innerHTML='<div class="pg"><button onclick="$(\'rep\').style.display=\'none\'">Close</button><p>Report not available.</p></div>'}}
+const mkc=(id,cfg)=>{const c=$(id);if(!c||!window.Chart)return;cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,animation:false},cfg.options||{});CH.push(new Chart(c,cfg))};
+function narr(M,sp,pk){
+  const A=M.att,cs=M.cs,rk=M.rk,pn=M.pnl,iv=A.inv,cv=cs.n?cs.con/cs.n:0,ar=cs.n?cs.ans/cs.n:1,fu=x=>(x<0?"−":"+")+Math.round(Math.abs(x)).toLocaleString("id-ID");
+  let p=`Selama ${mm(M.used)} sesi ${M.pair}, kamu ${pn>=0?"mencatat keuntungan":"mengalami kerugian"} ${fu(pn)} USD. `;
+  p+=Math.abs(sp)+Math.abs(iv)<1?"Belum ada transaksi yang tercatat, jadi belum ada sumber untung atau rugi yang bisa dianalisis. ":sp>0&&iv>=0?"Hasil ini datang dari dua sumber yang sehat: selisih harga dari melayani klien dan stok mata uang yang searah pasar. ":sp>0?`Jasa transaksimu menghasilkan ${fu(sp)}, tetapi stok mata uang yang dipegang merugi ${fu(iv)} sehingga sebagian untung terkikis. `:iv>0?`Untungmu lebih banyak berasal dari arah pasar yang kebetulan searah dengan stokmu (${fu(iv)}) daripada dari selisih harga, jadi hasilnya kurang bisa diulang. `:"Baik selisih harga maupun stok mata uang sama-sama merugi: harga yang kamu beri kemungkinan terlalu mepet pasar atau stok dipegang terlalu lama. ";
+  p+=rk.br===0&&pk<80?`Manajemen risiko tergolong aman: tidak ada pelanggaran batas dan pemakaian limit tertinggi hanya ${Math.round(pk)}%.`:`Risiko perlu diperhatikan: ${rk.br} kali melanggar batas, limit terpakai hingga ${Math.round(pk)}% dan saldo sempat turun ${Math.round(rk.dd).toLocaleString("id-ID")} USD.`;
+  const T=[[cs.ans>3&&cv<.4,"Turunkan tingkat 'ditolak klien': persempit selisih Bid-Ask untuk tiket kecil dan jangan terlalu jauh dari harga pasar."],[cs.ttq!=null&&cs.ttq>7,"Jawab klien lebih cepat (target di bawah 5 detik); klien yang menunggu lama sering membatalkan."],[rk.br>0||pk>80,"Kurangi stok sebelum limit terpakai 70% (jual/beli di layar broker) agar tidak kena jeda trading."],[iv<0&&Math.abs(iv)>Math.abs(sp),"Geser harga Bid-Ask ke arah posisimu untuk membuang stok, terutama saat melayani tiket besar."],[ar<.8,"Layani lebih banyak permintaan klien; setiap yang terlewat berarti peluang selisih harga hilang."],[sp<=0,"Lebarkan sedikit selisih saat pasar bergejolak atau ada berita, jangan memberi harga lebih murah dari pasar."],[1,"Pertahankan disiplin harga dan catat tiket mana yang paling sering gagal, lalu sesuaikan di sesi berikutnya."],[1,"Pilih satu skenario berita dan tentukan di awal apakah kamu mau ikut arah pasar atau menghindarinya."]].filter(x=>x[0]).slice(0,2);
+  return`<p class="nr">${p}</p><p class="nr"><b>Dua hal untuk diperbaiki:</b></p><ol>${T.map(x=>`<li>${x[1]}</li>`).join("")}</ol>`}
+function drawReport(M,O){
+  const R=score(M,O),A=M.att,cs=M.cs,rk=M.rk,st=M.sty,N=O.length+1,f=(x,d=0)=>x==null||!isFinite(x)?"—":(+x).toLocaleString("id-ID",{maximumFractionDigits:d,minimumFractionDigits:d}),
+    sg=(x,d=0)=>x==null||!isFinite(x)?"—":(x<0?"−":"+")+f(Math.abs(x),d),k=x=>x>=0?"up":"dn",tip=t=>`<span class="tip" title="${t}">ⓘ</span>`,z=x=>x==null||Math.round(x)===0,
+    kv=(l,v,t)=>v===""?"":`<div class="kv"><span>${l}${t?tip(t):""}</span><b>${v}</b></div>`,c=(l,v,s,t)=>`<div class="c"><small>${l}${t?tip(t):""}</small><b>${v}</b>${s?`<small>${s}</small>`:""}</div>`;
+  const sp=A.maker+A.taker,iv=A.inv,tt=Math.abs(sp)+Math.abs(iv)||1,pk=Math.max(0,...M.ser.p)/M.lim*100,cv=cs.n?cs.con/cs.n*100:0,
+    sf=rk.br===0&&pk<90?["AMAN","up"]:rk.br<=1&&pk<100?["WASPADA","am"]:["BERISIKO","dn"],
+    lab=[cs.ttq==null?"":cs.ttq<=5?"Tipe Cepat":cs.ttq<=9?"Tipe Cukup Sigap":"Tipe Pelan",st.dir>=60?"Aktif Membeli "+M.base:st.dir<=40?"Aktif Menjual "+M.base:"Seimbang Beli-Jual",rk.br===0&&pk<70?"Aman Menjaga Modal":rk.br>0?"Sering Menyentuh Batas":"Berani Memakai Limit"].filter(Boolean);
+  $("rep").innerHTML=`<div class="pg"><div class="noprint bar"><button onclick="$('rep').style.display='none'">✕ Close</button><button onclick="location.reload()">Back to lobby</button><span class="sp"></span><button class="pri" onclick="window.print()">Download / Print PDF</button></div>
+  <div class="sec"><div class="mu2">Kartu Skor Sesi${M.srv?" · "+M.srv:""}</div><h1>${M.name}${M.game?" · Game #"+M.game:""} · ${M.pair}</h1><div class="mu2">Durasi ${mm(M.used)} · nilai dalam USD</div>
+   <h2 style="margin-top:14px">1. Ringkasan Utama</h2><div class="g">${c("Total Untung/Rugi",`<span class="${k(M.pnl)}">${sg(M.pnl)}</span>`)}
+   ${c("Sumber Keuntungan",`${f(Math.abs(sp)/tt*100)}% selisih · ${f(Math.abs(iv)/tt*100)}% stok`,"porsi dari besarnya masing-masing sumber","Selisih = jasa transaksi; Stok = efek pergerakan harga pada mata uang yang kamu pegang")}
+   ${c("Skor Peringkat",f(R.pct)+" / 100","dibanding "+N+" pemain","Persentil gabungan dari 8 aspek keahlian; 50 = rata-rata pemain")}${c("Status Risiko",`<span class="bd ${sf[1]}">${sf[0]}</span>`)}</div>
+   ${kv("Untung dari Selisih Harga (Jasa Transaksi)",z(sp)?"":`<span class="${k(sp)}">${sg(sp)}</span>`,"Hasil dari memberi harga beli lebih rendah dan harga jual lebih tinggi kepada klien (Maker edge + biaya ambil harga)")}${kv("Untung/Rugi dari Stok Mata Uang",z(iv)?"":`<span class="${k(iv)}">${sg(iv)}</span>`,"Efek naik-turunnya kurs pada mata uang yang sedang kamu pegang (Inventory P&L)")}</div>
+  <div class="sec"><h2>2. Performa Layanan &amp; Gaya Main</h2><div class="g">${c("Permintaan Klien yang Dilayani",cs.ans+" / "+cs.n,f(cs.n?cs.ans/cs.n*100:0)+"%","Berapa permintaan harga klien yang kamu jawab sebelum klien pergi")}${c("Berhasil Jadi Transaksi",f(cv)+"%",cs.con+" deal","Klien menerima harga Bid/Ask-mu")}
+   ${cs.ttq==null?"":c("Rata-rata Respons",f(cs.ttq,1)+" dtk","makin cepat makin besar peluang deal")}${cs.rel==null?"":c("Skor Hubungan Klien",f(cs.rel*100)+"%","naik tiap klien deal, turun bila ditolak","Klien yang sering ditolak makin enggan menerima harga berikutnya")}</div>
+   <p style="font-size:15px"><b>Gaya main:</b> ${lab.join(", ").replace(/, ([^,]*)$/," dan $1")}</p></div>
+  <div class="sec"><h2>3. Kontrol Risiko</h2><div class="g">${c("Pelanggaran Batas",rk.br===0?"Tidak ada":rk.br+" kali","",  "Berapa kali posisi melewati batas limit")}${c("Penurunan Saldo Terbesar",f(rk.dd),"USD","Selisih terbesar antara puncak saldo dan titik terendah sesudahnya (Max drawdown)")}${c("Pemakaian Batas Modal",f(pk)+"%","puncak posisi vs limit "+M.lim+"M "+M.base)}</div></div>
+  <div class="sec"><h2>4. Kesimpulan &amp; Saran</h2>${narr(M,sp,pk)}</div>
+  <div class="sec noprint"><h2>Global leaderboard</h2><div id="lbBox2"></div></div></div>`;loadLB($("lbBox2"))}
+
+/* --- start --- */
+lobbyInit();
+
+</script>
+</body>
+</html>
