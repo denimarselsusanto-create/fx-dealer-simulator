@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Market Trader Simulator v6</title>
+<title>Market Trader Simulator v7</title>
 <style>
 :root{--bg:#070707;--pn:#151515;--in:#0e0e0e;--ln:#2b2b2b;--tx:#f4f4f4;--mu:#9a9a9a;--bl:#5b8def;--up:#4fd39a;--dn:#ff6b6b;--am:#ffb340;--bn:#352607}
 [data-theme=light]{--bg:#eaf0f6;--pn:#fff;--in:#f2f6fa;--ln:#d3dde8;--tx:#0e1b26;--mu:#5d7083;--bn:#fff0cf}
@@ -116,11 +116,29 @@ body.isfi .l4,body.isfi .bb{display:none}body.isfi .lr{display:block}
 .ev3{display:grid;grid-template-columns:1fr 74px 74px;gap:6px;margin:6px 0}.ev3 small{display:block}.evd{color:var(--mu);margin:4px 0}
 .nwb{background:#fff;color:#000;border-radius:3px;padding:0 6px;font-size:11px;font-weight:700}
 .crw{display:flex;justify-content:space-between;padding:3px 0}.crw input{width:110px;text-align:right;font-weight:600}
+
+/* ===== v7: tampilan mengikuti Vega (FI) ===== */
+body.isfi #spd,body.isfi #setB,body.isfi #scn,body.isfi #brief2,body.isfi #p-watch{display:none!important}
+#ttl{font-weight:600;font-size:15px}
+.vp{display:flex;justify-content:space-between;align-items:baseline}.vp>span:first-child{font-size:17px}.vb{font-size:22px;font-weight:700}.vb small{font-size:12px;font-weight:400;color:var(--mu)}
+.vg{display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;margin:8px 0}.vg .r{text-align:right}.vg b{font-size:17px;margin-left:6px}
+.fh{display:grid;grid-template-columns:1fr 96px 1fr;color:var(--mu);font-size:12px;padding:0 8px}.fh span:nth-child(2){text-align:center}.fh span:last-child{text-align:right}
+body.isfi #pb{background:rgba(255,107,107,.1);color:var(--dn);text-align:center}body.isfi #pa{background:rgba(53,212,154,.1);color:var(--up);text-align:center}
+body.isfi #cmm{width:auto!important;display:block;margin-left:auto}
+.ib{padding:3px 9px;font-size:15px}
+.ft th{font-size:11.5px;color:var(--mu)}.ft td{font-size:12.5px}.you{background:#4a4a7a;color:#c9b8ff;border-radius:3px;padding:1px 8px}
+.cbox{display:flex;align-items:center;gap:6px;border:1px solid var(--ln);border-radius:4px;padding:6px 10px;margin-top:6px}.cbox input{flex:1;text-align:right;background:none;border:0;font-weight:600;font-size:14px}
+.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.nw1{padding:8px 0}.nw1 h4{margin:3px 0;font-size:15px}.nw1 p{margin:4px 0;color:var(--mu)}.nw1 .t{display:flex;justify-content:space-between;color:var(--mu);font-size:12px;align-items:center}
+.er{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--ln);border-radius:0;padding:7px 0;color:var(--tx);cursor:pointer}.er span{color:var(--mu);margin-right:8px}
+.vv{background:var(--in);border-radius:4px;padding:8px 10px;margin:6px 0}.vh,.vr{display:flex;justify-content:space-between;align-items:center}.vv .vt{margin:0;flex:1;margin-left:12px}
+.ph2{display:flex;justify-content:space-between;font-weight:600;padding:7px 0 3px;margin-top:6px;color:var(--tx)}
+.up1{padding:6px 0}.up1 p{color:var(--mu);margin:4px 0}
 </style>
 </head>
 <body>
 <header>
-  <select id="scn" aria-label="Scenario"></select>
+  <b id="ttl" class="fionly"></b><select id="scn" aria-label="Scenario"></select>
   <span class="nm">Trading as <b id="who"></b></span><button class="lnk" id="notyou">Not you?</button>
   <span><span class="dot" id="dot"></span><span id="live">Live</span></span>
   <span class="sp"></span>
@@ -153,7 +171,7 @@ body.isfi .l4,body.isfi .bb{display:none}body.isfi .lr{display:block}
   </section></div>
   <div class="col">
     <section class="pn" id="p-chart"><div class="ph"><h3 id="chT"></h3><span class="mu" id="chR"></span></div>
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:4px"><span class="mu">Last</span><b class="big" id="last"></b><span id="dlt"></span><span class="sp"></span><select id="ctype" aria-label="Chart type"><option value="line">Line</option><option value="candle">Candles</option><option value="area">Area</option></select><button id="indB" title="Indicators">〜 Indicators</button><button id="drwB" title="Drawing tools">✎ Draw</button></div><div class="pop" id="indM"></div><div id="dtb"></div><canvas id="cv"></canvas></section>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:4px"><span class="mu">Last</span><b class="big" id="last"></b><span id="dlt"></span><span class="sp"></span><select id="ctype" aria-label="Chart type"><option value="line">Line</option><option value="candle">Candles</option><option value="area">Area</option></select><button id="indB" class="ib" title="Indicators">∿</button><button id="drwB" class="ib" title="Drawing tools">✎</button></div><div class="pop" id="indM"></div><div id="dtb"></div><canvas id="cv"></canvas></section>
     <section class="pn" id="p-ord"><div class="ph"><h3>Orders</h3><span class="mu" id="onum"></span></div><div id="ordB"></div></section>
     <section class="pn" id="p-log"><div class="ph"><h3>Log</h3><span class="mu" id="lnum"></span></div><div id="logB" style="max-height:300px;overflow:auto"></div></section>
   </div>
@@ -253,7 +271,7 @@ function bondInit(c,o){const ten=c.ten||10,m=/\s([\d.]+)\//.exec(c.pair),my=/\/(
   /* vol harian 10Y (bp) ~ MOVE 80-100 => 5-6 bp; gilt/BTP tertinggi, JGB terendah. Sesi = jam aktif => dipadatkan x1.3 */
   const rg=/^DE/.test(c.pair)?4.5:/^IT/.test(c.pair)?6.3:/^UK/.test(c.pair)?6.5:/^CA/.test(c.pair)?5:/^JGB/.test(c.pair)?3.5:/^ID/.test(c.pair)?3.6:/^(MSFT|TENT|TNCT|BCGPP|SIEG)/.test(c.pair)?6:5.4,
     tf=ten<=3?1.05:ten<=7?1.05:ten<=10?1:.92;c.dvol=+(rg*tf).toFixed(2);c.kv=c.dvol/5.4;c.ppbp=ppb/.001;
-  c.fvol=c.dvol/Math.sqrt(6.5)*1.3/60*c.ppbp;c.dv=+(c.ppbp*.07).toFixed(2);c.spr=Math.max(2,Math.round(.2*ppb/.001));o.step=Math.max(2,Math.round(2*ppb/.001));
+  c.fvol=c.dvol/Math.sqrt(6.5)*2.5/60*c.ppbp;c.dv=+(c.ppbp*.07).toFixed(2);c.spr=Math.max(2,Math.round(.2*ppb/.001));o.step=1;o.dec=8;
   c.sizes=[10,25,50,75,100,150];c.limit=600}
 function finishI(c,h,o){c.id="x"+SCB.length;c.gen=1;c.title=c.pair;if(c.cls==="FI")bondInit(c,o);c.dec=o.dec!=null?o.dec:Math.max(0,Math.ceil(-Math.log10(c.pip)-1e-9));c.step=o.step||c.spr;
   c.vol=+(c.px*h/100/c.pip/60).toFixed(4);if(c.fi)c.vol=+c.fvol.toFixed(3);c.strong=Math.max(4,Math.round(c.vol*80));c.weak=Math.max(2,Math.round(c.vol*27));
@@ -523,7 +541,7 @@ const DEFCFG={on:1,int:15,ans:30,large:20,one:25,two:25,prop:50,ib:1,br:1,pl:30,
 let S,ALL=[],cur=0,pi=0,fd=0,nameU=localStorage.getItem("mts_name")||"Trader";
 const yld=p=>byld(p,S.sc.cpn,S.sc.yrs,S.sc.frq),dur=()=>bdur(yld(S.mid),S.sc.cpn,S.sc.yrs,S.sc.frq),/* DV01 = N x (Pd/100) x MD x 0.01% ($ untuk turun 1bp; long = positif). PV01 = Pd x MD x 0.01% per 100 nominal */
 dv01=q=>q*1e6*(S.mid/100)*dur()*1e-4,pv01=()=>S.mid*dur()*1e-4;
-const fpv=v=>v.toFixed(S.sc.fi?4:S.sc.dec),fp=p=>fpv(S.sc.fi?yld(p):p),fu=p=>fp(p)+(S.sc.fi?"%":""),pips=x=>x/S.sc.pip,ip=v=>S.sc.fi?+bpx(v,S.sc.cpn,S.sc.yrs,S.sc.frq).toFixed(S.sc.dec):v;
+const fpv=v=>v.toFixed(S.sc.fi?4:S.sc.dec),fp=p=>fpv(S.sc.fi?yld(p):p),fu=p=>fp(p)+(S.sc.fi?"%":""),pips=x=>x/S.sc.pip,ip=v=>S.sc.fi?bpx(+(+v).toFixed(5),S.sc.cpn,S.sc.yrs,S.sc.frq):v;
 const fK=v=>{const a=Math.abs(v);return a>=1e6?(a/1e6).toFixed(2)+"M":a>=1e3?(a/1e3).toFixed(1)+"K":a.toFixed(0)},sK=v=>(v<0?"−":"")+fK(v);
 const mm=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
 const TT=s=>"T+"+String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0");
@@ -661,7 +679,15 @@ function newsPool(sc,th){const C=[],sym=sc.pair,cls=sc.cls||"FX",R0=sc.reg||[],a
   C.forEach(c=>{if(c.rg&&th.rg[c.rg])c.w*=3;if(c.tg&&th.tg[c.tg])c.w*=2.5});return C}
 function rndTimes(R,n,lo,hi,gap){for(let a=0;a<80;a++){const t=[];for(let i=0;i<n;i++)t.push(lo+R()*(hi-lo));t.sort((x,y)=>x-y);if(t.every((v,i)=>!i||v-t[i-1]>=gap))return t.map(Math.round)}return Array.from({length:n},(_,i)=>Math.round(lo+(hi-lo)*(i+.5)/n))}
 function shuf(R,a){for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function randSession(sc,label){const _t=(label||"");const sx=sxSeed(),R=mkP(sx),v=sc.vol,th=themeOf((label||"")+" "+sc.pair);if(/Across Borders|Visor|Horizon II|Orchestra|Peaks/i.test(_t)){th.tg.curve=1;th.tg.spread=1}if(/Triple A|Tencent/i.test(_t))th.tg.credit=1;sc.sx=sx;
+function bombNews(sc,R,nm){const pr={calm:.12,std:.35,vol:.6}[nm||"std"];if(!(R()<(pr==null?.35:pr)))return;
+  const rg=(sc.reg||[])[0],B=BK[rg]||"The central bank",N=NA[rg]||"Local",up=R()<.5,cls=sc.cls||"FX",t=Math.round(600+R()*2400),sym=sc.pair;let h,b,e,size;
+  if(sc.fi||cls==="IRS"||cls==="BFUT"){const A=up?[[`BREAKING: ${B} springs surprise rate hike`,"Markets were braced for a hold; yields jumped across the curve."],[`BREAKING: ${N} sovereign downgraded, bonds sell off`,"The rating action triggered heavy selling."]]:[[`BREAKING: ${B} announces emergency bond purchases`,"The surprise move sent yields tumbling."],["BREAKING: Flight to safety as global stocks crash","Investors piled into government bonds."]];
+    [h,b]=A[R()<.5?0:1];e=(cls==="BFUT"?1:-1)*(up?1:-1);size=sc.fi?(5+R()*3.5)*sc.kv*sc.ppbp*(sc.vm||1):(90+R()*70)*sc.vol}
+  else if((!sc.cls||cls==="FX")&&/^[A-Z]{3}\/[A-Z]{3}$/.test(sym)){const cc=sym.split("/"),ix=R()<.5?0:1,c0=cc[ix],B0=BK[(CCY[c0]||[])[0]]||c0+" central bank",s=up?1:-1;
+    h=s>0?`BREAKING: ${B0} stuns markets with surprise rate hike`:`BREAKING: ${B0} ambushes markets with emergency rate cut`;b="The unexpected decision triggered a sharp repricing in "+sym+".";e=ix?-s:s;size=(90+R()*70)*sc.vol}
+  else{h=up?`BREAKING: Shock announcement lifts ${sym}`:`BREAKING: Unexpected shock rocks ${sym}`;b="Participants rushed to reprice after the news crossed the wires.";e=up?1:-1;size=(90+R()*70)*sc.vol}
+  sc.nw.push({t,h,b,i:+(e*size).toFixed(2),bomb:1});sc.nw.sort((a,b)=>a.t-b.t)}
+function randSession(sc,label,nm){const _t=(label||"");const sx=sxSeed(),R=mkP(sx),v=sc.vol,th=themeOf((label||"")+" "+sc.pair);if(/Across Borders|Visor|Horizon II|Orchestra|Peaks/i.test(_t)){th.tg.curve=1;th.tg.spread=1}if(/Triple A|Tencent/i.test(_t))th.tg.credit=1;sc.sx=sx;
   /* regime volatilitas acak per sesi: MOVE 2026 berkisar ~62 (tenang) - ~115 (stres); 1 MOVE-pt ~ 1/sqrt(252) bp per hari */
   if(sc.fi){const q=R(),rg=q<.25?["Calm",.72]:q<.75?["Normal",1]:["Stressed",1.3];sc.vm=rg[1];sc.vr=rg[0];sc.vol=+(sc.vol*rg[1]).toFixed(3);sc.dvol=+(sc.dvol*rg[1]).toFixed(2);sc.move=Math.round(sc.dvol*15.87);sc.brief+=" Rate-vol regime today: "+rg[0]+" (~"+sc.dvol+" bp/day, MOVE-equivalent ~"+sc.move+")."}
   /* kalender: urutan, waktu, forecast/previous diacak */
@@ -674,16 +700,16 @@ function randSession(sc,label){const _t=(label||"");const sx=sxSeed(),R=mkP(sx),
   sc.nw=pick.map((c,i)=>{let size=sc.fi?(.5+R())*sc.kv*sc.ppbp*(sc.vm||1):(18+R()*22)*v;
     if(c.cur!=null&&c.cur>0)size=c.cur*(.7+R()*.6);
     let sg=c.e===0?(R()<.5?-1:1):Math.sign(c.e);if(c.e===0)size*=.15;else if(R()<.15)size*=-.4; /* kadang pasar "menjual berita" */
-    return{t:tt[i],h:c.h,b:c.b,i:+(sg*Math.abs(size)*(c.e!==0&&c.cur==null?Math.min(1.2,Math.abs(c.e)):1)).toFixed(2)}}).sort((a,b)=>a.t-b.t)}
+    return{t:tt[i],h:c.h,b:c.b,i:+(sg*Math.abs(size)*(c.e!==0&&c.cur==null?Math.min(1.2,Math.abs(c.e)):1)).toFixed(2)}}).sort((a,b)=>a.t-b.t);bombNews(sc,R,nm)}
 function mk(i,rm){
-  const sc=JSON.parse(JSON.stringify(SCB[i]));const rng={m:rm?rm.seed|0:1,c:rm?(rm.seed^0x9e3779b9)|0:2,a:rm?(rm.seed^0x85ebca6b)|0:3};RNGS=rng;RK="m";randSession(sc,rm&&rm.scn);if(rm)tune(sc,rm);
+  const sc=JSON.parse(JSON.stringify(SCB[i]));const rng={m:rm?rm.seed|0:1,c:rm?(rm.seed^0x9e3779b9)|0:2,a:rm?(rm.seed^0x85ebca6b)|0:3};RNGS=rng;RK="m";randSession(sc,rm&&rm.scn,rm&&rm.news);if(rm)tune(sc,rm);
   const S={sc,cfg:rm?cfgOf(rm):{...CFG},sim:0,paused:true,fin:false,speed:+$("spd").value||1,mid:sc.px,fv:sc.px,disp:sc.px,nextRef:5,start:sc.px,hist:[[0,sc.px]],lastH:0,pos:0,avg:0,real:0,trades:[],orders:[],calls:[],feed:[],log:[],imp:[],wide:0,nextCall:rnd(4,10)*(sc.cr||1),cid:1,oid:1,auto:false,votes:{},res:[],bank:0,tab:"active",ntab:"news",v2:1,pk:0,dd:0,maxPos:0,rel:{},st:{sent:0,hit:0,exp:0,pass:0},
     tB:[],tA:[],zB:[],zA:[],bots:BOTN.map(n=>({n,pnl:0,mu:rnd(-.3,.8),sg:rnd(2,6)}))};
 
   for(let k=0;k<=10;k++){S.tB.push(Math.round(rnd(100,1300)*(sc.fi?.08:1)));S.tA.push(Math.round(rnd(100,1300)*(sc.fi?.08:1)))}S.zB=S.tB.slice();S.zA=S.tA.slice();S.rng=rng;S.room=rm;initWatch(S,rm);RK="a";return S;
 }
 function sel(k){
-  cur=k;S=ALL[k];RNGS=S.rng||null;const sc=S.sc;document.body.classList.toggle("isfi",!!sc.fi);if(sc.fi)initCalc();loadInd();drawTB();
+  cur=k;S=ALL[k];RNGS=S.rng||null;const sc=S.sc;document.body.classList.toggle("isfi",!!sc.fi);arrangeFI(!!sc.fi);$("ttl").textContent=(S.scn&&S.scn.n?S.scn.n:sc.pair)+" (Fixed Income - "+sc.pair+")";if(sc.fi)initCalc();loadInd();drawTB();
   $("tl").querySelectorAll("i").forEach(e=>e.remove());sc.ev.forEach(e=>tick1(e.t,24));
   $("posT").innerHTML=`${sc.pair} <span>Position</span>`;$("brkT").innerHTML=`${sc.pair} <span>Broker</span>`;$("chT").innerHTML=`${sc.pair} <span>Chart</span>`;
   $("ccy").textContent=sc.base;if(sc.gen){$("size").min="0";$("size").step="any";$("size").value=sc.sizes[2]}$("aq").textContent=sc.pair;$("pb").dataset.d="";$("pa").dataset.d="";
@@ -699,10 +725,12 @@ async function realStart(){
     if(r.IDR>0)USDIDR=r.IDR;
     if(ALL[0]===t&&t.sim===0&&v>0&&!t.room){const p=t.sc.pip;t.mid=t.fv=t.disp=t.start=+(Math.round(v/p)*p).toFixed(t.sc.dec);t.hist=[[0,t.mid]];t.real0=true;t.v2++}}catch(e){}
 }
-const qz=x=>+(Math.round(x/S.sc.pip)*S.sc.pip).toFixed(S.sc.dec);
+const YT=.002,yq=i=>+(i*YT).toFixed(5),pOf=y=>bpx(y,S.sc.cpn,S.sc.yrs,S.sc.frq);
+const qz=x=>S.sc.fi?pOf(+(Math.round(yld(x)/.001)*.001).toFixed(5)):+(Math.round(x/S.sc.pip)*S.sc.pip).toFixed(S.sc.dec);
 const sprP=()=>Math.max(1,Math.round(S.sc.spr*(S.sim<S.wide?2.2:1)));
-const bidP=()=>qz(S.mid-sprP()*S.sc.pip/2),askP=()=>qz(bidP()+sprP()*S.sc.pip);
-const lvl=(buy,k)=>+((buy?askP()+k*S.sc.step*S.sc.pip:bidP()-k*S.sc.step*S.sc.pip)).toFixed(S.sc.dec);
+const nT=()=>Math.max(1,Math.round(sprP()/S.sc.spr)),bI=()=>Math.round(yld(S.mid)/YT+nT()/2-1e-9);
+const bidP=()=>S.sc.fi?pOf(yq(bI())):qz(S.mid-sprP()*S.sc.pip/2),askP=()=>S.sc.fi?pOf(yq(bI()-nT())):qz(bidP()+sprP()*S.sc.pip);
+const lvl=(buy,k)=>S.sc.fi?pOf(yq(buy?bI()-nT()-k*S.sc.step:bI()+k*S.sc.step)):+((buy?askP()+k*S.sc.step*S.sc.pip:bidP()-k*S.sc.step*S.sc.pip)).toFixed(S.sc.dec);
 const unreal=()=>S.pos?S.pos*(S.mid-S.avg)*cv()*1e6:0;
 const L=(k,h,d)=>{S.log.unshift({k,h,d:d||"",t:S.sim});S.v2++};
 const err=d=>{L("err","Action could not be completed",d);return false};
@@ -721,8 +749,8 @@ const limOK=q=>{const n=Math.abs(S.pos+q),ok=n<=S.sc.limit+1e-9||n<Math.abs(S.po
 function market(q,ch){
   if(!guard())return false;if(!(Math.abs(q)>0))return err("Enter a size.");
   if(!limOK(q))return err(`Position limit of ${S.sc.limit}M ${S.sc.base} would be exceeded.`);
-  const buy=q>0,sz=buy?S.zA:S.zB,st=S.sc.step*S.sc.pip;let rem=Math.abs(q),cost=0,sw=[];
-  for(let k=0;k<=10&&rem>1e-9;k++){const t=Math.min(rem,sz[k]),p=buy?askP()+k*st:bidP()-k*st;cost+=t*p;rem-=t;sw.push([k,t])}
+  const buy=q>0,sz=buy?S.zA:S.zB;let rem=Math.abs(q),cost=0,sw=[];
+  for(let k=0;k<=10&&rem>1e-9;k++){const t=Math.min(rem,sz[k]),p=k?lvl(buy,k):buy?askP():bidP();cost+=t*p;rem-=t;sw.push([k,t])}
   if(rem>1e-9)return err("Not enough liquidity on the broker screen for that size.");
   sw.forEach(([k,t])=>sz[k]-=t);fill(q,qz(cost/Math.abs(q)),ch);return true;
 }
@@ -783,13 +811,14 @@ function callTick(dt){
 function step(dt){
   S.sim+=dt;const zz=randn();let m=S.fv+S.sc.pip*S.sc.vol*(S.vz||1)*zz*Math.sqrt(dt);
   S.imp=S.imp.filter(i=>{m+=i.per*Math.min(dt,i.left)*S.sc.pip;i.left-=dt;return i.left>0});S.fv=m;stepWatch(dt,zz);
-  if(S.sim>=S.nextRef){const df=S.fv-S.mid,cp=Math.max(S.sc.pip*S.sc.vol*2.5,Math.abs(df)*.35);S.mid=qz(S.mid+Math.max(-cp,Math.min(cp,df)));S.nextRef=S.sim+(S.cfg.ref||5)*(S.sim<S.wide?.5:1)*rnd(.7,1.3)}
-  S.disp+=(S.mid-S.disp)*(1-Math.exp(-dt/1.5));
+  /* harga hanya diperbarui tiap ref x (0.7-1.3) detik (medium: ref=5 => min 3.5 dtk). Percepatan HANYA saat berita/data sangat besar (S.big) */
+  if(S.sim>=S.nextRef){const df=S.fv-S.mid,big=S.sim<(S.big||0),cp=big?Math.abs(df)+1:Math.max(S.sc.pip*S.sc.vol*2.5,Math.abs(df)*.35);S.mid=qz(S.mid+Math.max(-cp,Math.min(cp,df)));S.nextRef=S.sim+(S.cfg.ref||5)*(big?.45:1)*rnd(.7,1.3)}
+  S.disp+=(S.mid-S.disp)*(1-Math.exp(-dt/.35));
   for(let k=0;k<=10;k++){S.zB[k]+=(S.tB[k]-S.zB[k])*.12*dt+rnd(-15,15)*(S.sc.fi?.1:1)*dt;S.zA[k]+=(S.tA[k]-S.zA[k])*.12*dt+rnd(-15,15)*(S.sc.fi?.1:1)*dt;S.zB[k]=Math.max(S.sc.fi?6:20,S.zB[k]);S.zA[k]=Math.max(S.sc.fi?6:20,S.zA[k])}
   S.sc.ev.forEach((e,i)=>{if(!e.fired&&S.sim>=e.t){e.fired=1;const sur=+((rnd(0,1)*2-1)*e.sd*1.4).toFixed(e.d);e.act=+(e.fc+sur).toFixed(e.d);
-    const imp=sur*e.s+randn()*S.sc.spr*.3;S.imp.push({per:imp/6,left:6});S.wide=S.sim+25;L("info",`${e.c} ${e.n}: ${e.act}${e.u}`,`forecast ${e.fc}${e.u}, previous ${e.pv}${e.u}`);
+    const imp=sur*e.s+randn()*S.sc.spr*.3;if(Math.abs(imp)>=S.sc.weak*1.2)S.big=S.sim+14;S.imp.push({per:imp/6,left:6});S.wide=S.sim+25;L("info",`${e.c} ${e.n}: ${e.act}${e.u}`,`forecast ${e.fc}${e.u}, previous ${e.pv}${e.u}`);
     S.res.push({at:S.sim+30,i,m0:S.mid});S.v2++}});
-  S.sc.nw.forEach(n=>{if(!n.fired&&S.sim>=n.t){n.fired=1;S.feed.unshift({t:n.t,h:n.h,b:n.b,open:true});S.feed.forEach((f,k)=>{if(k)f.open=false});S.imp.push({per:(n.i+randn()*2)/8,left:8});S.wide=S.sim+12;S.v2++}});
+  S.sc.nw.forEach(n=>{if(!n.fired&&S.sim>=n.t){n.fired=1;if(n.bomb||Math.abs(n.i)>=S.sc.weak*1.6)S.big=S.sim+14;S.feed.unshift({t:n.t,h:n.h,b:n.b,open:false});S.feed.forEach((f,k)=>{if(k)f.open=false});{const lf=n.bomb?3:8;S.imp.push({per:(n.i+randn()*2)/lf,left:lf})}S.wide=S.sim+12;S.v2++}});
   S.res=S.res.filter(r=>{if(S.sim<r.at)return true;const mv=(S.sc.fi?-1:1)*pips(S.mid-r.m0),a=Math.abs(mv),c=a>=S.sc.strong?2:a>=S.sc.weak?1:0,real=c*Math.sign(mv),v=S.votes[r.i],e=S.sc.ev[r.i];
     if(v==null)L("info","Bank's view: no vote",`${e.n} moved ${mv.toFixed(1)} pips`);
     else{const pts=v===real?2:(v&&Math.sign(v)===Math.sign(real)&&real!==0?1:0);S.bank+=pts;L("info",`Bank's view result: +${pts} pts`,`${e.n}: market moved ${mv.toFixed(1)} pips`)}return false});
@@ -812,8 +841,9 @@ function render(){
   $("posB").innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="${S.pos>0?"up":S.pos<0?"dn":"mu"}" style="font-size:17px">${S.pos>0?"Long":S.pos<0?"Short":"Flat"}</span><span class="big ${S.pos>0?"up":S.pos<0?"dn":""}">${S.pos<0?"−":""}${fM(ap)} <small class="mu" style="font-size:12px">${sc.base}</small></span></div>
    <div class="kv"><span>Unrealized <b class="${cu(u)}">${fU(u)}</b></span><span>avg <b class="big" style="font-size:17px">${S.pos?fu(S.avg):"—"}</b></span></div>
    <div class="kv"><span>Realized</span><b class="${cu(S.real)}">${S.real?fU(S.real):"0"}</b></div>
-   ${sc.fi?fiLim():`<div class="kv"><span>Limit</span><span>${Math.round(ap/sc.limit*100)}% · ${fM(ap)} of ${sc.limit}M ${sc.base}</span></div><div class="lim"><i style="width:${Math.min(100,ap/sc.limit*100)}%"></i></div>`}
+   ${sc.fi?"":`<div class="kv"><span>Limit</span><span>${Math.round(ap/sc.limit*100)}% · ${fM(ap)} of ${sc.limit}M ${sc.base}</span></div><div class="lim"><i style="width:${Math.min(100,ap/sc.limit*100)}%"></i></div>`}
    <div class="kv mu"><span>${S.orders.filter(o=>o.q>0).map(o=>"Bid "+fM(o.left)+" @ "+fp(o.px)).join(", ")||"No bids"}</span><span>${S.orders.filter(o=>o.q<0).map(o=>"Ask "+fM(o.left)+" @ "+fp(o.px)).join(", ")||"No asks"}</span></div>`;
+  if(sc.fi)$("posB").innerHTML=fiPos();
   const sz=+$("size").value||0;$("mSell").textContent="SELL "+fM(sz);$("mBuy").textContent="BUY "+fM(sz);$("szb").textContent=fM(S.zB[0]);$("sza").textContent=fM(S.zA[0]);
   $("best").innerHTML=`<span data-reset="1">${fp(b)}</span><small>${sprP()} pips</small><span data-reset="1">${fp(a)}</span>`;
   let h="";const mx=Math.max(...S.zB.slice(1),...S.zA.slice(1));
@@ -825,14 +855,14 @@ function render(){
   $("lnum").textContent=S.trades.length+" fills";
   if(S.lv!==S.v2){S.lv=S.v2;
     $("logB").innerHTML=S.log.slice(0,60).map(l=>{const c=l.k==="err"?"var(--dn)":l.k==="info"?"var(--bl)":l.h.startsWith("Bought")?"var(--up)":"var(--dn)";return `<div class="lg"><span class="ic" style="background:${c}">${l.k==="err"?"✕":l.k==="info"?"i":"✓"}</span><div><b>${l.h}</b><small>${l.d}</small></div></div>`}).join("")||`<span class="mu">No activity yet.</span>`;
-    renderCalls();renderNews()}
+    if(sc.fi)$("logB").innerHTML=fiLog();renderCalls();renderNews()}
   document.querySelectorAll("[data-tm]").forEach(e=>{const c=S.calls.find(x=>x.id==e.dataset.tm);if(c){e.textContent=mm(c.pend?c.wait:c.left)}});
   document.querySelectorAll("[data-cd]").forEach(e=>e.textContent=mm(+e.dataset.cd-S.sim));
   const act=S.calls.filter(c=>c.st==="active");$("wait").textContent=act.length+" waiting";$("tA").textContent="Active "+act.length;$("tR").textContent="Recent "+(S.calls.length-act.length);
   const vw=S.sc.ev.findIndex(e=>!e.fired&&S.sim>=e.t-45);if(vw!==S.vw){S.vw=vw;S.v2++}
   if(sc.fi)renderFI();renderWatch();drawChart();
 }
-function renderCalls(){
+function _renderCalls0(){
   $("tA").className=S.tab==="active"?"on":"";$("tR").className=S.tab==="recent"?"on":"";
   const list=S.calls.filter(c=>S.tab==="active"?c.st==="active":c.st==="done");
   $("clist").innerHTML=list.map(c=>{
@@ -840,13 +870,23 @@ function renderCalls(){
       if(c.st==="done")return `<div class="call" data-id="${c.id}">${hd}<div class="${c.rc}">${c.res} <span class="mu">· ${TT(c.at)}</span></div></div>`;
       if(c.pend)return `<div class="call" data-id="${c.id}">${hd}<div class="mu">Waiting for quote…</div></div>`;
       return `<div class="call" data-id="${c.id}">${hd}<div class="cr"><span class="mu">Bid</span><b style="font-size:17px">${fp(c.mb)}</b><span class="mu">Ask</span><b style="font-size:17px">${fp(c.ma)}</b></div><div class="cr" style="margin-top:6px"><button class="dn" data-mhit>Sell @ bid</button><button class="up" data-mlift>Buy @ ask</button><button class="go" data-dec>Decline</button></div></div>`}
-    const head=`<div class="ch"><b>${S.sc.pair}</b>${c.two?`<span>Two-way <b style="font-size:16px">${c.size}M</b> ${S.sc.base}</span>`:`<span class="${c.d<0?"dn":"up"}">They ${c.d<0?"sell":"buy"} <b style="font-size:16px;color:var(--tx)">${c.size}M</b> ${S.sc.base}</span>`}${c.st==="active"?`<span class="tm" data-tm="${c.id}"></span>`:""}</div><div class="cn">${c.cl.n}<small>${c.cl.ty}${c.one?" · asks your price":""}</small></div>`;
+    const head=`<div class="ch"><b>${S.sc.pair}</b>${c.two?`<span>Two-way <b style="font-size:16px">${c.size}M</b> ${S.sc.base}</span>`:`<span class="${c.d<0?"dn":"up"}">They ${c.d<0?"sell":"buy"} <b style="font-size:16px;color:var(--tx)">${c.size}M</b> ${S.sc.base}</span>`}${c.st==="active"?`<span class="tm" data-tm="${c.id}"></span>`:""}</div><div class="cn">${c.cl.n}${S.sc.fi?"":`<small>${c.cl.ty}${c.one?" · asks your price":""}</small>`}</div>`;
     if(c.st==="done")return `<div class="call" data-id="${c.id}">${head}<div class="${c.rc}">${c.res} <span class="mu">· ${TT(c.at)}</span></div></div>`;
     if(c.pend)return `<div class="call" data-id="${c.id}">${head}<div class="mu">Quote sent ${fp(c.qb)} / ${fp(c.qa)}, waiting for client…</div></div>`;
-    if(c.one)return `<div class="call" data-id="${c.id}">${head}<div class="cr"><span class="mu">Your ${c.d>0?"offer":"bid"}</span><input data-cp value="${fp(c.d>0?c.qa:c.qb)}" aria-label="Price"><button data-mkt1>Market</button><button class="go" data-send1>Send price</button><button data-pass>Pass</button></div></div>`;
-    return `<div class="call" data-id="${c.id}">${head}`+(c.two?`<div class="cr"><span class="mu">Bid</span><input data-cb value="${fp(c.qb)}" aria-label="Bid"><span class="mu">Ask</span><input data-ca value="${fp(c.qa)}" aria-label="Ask"></div><div class="cr" style="margin-top:6px"><button data-mkt>Market</button><button class="go" data-send>Send quote</button><button data-pass>Pass</button></div>`
+    if(c.one)return `<div class="call" data-id="${c.id}">${head}<div class="cr"><span class="mu">Your ${c.d>0?"offer":"bid"}</span><input data-cp value="${c.uv!=null?c.uv:fp(c.d>0?c.qa:c.qb)}" aria-label="Price">${S.sc.fi?"":"<button data-mkt1>Market</button>"}<button class="go" data-send1>Send ${S.sc.fi?"quote":"price"}</button><button data-pass>Pass</button></div></div>`;
+    return `<div class="call" data-id="${c.id}">${head}`+(c.two?`<div class="cr"><span class="mu">Bid</span><input data-cb value="${c.ub!=null?c.ub:fp(c.qb)}" aria-label="Bid"><span class="mu">Ask</span><input data-ca value="${c.ua!=null?c.ua:fp(c.qa)}" aria-label="Ask"></div><div class="cr" style="margin-top:6px"><button data-mkt>Market</button><button class="go" data-send>Send quote</button><button data-pass>Pass</button></div>`
       :`<div class="cr"><span class="mu">Client price</span><b style="font-size:17px">${fu(c.px)}</b><button class="go" data-acc>Accept</button><button data-dec>Decline</button></div>`)+`</div>`}).join("")||`<div class="mu" style="padding:16px 0;text-align:center">${S.tab==="active"?"No active calls."+(S.cfg.on?"":" Client calls are off in Settings."):"No recent calls."}</div>`;
 }
+function renderCalls(){
+  $("tA").className=S.tab==="active"?"on":"";$("tR").className=S.tab==="recent"?"on":"";
+  const cl=$("clist"),list=S.calls.filter(c=>S.tab==="active"?c.st==="active":c.st==="done"),sg=S.tab+"|"+list.map(c=>[c.id,c.st,c.pend?1:0,c.mm?1:0,c.res||""].join(":")).join("|");
+  if(cl._s===S&&cl._sg===sg)return; /* tidak ada perubahan struktur: JANGAN bangun ulang (angka yang sedang diketik tetap utuh) */
+  cl._s=S;cl._sg=sg;
+  const ae=document.activeElement,ci=ae&&ae.closest?ae.closest(".call"):null,fo=ci&&cl.contains(ae)?{id:ci.dataset.id,k:["cb","ca","cp"].find(k=>ae.hasAttribute("data-"+k)),a:ae.selectionStart,b:ae.selectionEnd}:null;
+  _renderCalls0();
+  if(fo&&fo.k){const f=cl.querySelector('.call[data-id="'+fo.id+'"] [data-'+fo.k+']');if(f){f.focus();try{f.setSelectionRange(fo.a,fo.b)}catch(e){}}}}
+$("clist").addEventListener("input",e=>{const t=e.target,ci=t.closest?t.closest(".call"):null;if(!ci)return;const c=S.calls.find(x=>x.id==ci.dataset.id);if(!c)return;
+  if(t.hasAttribute("data-cb"))c.ub=t.value;else if(t.hasAttribute("data-ca"))c.ua=t.value;else if(t.hasAttribute("data-cp"))c.uv=t.value});
 const EVD=[[/hourly|wage/i,"Wage growth. Faster wage growth feeds inflation and supports expectations of higher rates."],[/payroll|employment change|jobs/i,"Jobs added to the economy. Strong hiring signals a healthy economy and can lift rate expectations."],[/cpi|inflation|price index|ppi/i,"Change in the price of a basket of goods and services. A high reading points to inflation and raises the odds of tighter policy."],[/rate decision|lpr|loan prime|policy rate/i,"The central bank's policy-rate decision. A hike or hawkish tone usually lifts the currency and yields; a cut or dovish tone does the opposite."],[/pmi|manufacturing|zew|sentiment|kof|tankan|confidence|barometer/i,"Survey-based gauge of business or consumer conditions. Readings above the neutral level (50 for PMIs) point to expansion."],[/gdp/i,"Total output of the economy. Growth above forecast tends to support the currency and push yields up."],[/trade balance/i,"Exports minus imports. A larger surplus is generally positive for the local currency."],[/building permits|housing|home/i,"Tracks new construction or housing activity. A higher number points to a stronger housing market and economy."],[/industrial|production/i,"Volume of output in factories and mines. Strong readings can raise inflation and rate expectations."],[/crude|eia|oil|inventor/i,"Weekly change in crude stocks. A larger draw than forecast is usually read as bullish for oil."],[/retail|sales/i,"Consumer spending. A high reading signals strong demand and supports the currency."],[/earnings|eps/i,"Company profit per share against analyst forecasts. A beat usually lifts the share price."]];
 const EVDesc=n=>(EVD.find(x=>x[0].test(n))||[0,"Scheduled data release. A reading above forecast is usually seen as positive for the local currency and yields."])[1];
 function evBlock(e,i){const sc=S.sc,labs=["↓↓","↓","Flat","↑","↑↑"],cur=S.votes[i],open=i===S.vw&&!e.fired,df=e.fired?+(e.act-e.fc).toFixed(e.d):0,mt='<div class="mu" style="margin-top:6px">';
@@ -858,38 +898,51 @@ function evBlock(e,i){const sc=S.sc,labs=["↓↓","↓","Flat","↑","↑↑"],
   return `<div class="nw">${top}${nums}${view}<details><summary class="mu" style="cursor:pointer;margin-top:4px">About this release</summary><p class="evd">${EVDesc(e.n)}</p></details></div>`}
 function calHTML(all){const E=S.sc.ev.map((e,i)=>[e,i]),up=E.filter(x=>!x[0].fired),er=E.filter(x=>x[0].fired).reverse(),hd=(a,b)=>`<div class="ph" style="margin-top:12px"><span style="font-weight:600">${a}</span><span class="mu">${b}</span></div>`;
   return hd("Upcoming","Forecast &nbsp; Previous")+(up.slice(0,all?9:2).map(x=>evBlock(...x)).join("")||'<div class="mu">None.</div>')+hd("Earlier","Actual &nbsp; Forecast")+(er.slice(0,all?9:3).map(x=>evBlock(...x)).join("")||'<div class="mu">Nothing released yet.</div>')}
-function renderNews(){
-  $("nT").innerHTML=`News <small class="mu">${S.feed.length} today</small>`;$("cT").innerHTML=`Calendar <small class="mu">${S.sc.ev.filter(e=>e.fired).length} today</small>`;
-  $("nT").className=S.ntab==="news"?"on":"";$("cT").className=S.ntab==="cal"?"on":"";
-  if(S.ntab==="cal"){$("nbody").innerHTML=calHTML(true);return}
-  const h=S.feed.map((f,i)=>`<div class="nw"><div class="t"><span>${TT(f.t)}</span></div><h4>${f.h}</h4>${f.open?`<p>${f.b}</p>`:""}<button class="lnk" data-tg="${i}">${f.open?"Show less":"Show more"}</button></div>`).join("")
-   ||`<div class="nw"><div class="t"><span>T+00:00</span><button class="lnk" id="brief">Morning brief</button></div><h4>No news yet</h4><p>Headlines will appear here as the session runs.</p></div>`;
-  $("nbody").innerHTML=h+calHTML(false)}
-
 /* ---------- FI panels ---------- */
-function fiLim(){const sc=S.sc,d=dv01(S.pos),lm=sc.limit*sc.px*bdur(byld(sc.px,sc.cpn,sc.yrs,sc.frq),sc.cpn,sc.yrs,sc.frq),p=Math.min(100,Math.abs(d)/lm*100);
-  const bar=n=>`<div class="kv"><span>${n}</span><span>${Math.round(p)}% · ${fK(d)} of ${fK(lm)}</span></div><div class="lim"><i style="width:${p}%"></i></div>`;
-  return `<div class="kv"><span>DV01</span><b>${S.pos?sK(d):"0"}</b></div>`+bar(sc.yrs+"Y DV01")+bar("Total DV01")}
-function fiLad(){const sc=S.sc,sz=+$("size").value||0,row=(a,k)=>{const p=k?lvl(a,k):a?askP():bidP(),s=(a?S.zA:S.zB)[k],mx=Math.max(...S.zB.slice(0,6),...S.zA.slice(0,6));
-    return `<div class="fr ${a?"a":"b"}${k?"":" best"}" style="--w:${s/mx*100}%" data-p="${fp(p)}" data-s="${a?"a":"b"}" title="${a?"Buy":"Sell"} ${sz}M USD of ${sc.pair} at ${fp(p)}% · Immediate or cancel">${a?"<span></span><b>"+fp(p)+"<small>%</small></b><small>"+fM(s)+"</small>":"<small>"+fM(s)+"</small><b>"+fp(p)+"<small>%</small></b><span></span>"}</div>`};
-  let h="";for(let k=4;k>=0;k--)h+=row(true,k);h+=`<div class="fsp">Spread <b style="color:var(--tx)">${((yld(bidP())-yld(askP()))*100).toFixed(1)}</b> bp</div>`;for(let k=0;k<=4;k++)h+=row(false,k);return h}
-function renderFI(){const sc=S.sc,y=yld(S.mid),md=bdur(y,sc.cpn,sc.yrs,sc.frq),cx=bcvx(y,sc.cpn,sc.yrs,sc.frq),d=dv01(S.pos),u=unreal(),dd=S.pos?sK(d):"0";
-  const r=(n)=>`<tr><td><b>${n}</b></td><td>${dd}</td><td class="${cu(S.real)}">${S.real?fU(S.real):"0"}</td><td class="${cu(u)}">${u?fU(u):"0"}</td></tr>`;
-  const kv=(a,b)=>`<div class="kv"><span>${a}</span><b>${b}</b></div>`;
-  $("riskB").innerHTML=`<table><thead><tr><th></th><th>DV01</th><th>REALIZED</th><th>UNREALIZED</th></tr></thead><tbody>${r(sc.pair)}${r("Total")}</tbody></table>`+
-   `<div style="margin-top:8px">${kv("Price / Yield",S.mid.toFixed(4)+" / "+y.toFixed(3)+"%")}${kv("Modified duration",md.toFixed(3))}${kv("PV01 (per 100 face)",pv01().toFixed(4))}${kv("DV01 posisi","$"+Math.round(d).toLocaleString())}${kv("Convexity",cx.toFixed(2))}${sc.move?kv("Rate-vol hari ini",sc.dvol+" bp/hari ≈ MOVE "+sc.move):""}</div>`}
+const fUK=v=>fU(v).replace(/k$/,"K");
+function fiPos(){const sc=S.sc,ap=Math.abs(S.pos),u=unreal(),d=dv01(S.pos),cl=S.pos>0?"up":S.pos<0?"dn":"",
+  lm=sc.limit*sc.px*bdur(byld(sc.px,sc.cpn,sc.yrs,sc.frq),sc.cpn,sc.yrs,sc.frq),p=Math.min(100,Math.abs(d)/lm*100),
+  bar=n=>`<div class="kv" style="font-size:12px"><span>${n}</span><span>${Math.round(p)}% · ${fK(d)} of ${fK(lm)}</span></div><div class="lim"><i style="width:${p}%"></i></div>`;
+  return `<div class="vp"><span class="${cl||"mu"}">${S.pos>0?"Long":S.pos<0?"Short":"Flat"}</span><span class="vb ${cl}">${S.pos>0?"+":S.pos<0?"−":""}${fM(ap)} <small>USD</small></span></div>
+  <div class="vg"><div><span class="mu">Unrealized</span><b class="${cu(u)}">${fUK(u)}</b></div><div class="r"><span class="mu">avg</span><b>${S.pos?fu(S.avg):"—"}</b></div><div><span class="mu">Realized</span><b class="${cu(S.real)}">${S.real?fUK(S.real):"0"}</b></div><div class="r"><span class="mu">DV01</span><b>${S.pos?sK(-d):"0"}</b></div></div>`+bar(sc.yrs+"Y DV01")+bar("Total DV01")+
+  `<div class="kv mu" style="margin-top:12px"><span>${S.orders.filter(o=>o.q>0).map(o=>"Bid "+fM(o.left)+" @ "+fp(o.px)).join(", ")||"No bids"}</span><span>${S.orders.filter(o=>o.q<0).map(o=>"Ask "+fM(o.left)+" @ "+fp(o.px)).join(", ")||"No asks"}</span></div>`}
+function fiLad(){const sc=S.sc,sz=+$("size").value||0,mx=Math.max(...S.zB.slice(0,4),...S.zA.slice(0,4)),
+  row=(a,k)=>{const p=k?lvl(a,k):a?askP():bidP(),s=(a?S.zA:S.zB)[k];
+    return `<div class="fr ${a?"a":"b"}${k?"":" best"}" style="--w:${s/mx*100}%" data-p="${fp(p)}" data-s="${a?"a":"b"}" title="${a?"Buy":"Sell"} ${sz}M USD of ${sc.pair} at ${fp(p)}% · Immediate or cancel">${a?"<span></span><b>"+fp(p)+"<small>%</small></b><small>"+fM(s)+"M</small>":"<small>"+fM(s)+"M</small><b>"+fp(p)+"<small>%</small></b><span></span>"}</div>`};
+  let h='<div class="fh"><span>Bid</span><span>Price</span><span>Ask</span></div>';for(let k=3;k>=0;k--)h+=row(true,k);
+  h+=`<div class="fsp">Spread <b style="color:var(--tx)">${((yld(bidP())-yld(askP()))*100).toFixed(1)}</b> bp</div>`;for(let k=0;k<=3;k++)h+=row(false,k);return h}
+function renderFI(){const sc=S.sc,d=dv01(S.pos),u=unreal(),dd=S.pos?sK(-d):"0";
+  const r=(n,a)=>`<tr><td>${a?'<span style="border-left:3px solid var(--bl);padding-left:6px"></span>':""}<b>${n}</b></td><td>${dd}</td><td class="${cu(S.real)}">${S.real?fUK(S.real):"0"}</td><td class="${cu(u)}">${u?fUK(u):"0"}</td></tr>`;
+  $("riskB").innerHTML=`<table><thead><tr><th></th><th>DV01</th><th>REALIZED</th><th>UNREALIZED</th></tr></thead><tbody>${r(sc.pair,1)}${r("Total")}</tbody></table>`}
 function initCalc(){const sc=S.sc;$("calcT").innerHTML=`${sc.pair} <span>Calculator</span>`;
   const row=(a,b)=>`<div class="crw"><span class="mu">${a}</span><span>${b}</span></div>`;
   $("calcB").innerHTML=row("Face value",100)+row("Coupon",sc.cpn+'<small class="mu">%</small>')+row("Issue date",sc.iss)+row("Years",sc.yrs)+row("Frequency","Semiannual")+
-   `<div style="border-top:1px solid var(--ln);margin-top:6px;padding-top:6px"><div class="crw"><span class="mu">Yield %</span><input id="cy" type="number" step="any"></div><div class="crw"><span class="mu">Price</span><input id="cpx" type="number" step="any"></div><button class="lnk" id="clive">Use live market</button></div>`+
-   `<div style="border-top:1px solid var(--ln);margin-top:6px;padding-top:6px"><div class="crw"><span class="mu">Notional (M)</span><input id="cn" type="number" step="any" value="100"></div><div id="cout"></div><div class="crw"><span class="mu">Target DV01 ($)</span><input id="cdd" type="number" step="any" value="20000"></div><div id="cout2"></div><div class="hint">MD = (P − P₁)/(P·Δy), Δy = −1bp · PV01 = P·MD·0.01% · DV01 = N·(P/100)·MD·0.01% · Notional = DV01 / ((P/100)·0.01%·MD)</div></div>`;
-  const calc=()=>{const y=+$("cy").value,P=bpx(y,sc.cpn,sc.yrs,sc.frq),md=bdur(y,sc.cpn,sc.yrs,sc.frq),cx=bcvx(y,sc.cpn,sc.yrs,sc.frq),N=(+$("cn").value||0)*1e6,dd=+$("cdd").value||0;
-    $("cout").innerHTML=row("Mod. duration",md.toFixed(4))+row("PV01 (per 100)",(P*md*1e-4).toFixed(4))+row("DV01 ($)",Math.round(N*(P/100)*md*1e-4).toLocaleString())+row("Convexity",cx.toFixed(2));
-    $("cout2").innerHTML=row("Notional for target (M)",(dd/((P/100)*1e-4*md)/1e6).toFixed(2))};
-  const live=()=>{const y=yld(S.mid);$("cy").value=y.toFixed(4);$("cpx").value=bpx(y,sc.cpn,sc.yrs,sc.frq).toFixed(4);calc()};live();
-  $("cy").oninput=()=>{const y=+$("cy").value;if(y>-5)$("cpx").value=bpx(y,sc.cpn,sc.yrs,sc.frq).toFixed(4);calc()};
-  $("cpx").oninput=()=>{const p=+$("cpx").value;if(p>0){$("cy").value=byld(p,sc.cpn,sc.yrs,sc.frq).toFixed(4);calc()}};
-  $("cn").oninput=calc;$("cdd").oninput=calc;$("clive").onclick=live}
+   `<div class="cbox"><span class="mu">Yield</span><input id="cy" type="number" step="any"><small class="mu">%</small></div><div class="cbox"><span class="mu">Price</span><input id="cpx" type="number" step="any"></div>`;
+  const y=yld(S.mid);$("cy").value=y.toFixed(4);$("cpx").value=bpx(y,sc.cpn,sc.yrs,sc.frq).toFixed(4);
+  $("cy").oninput=()=>{const v=+$("cy").value;if(v>-5)$("cpx").value=bpx(v,sc.cpn,sc.yrs,sc.frq).toFixed(4)};
+  $("cpx").oninput=()=>{const p=+$("cpx").value;if(p>0)$("cy").value=byld(p,sc.cpn,sc.yrs,sc.frq).toFixed(4)}}
+function fiLog(){const sc=S.sc,l=S.log[0],T=S.trades.slice().reverse().slice(0,80);
+  const top=l?(()=>{let h=l.h,d=l.d;if(l.k==="fill"){const rf=/^Client: /.test(d);h=rf?"Client trade confirmed":"Trade confirmed";d=rf?d.slice(8):d.replace(/ · realized.*/,"")}
+    return `<div class="lg"><span class="ic" style="background:${l.k==="err"?"var(--dn)":l.k==="info"?"var(--bl)":"var(--up)"}">${l.k==="err"?"✕":l.k==="info"?"i":"✓"}</span><div><b>${h}</b><small>${sc.pair}${d?" · "+d:""}</small></div></div>`})():'<span class="mu">No activity yet.</span>';
+  const rows=T.map(t=>`<tr><td class="${t.q>0?"up":"dn"}">${t.q>0?"Buy":"Sell"}</td><td>${Math.round(Math.abs(t.q)*1e6).toLocaleString("de-DE")} USD</td><td>${fu(t.p)}</td><td><span class="you">You</span></td><td>${t.ch==="rfq"?"Client":t.ch==="limit"?"Order":t.k==="mm"?"Dealer":"Broker"}</td></tr>`).join("");
+  return top+(T.length?`<table class="ft"><thead><tr><th>SIDE</th><th>SIZE</th><th>PRICE</th><th>BY</th><th>VENUE</th></tr></thead><tbody>${rows}</tbody></table>`:"")}
+const FIA=[["p-pos","p-watch","p-ord","p-log"],["p-risk","p-brk","p-chart"],["p-calc","p-calls"],["p-news"]];
+function arrangeFI(on){const cs=COLS();let L=on?(lsG("mts_layout_fi")||FIA):(lsG(LK)||DEF);if(!L||L.length!==cs.length)L=on?FIA:DEF;L.forEach((a,i)=>a.forEach(id=>{const p=$(id);if(p)cs[i].appendChild(p)}))}
+function renderNews(){
+  const sc=S.sc,F=S.feed,labs=["↓↓","↓","Flat","↑","↑↑"];
+  $("nT").innerHTML=`News <small class="mu">${F.length} today</small>`;$("cT").innerHTML=`Calendar <small class="mu">${sc.ev.filter(e=>e.fired).length} today</small>`;
+  $("nT").className=S.ntab==="news"?"on":"";$("cT").className=S.ntab==="cal"?"on":"";
+  if(S.ntab==="cal"){$("nbody").innerHTML=calHTML(true);return}
+  let h="";const f0=F[0];
+  if(f0)h+=`<div class="nw1"><div class="t"><span>${TT(f0.t)}</span><span>${S.sim-f0.t<60?'<span class="nwb">New</span> ':""}<button class="lnk" data-brief="1">Morning brief</button></span></div><h4>${f0.h}</h4><p class="${f0.open?"":"clamp"}">${f0.b}</p><button class="lnk" data-tg="0">${f0.open?"Show less":"Show all"}</button></div>`;
+  else h+=`<div class="nw1"><div class="t"><span>T+00:00</span><button class="lnk" data-brief="1">Morning brief</button></div><h4>No news yet</h4><p>Headlines will appear here as the session runs.</p></div>`;
+  const ve=S.vw>=0?sc.ev[S.vw]:null,lastF=sc.ev.map((e,i)=>e.fired?i:-1).filter(i=>i>=0).pop();
+  if(ve&&!ve.fired){const cur=S.votes[S.vw];h+=`<div class="vv"><div class="vh"><span>Your bank's view</span><span class="am"><b data-cd="${ve.t}">${mm(ve.t-S.sim)}</b> left to vote</span></div><div class="vr"><b>${sc.pair}</b><div class="vt">${labs.map((l,k)=>`<button data-v="${k-2}" class="${cur===k-2?"on":""}">${l}</button>`).join("")}</div></div></div>`}
+  else if(lastF!=null){const cur=S.votes[lastF];h+=`<div class="vv"><div class="vh"><span>Your bank's view</span><span class="mu">Voting closed</span></div><div class="vr"><b>${sc.pair}</b><span>${cur==null?"No vote":["↓↓ Down ×2","↓ Down","Flat","↑ Up","↑↑ Up ×2"][cur+2]}</span></div></div>`}
+  const ne=sc.ev.find(e=>!e.fired);
+  h+=`<div class="ph2"><span>Upcoming</span><span class="mu" style="font-weight:400;font-size:12px">Forecast &nbsp;&nbsp; Previous</span></div>`+(ne?`<div class="up1"><div style="display:flex;justify-content:space-between"><span><span class="mu">in</span> <b data-cd="${ne.t}">${mm(ne.t-S.sim)}</b> &nbsp; <b>${ne.n}</b></span><span><b>${ne.fc}</b> <span class="mu">${ne.u||"-"}</span> &nbsp; <span class="mu">${ne.pv} ${ne.u||"-"}</span></span></div><div class="mu" style="font-size:12px">${ne.c}</div><p>${EVDesc(ne.n)}</p></div>`:'<div class="mu">No more scheduled events.</div>');
+  if(F.length>1)h+=`<div class="ph2"><span>Earlier</span></div>`+F.slice(1).map((f,i)=>`<button class="er" data-tg="${i+1}"><span>${TT(f.t)}</span>${f.h}</button>${f.open?`<p class="mu" style="margin:4px 0 8px">${f.b}</p>`:""}`).join("");
+  $("nbody").innerHTML=h}
 /* ---------- chart ---------- */
 let CG=null,IND={},DRW={tool:null,magnet:1,lock:0,hide:0,tmp:[],mv:null};
 const YC=new WeakMap(),lsG=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsS=(k,v)=>{try{v===null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
@@ -1021,7 +1074,7 @@ $("clist").onclick=e=>{const el=e.target.closest("[data-id]");if(!el)return;cons
 $("nbody").onclick=e=>{const d=e.target.dataset;
   if(d.tg!==undefined){S.feed[d.tg].open=!S.feed[d.tg].open;S.v2++}
   else if(d.v!==undefined){if(!guard())return;S.votes[S.vw]=+d.v;S.v2++}
-  else if(e.target.id==="brief")showBrief(false)};
+  else if(e.target.id==="brief"||d.brief!==undefined)showBrief(false)};
 $("brief2").onclick=()=>showBrief(false);$("dashB").onclick=()=>showDash("Dashboard");$("helpB").onclick=showHelp;$("setB").onclick=()=>showSettings(false);$("dx").onclick=()=>$("dlg").close();
 $("thmB").onclick=()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme==="dark"?"light":"dark"};
 $("ctype").onchange=drawChart;
@@ -1035,7 +1088,7 @@ $("scn").onchange=()=>{if(S.sim>0&&!S.fin&&!confirm("Ganti valas akan memulai se
 /* ---------- drag & drop panel ---------- */
 const LK="mts_layout2",COLS=()=>[...document.querySelectorAll("main .col")],ids=c=>[...c.querySelectorAll(":scope>.pn")].map(p=>p.id);
 const DEF=COLS().map(ids);
-const saveLay=()=>{try{localStorage.setItem(LK,JSON.stringify(COLS().map(ids)))}catch(e){}};
+const saveLay=()=>{try{localStorage.setItem(document.body.classList.contains("isfi")?"mts_layout_fi":LK,JSON.stringify(COLS().map(ids)))}catch(e){}};
 const applyLay=L=>{const cs=COLS();if(!L||L.length!==cs.length)return;L.forEach((a,i)=>a.forEach(id=>{const p=$(id);if(p)cs[i].appendChild(p)}))};
 document.querySelectorAll(".pn").forEach(p=>{const g=document.createElement("span");g.className="gr";g.textContent="⠿";g.title="Drag to move panel";p.appendChild(g)});
 try{applyLay(JSON.parse(localStorage.getItem(LK)))}catch(e){}
@@ -1052,7 +1105,7 @@ document.addEventListener("pointerdown",e=>{
     ph.replaceWith(p);p.classList.remove("drag");p.style.left=p.style.top=p.style.width="";saveLay()};
   document.addEventListener("pointermove",mv);document.addEventListener("pointerup",up)});
 $("lay").insertAdjacentHTML("beforeend",'<button id="lrst" style="margin-top:6px">Reset layout</button>');
-$("lrst").onclick=()=>{applyLay(DEF);saveLay()};
+$("lrst").onclick=()=>{applyLay(document.body.classList.contains("isfi")?FIA:DEF);saveLay()};
 /* ================= ONLINE LAYER (Supabase) ================= */
 const sb=(window.supabase&&!/ISI_/.test(SUPABASE_URL+SUPABASE_ANON_KEY))?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}):null;
 let SESS=null,saving=0,KIND="",finishing=0,CH=[],LBD=[],LBS="pnl",LBF=false;
@@ -1138,14 +1191,14 @@ setInterval(()=>{if(S&&S.room&&SESS&&!SESS.dead&&!S.fin&&liveH()!==S.room.hash)t
 const num=(k,l,v)=>`<label class="fl">${l}<input id="h_${k}" type="number" step="any" value="${v}" min="${LIM[k][0]}" max="${LIM[k][1]}"></label>`;
 const sel2=(k,l,o)=>`<label class="fl">${l}<select id="h_${k}">${o.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")}</select></label>`;
 const CLSN={FX:"FX",EQ:"Equity/Index",FI:"Bond",CM:"Commodity",FXSWP:"FX Swap",IRS:"IRS",BFUT:"Bond Futures",CDS:"CDS"};
-const DP={easy:{int:20,ans:25,large:10,two:80,br:1,pl:20,pm:2,ib:1,news:"calm",lf:1.5},medium:{int:15,ans:15,large:20,two:70,br:1,pl:30,pm:2,ib:1,news:"std",lf:1},hard:{int:8,ans:9,large:30,two:55,br:1,pl:45,pm:3,ib:1,news:"vol",lf:.7}};
+const DP={easy:{int:20,ans:25,large:10,two:80,br:1,pl:20,pm:2,ib:1,news:"calm",lf:1.5,ref:7},medium:{int:15,ans:15,large:20,two:70,br:1,pl:30,pm:2,ib:1,news:"std",lf:1,ref:5},hard:{int:8,ans:9,large:30,two:55,br:1,pl:45,pm:3,ib:1,news:"vol",lf:.7,ref:3.5}};
 let PICK=null,PLEG=null;
 const scnLabel=c=>PICK?(PICK.ins.length>1?PICK.n+" · "+c.pair:PICK.n).slice(0,60):"Custom";
 const baseOf=p=>(SCB.find(c=>c.pair===p)||{}).base||p.slice(0,3);
 function drawPick(){const s=PICK;$("c_pick").innerHTML=s?`✔ <b>${esc(s.n)}</b> · ${s.d} mnt · ${s.df}${s.ins.length>1?`<div style="margin-top:6px">Skenario ini punya ${s.ins.length} instrumen, tapi satu server mensimulasikan 1 pasar. Pilih yang dimainkan:<br>${s.ins.map(x=>`<button class="${x===PLEG?"pri":""}" data-leg="${esc(x)}" style="margin:3px 3px 0 0">${esc(x)}</button>`).join("")}</div>`:""}`:"Custom — atur sendiri di form bawah."}
 function fillScn(s,i){const P=DP[s.df],c=SCB[i],set=(a,v)=>{$("h_"+a).value=v};
   set("name",s.n.slice(0,30));set("pair",i);set("dur",s.d);["int","ans","large","two","br","pl","pm","ib","news"].forEach(a=>set(a,P[a]));
-  set("mat",.25);set("ref",5);set("limit",Math.max(.1,+(c.limit*P.lf).toFixed(2)));$("h_px").value="";$("h_px").placeholder=c.px;drawPick()}
+  set("mat",.25);set("ref",P.ref||5);set("limit",Math.max(.1,+(c.limit*P.lf).toFixed(2)));$("h_px").value="";$("h_px").placeholder=c.px;drawPick()}
 const CTAG={FX:"FX",EQ:"EQ",FI:"FI",CM:"CM",FXSWP:"FXSWP",IRS:"IRS",BFUT:"FUT",CDS:"CDS"},CTC={FI:"FI",IRS:"FI",BFUT:"FI",FX:"FX",FXSWP:"FX",EQ:"EQ",CM:"CM"};
 const fdur=m=>m>=60?(Math.floor(m/60)+"h"+(m%60?" "+(m%60)+"m":"")):m+"m";
 const ALLINS=[...new Set(CAT.flatMap(s=>s.ins))].sort();
