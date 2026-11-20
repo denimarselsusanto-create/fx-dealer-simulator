@@ -202,7 +202,7 @@ body.isfi #cmm{width:auto!important;display:block;margin-left:auto}
  <div id="lp1"><input id="nn" placeholder="Player name" maxlength="24" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><input id="np" class="pin-mask" placeholder="PIN (4-6 digits)" inputmode="numeric" maxlength="6" type="text" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><button id="nGo" class="pri" style="width:100%;padding:10px">Create profile</button></div>
  <div id="lp2" style="display:none"><input id="cn" placeholder="Player name" maxlength="24" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><input id="cp" class="pin-mask" placeholder="PIN" inputmode="numeric" maxlength="6" type="text" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><button id="cGo" style="width:100%;padding:10px">Sign in</button></div></div>
  <div id="prof" style="display:none"><div class="kv" style="align-items:center;margin-top:14px"><span>Signed in as <b id="pnm"></b></span><button id="pout">Sign out</button></div><div id="qc"></div>
-  <div class="pr2"><button id="hostB" class="pri" style="padding:12px">Create Server (Host)</button><button id="joinB" style="padding:12px">Join Server (Player)</button></div><div id="rm"></div><h2>Server tersedia <span class="mu" style="font-size:12px;font-weight:400">dibuat pemain lain · refresh tiap 5 dtk</span></h2><div id="rl" style="overflow-x:auto"></div><h2>Server tersedia <span class="mu" style="font-size:12px;font-weight:400">dibuat pemain lain, refresh tiap 5 dtk</span></h2><div id="srv"></div><h2>My games</h2><div id="glist"></div></div>
+  <div class="pr2"><button id="hostB" class="pri" style="padding:12px">Create Server (Host)</button><button id="joinB" style="padding:12px">Join Server (Player)</button></div><div id="rm"></div><h2>Server tersedia <span class="mu" style="font-size:12px;font-weight:400">dibuat pemain lain · refresh tiap 5 dtk</span></h2><div id="rl" style="overflow-x:auto"></div><h2>My games</h2><div id="glist"></div></div>
  <div id="lmsg"></div><h2>Global leaderboard <span class="mu" style="font-size:12px;font-weight:400">live, refreshes every 5 s</span></h2><div id="lbBox"></div></div></div>
 <div id="rep"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1157,7 +1157,6 @@ document.addEventListener("pointerdown",e=>{
   const sx=e.clientX,sy=e.clientY,sw=rect.width,sh=rect.height,scw=cRect.width;
   const mv=ev=>{
     const nh=Math.max(85,Math.round(sh+(ev.clientY-sy)));
-    const nw=Math.max(220,Math.round(sw+(ev.clientX-sx)));
     p.style.height=nh+"px";
     if(Math.abs(ev.clientX-sx)>4){
       const ncw=Math.max(220,Math.round(scw+(ev.clientX-sx)));
@@ -1246,7 +1245,7 @@ function enter(r,pin,pair,room){
   LS("mts_sess",{...SESS,rem:nowS()});LS("mts_prof",{name:r.name,pin});LS("mts_bk",null);saveNow()}
 async function profLogin(n,p,silent){
   if(!sb)return msg("Supabase is not configured.");if(!silent)msg("Signing in…");
-  let r0;try{r0=await Promise.race([sb.rpc("dealer_login",{p_name:n,p_pin:p}),new Promise((_,j)=>setTimeout(()=>j(new Error("Server tidak merespons (timeout 15 dtk). Pastikan supabase_setup_v2.sql sudah dijalankan sampai selesai.")),15000))])}catch(e){return msg(e.message)}const {data,error}=r0;
+  let r0;try{r0=await Promise.race([sb.rpc("dealer_login",{p_name:n,p_pin:p}),new Promise((_,j)=>setTimeout(()=>j(new Error("Server tidak merespons (timeout 15 dtk). Pastikan supabase_setup_v6.sql sudah dijalankan sampai selesai.")),15000))])}catch(e){return msg(e.message)}const {data,error}=r0;
   if(error||!data||!data.ok){if(silent)LS("mts_prof",null);return msg(error?error.message:ERR[data.error]||"Login failed.")}
   PROF={name:data.name,pin:p,games:data.games||[]};LS("mts_prof",{name:data.name,pin:p});msg("");showProf()}
 function showProf(){loadRooms();$("auth").style.display="none";$("prof").style.display="block";$("pnm").textContent=PROF.name;drawGames()}
@@ -1261,6 +1260,7 @@ $("prof").onclick=async e=>{const d=e.target.dataset;if(!sb)return;
   else if(d.d){const g=PROF.games.find(x=>x.id===d.d);if(!g||!confirm(`Delete Game #${g.game_no} (${g.pair}, ${g.status})? This cannot be undone and it will be removed from the leaderboard.`))return;
     const {data}=await sb.rpc("dealer_delete_game",{p_name:PROF.name,p_pin:PROF.pin,p_id:d.d});if(!data||!data.ok)return msg("Delete failed.");
     PROF.games=data.games;if((LS("mts_sess")||{}).id===d.d)LS("mts_sess",null);drawGames();loadLB($("lbBox"),1)}};
+
 /* ================= SERVER / ROOM (Host & Join) ================= */
 const RF=["v","code","name","pair","dur","int","ans","large","two","prop","ib","limit","mat","br","pl","pm","ref","news","seed","px","usd"];
 const LIM={dur:[10,120],int:[5,120],ans:[6,30],large:[0,100],two:[0,100],prop:[0,100],limit:[.1,5000],mat:[.05,2],pl:[5,300],pm:[1,5],ref:[1,30]};
@@ -1322,7 +1322,7 @@ const preview=r=>`<div class="rm2"><b>${r.name}</b> <span class="mu">· kode ${r
 function pickRoom(c){const x=RL.find(r=>r.code===c);if(!x)return null;const r=roomOf(x);if(rh(r)!==r.hash||!OK(r)){msg("Config server tidak valid (checksum gagal).");return null}return r}
 async function loadRooms(){if(!sb||!PROF)return;
   try{const [a,b]=await Promise.all([sb.from("dealer_rooms").select("code,name,host_name,config,cfg_hash,created_at").eq("closed",false).order("created_at",{ascending:false}).limit(50),sb.from("dealer_sessions").select("room_code,status,updated_at").not("room_code","is",null)]);
-    if(a.error){$("rl").innerHTML='<div class="dn">Tabel server belum ada. Jalankan supabase_setup_v2.sql di Supabase.</div>';return}
+    if(a.error){$("rl").innerHTML='<div class="dn">Tabel server belum ada. Jalankan supabase_setup_v6.sql di Supabase.</div>';return}
     RL=a.data||[];const cnt={};(b.data||[]).forEach(s=>{const k=s.room_code;if(!cnt[k])cnt[k]=[0,0];cnt[k][1]++;if(s.status==="active"&&Date.now()-Date.parse(s.updated_at)<30000)cnt[k][0]++});
     $("rl").innerHTML=RL.length?`<table><thead><tr><th>Server</th><th>Host</th><th>Skenario / Pair</th><th>Durasi</th><th>Limit</th><th>Pemain</th><th>Dibuat</th><th></th></tr></thead><tbody>${RL.map(r=>{const c=r.config||{},[lv,tot]=cnt[r.code]||[0,0];return `<tr><td><b>${r.name}</b> <span class="mu">(${r.code})</span></td><td>${r.host_name}</td><td>${c.scn&&c.scn!=="Custom"?c.scn+" · ":""}${c.pair||""}</td><td>${c.dur||60}m</td><td>${c.limit||""}M</td><td>${lv} live / ${tot}</td><td class="mu">${ago(r.created_at)}</td><td style="white-space:nowrap"><button data-jr="${r.code}" class="pri">Join</button>${r.host_name===PROF.name?` <button data-cr="${r.code}">Tutup</button>`:""}</td></tr>`}).join("")}</tbody></table>`:'<p class="mu">Belum ada server terbuka. Klik <b>Create Server (Host)</b> untuk membuat.</p>'}catch(e){}}
 async function joinRoom(r){if(!sb)return msg("Supabase is not configured.");msg("Joining server…");
@@ -1330,193 +1330,175 @@ async function joinRoom(r){if(!sb)return msg("Supabase is not configured.");msg(
   if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Gagal masuk server.");
   const rm=roomOf(data.room);if(rh(rm)!==rm.hash||!OK(rm))return msg("Config server dari database rusak.");
   msg("");enter({id:data.id,name:PROF.name,token:data.token,no:data.game_no},PROF.pin,SCB.findIndex(c=>c.pair===rm.pair),rm)}
-function showJoin(){$("rm").innerHTML=`<div class="rm2"><h2 style="margin-top:0">Join Server (Player)</h2><div class="mu">Klik <b>Join</b> pada daftar server di bawah, atau masukkan kode 6 huruf / token dari host.</div>
- <input id="j_in" placeholder="Kode 6 huruf (mis. 8K3P2A) atau token DLR1..." autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><div id="j_pv"></div></div>`;
-  const go=async()=>{const v=$("j_in").value.trim();if(!v){$("j_pv").innerHTML="";return}
-    if(v.length<=8){const r=pickRoom(v.toUpperCase());if(r){RMS=r;$("j_pv").innerHTML=preview(r);return}
-      if(sb){const {data}=await sb.from("dealer_rooms").select("code,name,host_name,config,cfg_hash").eq("code",v.toUpperCase()).eq("closed",false).maybeSingle();
-        if(data){const rm=roomOf(data);if(rh(rm)===rm.hash&&OK(rm)){RMS=rm;$("j_pv").innerHTML=preview(rm);return}}}
-      $("j_pv").innerHTML='<div class="dn" style="margin-top:6px">Server tidak ditemukan atau sudah ditutup.</div>';return}
-    const r=parseTok(v);if(!r){$("j_pv").innerHTML='<div class="dn" style="margin-top:6px">Token tidak valid.</div>';return}
-    RMS=r;$("j_pv").innerHTML=preview(r)};$("j_in").oninput=go}
+function showJoin(){RMS=null;$("rm").innerHTML=`<div class="rm2"><h2 style="margin-top:0">Join Server (Player)</h2><div class="mu">Atau langsung klik tombol <b>Join</b> di daftar "Server tersedia" di bawah. Kode/token di sini untuk mencari cepat.</div><input id="j_in" placeholder="Kode server (mis. 4F9K2A) atau token DLR1.…" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><div id="j_prev"></div></div>`;
+  $("j_in").oninput=()=>{const v=$("j_in").value.trim(),r=v.startsWith("DLR1.")?parseTok(v):pickRoom(v.toUpperCase());RMS=r;$("j_prev").innerHTML=r?preview(r):v?'<span class="mu">Server belum ketemu — lanjut ketik 6 karakter kode atau klik Join pada tabel di bawah.</span>':""}}
+$("hostB").onclick=()=>{msg("");showHost()};$("joinB").onclick=()=>{msg("");showJoin()};
 $("rl").onclick=async e=>{const d=e.target.dataset;
-  if(d.jr){const r=pickRoom(d.jr);if(!r)return;RMS=r;$("rm").innerHTML=preview(r);$("rm").scrollIntoView({behavior:"smooth"})}
-  else if(d.cr){if(!confirm("Tutup server ini? Pemain baru tidak bisa masuk lagi (game yang sudah berjalan tetap lanjut)."))return;
-    const {data}=await sb.rpc("dealer_close_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:d.cr});if(!data||!data.ok)return msg(ERR[data&&data.error]||"Gagal menutup server.");loadRooms()}};
-$("hostB").onclick=showHost;$("joinB").onclick=showJoin;
-$("rm").onclick=async e=>{const a=e.target.dataset.a;if(!a)return;msg("");
-  if(a==="mk"||a==="mkplay"){const r=mkRoom();if(!r)return;if(!sb)return msg("Supabase is not configured.");msg("Membuat server…");
-    const {data,error}=await sb.rpc("dealer_create_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:r.code,p_room_name:r.name,p_config:r,p_hash:r.hash});
-    if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Gagal membuat server.");msg("");loadRooms();
-    if(a==="mkplay")return joinRoom(r);
-    const tok=tokOf(r);$("h_out").innerHTML=`<div class="rm2" style="margin-top:10px"><div class="up"><b>Server dibuka!</b> Otomatis muncul di daftar "Server tersedia" semua pemain.</div><div class="kv"><span>Kode server</span><b style="font-size:18px">${r.code}</b></div><div class="kv"><span>Checksum</span><b>${r.hash}</b></div><button data-a="cp" class="pri" style="width:100%;margin-top:8px">Copy kode &amp; info server</button><button data-a="play" style="width:100%;margin-top:6px">Mulai main di server ini</button></div>`;RMS=r}
-  else if(a==="cp")navigator.clipboard.writeText(`Dealer Server: ${RMS.name} | Kode: ${RMS.code} | ${RMS.pair} ${RMS.dur}m | Checksum: ${RMS.hash} | Token: ${tokOf(RMS)}`).then(()=>msg("Info & token server disalin."));
-  else if(a==="play"&&RMS)joinRoom(RMS)};
-$("nGo").onclick=async()=>{const n=$("nn").value.trim(),p=$("np").value.trim();if(!sb)return msg("Supabase is not configured.");msg("Creating profile…");
-  let r0;try{r0=await Promise.race([sb.rpc("dealer_register",{p_name:n,p_pin:p}),new Promise((_,j)=>setTimeout(()=>j(new Error("Server tidak merespons (timeout 15 dtk).")),15000))])}catch(e){return msg(e.message)}const {data,error}=r0;
-  if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Could not create profile.");msg("");profLogin(data.name,p)};
-$("cGo").onclick=()=>profLogin($("cn").value.trim(),$("cp").value.trim());
+  if(d.jr){const r=pickRoom(d.jr);if(r){RMS=r;$("rm").innerHTML=preview(r);$("rm").scrollIntoView({behavior:"smooth",block:"nearest"})}}
+  else if(d.cr&&confirm(`Tutup server ${d.cr}? Pemain baru tidak bisa masuk lagi.`)){const {data}=await sb.rpc("dealer_close_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:d.cr});if(!data||!data.ok)return msg(ERR[data&&data.error]||"Gagal menutup server.");loadRooms()}};
+$("rm").onclick=async e=>{const d=e.target.dataset;
+  if(d.a==="mk"||d.a==="mkplay"){msg("");const r=mkRoom();if(!r)return;if(!sb)return msg("Supabase is not configured.");
+    const {code,name,hash,...cfg}=r,btn=e.target;btn.disabled=true;
+    const {data,error}=await sb.rpc("dealer_create_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:code,p_name_room:name,p_config:cfg,p_hash:hash});btn.disabled=false;
+    if(error||!data||!data.ok)return msg(error?error.message:ERR[data&&data.error]||"Gagal membuat server.");
+    RMS=r;loadRooms();if(d.a==="mkplay")return joinRoom(r);
+    $("h_out").innerHTML=`<div class="rm2"><b>Server terbuka: ${r.name}</b> <span class="mu">· kode <b>${r.code}</b></span><div class="hint" style="margin:6px 0">Sudah tampil di daftar "Server tersedia" semua pemain.</div><button data-a="play" class="pri" style="width:100%;padding:10px">Masuk &amp; mulai main di server ini</button></div>`}
+  else if(d.a==="play"&&RMS)joinRoom(RMS)};
+$("nGo").onclick=()=>profLogin($("nn").value,$("np").value);$("cGo").onclick=()=>profLogin($("cn").value,$("cp").value);
 $("pout").onclick=()=>{PROF=null;LS("mts_prof",null);$("prof").style.display="none";$("auth").style.display="block";msg("")};
-$("notyou").onclick=()=>{if(SESS&&S&&!S.fin){S.paused=true;saveNow()}location.reload()};
-
 /* --- global leaderboard --- */
 async function loadLB(box,lim){
   if(!sb)return;
-  try{const {data}=await sb.from("dealer_sessions").select("id,player_name,game_no,pair,status,pnl,pct,duration_sec,used_sec,updated_at,room_code,room_name").order("pnl",{ascending:false}).limit(200);
-    if(!data)return;LBD=data;if(box===lbBox)drawLB()}catch(e){}}
-function drawLB(){const box=$("lbBox"),Q=(LBD||[]).filter(r=>!LBF||r.status==="finished");
-  const m=Q.slice().sort((a,b)=>LBS==="pct"?(b.pct||0)-(a.pct||0):b.pnl-a.pnl),f=LBF?"checked":"";
-  box.innerHTML=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap"><span class="mu">Urut:</span><button data-s="pnl" class="${LBS==="pnl"?"pri":""}">Total P&amp;L (USD)</button><button data-s="pct" class="${LBS==="pct"?"pri":""}">% terhadap MAT</button><label style="margin-left:auto;cursor:pointer"><input type="checkbox" id="lbf" ${f}> Hanya yang selesai</label></div>`+(m.length?`<table><thead><tr><th>#</th><th>Player</th><th>Game</th><th>Server</th><th>Pair</th><th>Status</th><th>P&amp;L (USD)</th><th>% MAT</th><th>Time</th></tr></thead><tbody>${m.slice(0,25).map((r,i)=>{
-    const lv=r.status==="finished"?["Finished","mu"]:Date.now()-Date.parse(r.updated_at)<30000?["Live","up"]:["Paused","am"],me=SESS&&r.id===SESS.id,pc=r.pct;
-    return `<tr style="${me?"font-weight:700":""}"><td>${i+1}</td><td>${r.player_name}</td><td>#${r.game_no}</td><td>${r.room_name||"—"}</td><td>${r.pair}</td><td class="${lv[1]}">${lv[0]}</td><td class="${cu(r.pnl)}">${fU(r.pnl)}</td><td class="${pc==null?"mu":cu(pc)}">${pc==null?"—":(pc>=0?"+":"")+pc.toFixed(1)+"%"}</td><td>${mm(r.used_sec)} / ${mm(r.duration_sec)}</td></tr>`}).join("")}</tbody></table>`:'<p class="mu">Belum ada sesi.</p>');
-  box.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{LBS=b.dataset.s;drawLB()});$("lbf").onchange=e=>{LBF=e.target.checked;drawLB()}}
+  try{
+    const {data,error}=await sb.from("dealer_sessions")
+      .select("id,player_name,game_no,pair,status,pnl,pct,duration_sec,used_sec,updated_at,room_code,metrics")
+      .order("pnl",{ascending:false})
+      .limit(200);
+    if(error){
+      console.error("LB error:",error);
+      if(box)box.innerHTML=`<p class="dn">Gagal memuat leaderboard: ${esc(error.message)}</p>`;
+      return;
+    }
+    if(!data)return;
+    LBD=data;
+    if(box===lbBox)drawLB();
+  }catch(e){console.error(e)}
+}
+function drawLB(){
+  const box=$("lbBox"),Q=(LBD||[]).filter(r=>!LBF||r.status==="finished");
+  const idxOf=r=>r.metrics&&r.metrics.idx!=null?r.metrics.idx:(r.pct!=null?Math.max(1,Math.min(99,Math.round(50+r.pct/4))):null);
+  const ppmOf=r=>r.used_sec>0?(r.pnl/(r.used_sec/60)):0;
+  const m=Q.slice().sort((a,b)=>{
+    if(LBS==="idx")return (idxOf(b)||0)-(idxOf(a)||0);
+    if(LBS==="ppm")return ppmOf(b)-ppmOf(a);
+    return b.pnl-a.pnl;
+  }),f=LBF?"checked":"";
+  box.innerHTML=`<div style="display:flex;gap:0;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+    <div class="tabs" style="margin:0 12px 0 0">
+      <button data-s="pnl" class="${LBS==="pnl"?"on":""}">Total P&amp;L (USD)</button>
+      <button data-s="idx" class="${LBS==="idx"?"on":""}">Overall Index</button>
+      <button data-s="ppm" class="${LBS==="ppm"?"on":""}">Efficiency (P&amp;L / min)</button>
+    </div>
+    <label style="cursor:pointer"><input type="checkbox" id="lbf" ${f}> Finished only</label>
+  </div>`+(m.length?`<table><thead><tr><th>#</th><th>Player</th><th>Server</th><th>Pair</th><th>Status</th><th>Time</th><th>P&amp;L (USD)</th><th>Index</th><th>P&amp;L / min</th><th></th></tr></thead><tbody>${m.slice(0,50).map((r,i)=>{
+    const lv=r.status==="finished"?["✓ Finished","mu"]:Date.now()-Date.parse(r.updated_at)<30000?["● Live","up"]:["❚❚ Paused","am"];
+    const me=SESS&&r.id===SESS.id,ix=r.status==="finished"?idxOf(r):null,ppm=ppmOf(r);
+    return `<tr style="${me?"font-weight:700":""}">
+      <td>${i+1}</td>
+      <td>${esc(r.player_name)} <span class="mu">#${r.game_no}</span></td>
+      <td class="mu">${esc(r.room_code||"—")}</td>
+      <td>${esc(r.pair)}</td>
+      <td class="${lv[1]}">${lv[0]}</td>
+      <td>${mm(r.used_sec)}</td>
+      <td class="${cu(r.pnl)}">${fU(r.pnl)}</td>
+      <td class="mu">${ix!=null?ordn(ix):"—"}</td>
+      <td class="${cu(ppm)}">${fU(ppm)}</td>
+      <td>${r.status==="finished"?`<button data-vrep="${r.id}">View Report</button>`:""}</td>
+    </tr>`}).join("")}</tbody></table>`:'<p class="mu">Belum ada sesi.</p>');
+  box.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{LBS=b.dataset.s;drawLB()});
+  box.querySelectorAll("[data-vrep]").forEach(b=>b.onclick=()=>showReport(b.dataset.vrep));
+  $("lbf").onchange=e=>{LBF=e.target.checked;drawLB()};
+}
 setInterval(()=>{if($("lobby").style.display!=="none"){loadLB($("lbBox"),1);loadRooms()}},5000);
 
-/* --- metrics & post-session report --- */
+/* --- finish & metrics --- */
 function metrics(){
-  const sc=S.sc,TR=S.trades,pl=S.real+unreal(),cl=TR.filter(t=>t.r),wn=cl.filter(t=>t.r>0),ls=cl.filter(t=>t.r<0),
-    sum=(a,f)=>a.reduce((s,x)=>s+f(x),0),avg=a=>a.length?sum(a,x=>x)/a.length:0,sd=a=>{if(a.length<2)return 0;const m=avg(a);return Math.sqrt(sum(a,x=>(x-m)**2)/(a.length-1))};
-  const ts=S.ts&&S.ts.length>1?S.ts:[[0,0,0,0],[S.sim,Math.round(S.real),Math.round(unreal()),S.pos]];
-  const tot=ts.map(x=>x[1]+x[2]),rets=[];for(let i=1;i<tot.length;i++)rets.push(tot[i]-tot[i-1]);
-  const mu=avg(rets),sg=sd(rets),sh=sg>0?(mu/sg)*Math.sqrt(720):0;
-  let pk=0,dd=0,t0=0,dur=0;ts.forEach(([t,r,u])=>{const v=r+u;if(v>=pk){pk=v;t0=t;dur=0}else{dd=Math.max(dd,pk-v);dur=Math.max(dur,t-t0)}});
-  const wP=avg(wn.map(t=>t.r)),lP=Math.abs(avg(ls.map(t=>t.r))),pf=sum(ls,t=>-t.r)>0?sum(wn,t=>t.r)/sum(ls,t=>-t.r):wn.length?99:0;
-  const exp=cl.length?(wn.length/cl.length)*wP-(ls.length/cl.length)*lP:0;
-  const vol=sum(TR,t=>Math.abs(t.q)),nt=sum(TR,t=>t.q*t.c*1e6),tu=sc.limit>0?vol/(2*sc.limit):0;
-  const byCh={};["ladder","limit","rfq"].forEach(k=>{const a=TR.filter(t=>t.ch===k);byCh[k]={n:a.length,vol:sum(a,t=>Math.abs(t.q)),r:sum(a,t=>t.r)}});
-  const byCl={};CL.forEach(c=>{const a=TR.filter(t=>t.cl===c.n);byCl[c.n]={n:a.length,vol:sum(a,t=>Math.abs(t.q)),r:sum(a,t=>t.r),ty:c.ty}});
-  const qtr=TR.filter(t=>t.k==="q"&&t.m!=null),edg=avg(qtr.map(t=>Math.sign(-t.q)*(t.p-t.m)/sc.pip)),
-    ad5=avg(qtr.map(t=>{const p=S.hist.find(h=>h[0]>=t.t+5);return p?Math.sign(t.q)*(p[1]-t.p)/sc.pip:null}).filter(x=>x!=null)),
-    ad30=avg(qtr.map(t=>{const p=S.hist.find(h=>h[0]>=t.t+30);return p?Math.sign(t.q)*(p[1]-t.p)/sc.pip:null}).filter(x=>x!=null));
-  const rts=S.calls.filter(c=>c.qt!=null).map(c=>c.qt),fcalls=S.calls.filter(c=>c.st==="done"&&!c.mm);
-  const mktP=sc.px*sc.k*1e6/(sc.id==="idr"?sc.px*1000:USDIDR),mat=S.room?S.room.mat*sc.limit/100*mktP:0,pct=mat>0?pl/mat*100:0;
-  const hhi=vol>0?sum(Object.values(byCl),x=>(x.vol/vol)**2):0;
-  const inv=ts.map(x=>Math.abs(x[3]));
-  return{ver:1,pair:sc.pair,base:sc.base,title:sc.title,used:Math.round(S.sim),dur:SESSION,pl,real:S.real,unr:unreal(),mat,pct,
-    n:TR.length,nClose:cl.length,wins:wn.length,losses:ls.length,wr:cl.length?wn.length/cl.length*100:null,
-    avgWin:wP,avgLoss:lP,pf,exp,sh,dd,ddDur:Math.round(dur),
-    vol,notional:nt,turnover:tu,avgSz:TR.length?vol/TR.length:0,maxPos:S.maxPos,avgAbsPos:avg(inv),limPct:S.maxPos/sc.limit*100,breaches:S.nbr||0,
-    byCh,byCl,edge:qtr.length?edg:null,adv5:qtr.length?ad5:null,adv30:qtr.length?ad30:null,
-    callsTot:fcalls.length,sent:S.st.sent,hit:S.st.hit,pass:S.st.pass,expC:S.st.exp,resp:avg(rts),hhi,bank:S.bank,
-    ts,hist:S.hist.filter((_,i)=>i%Math.max(1,Math.floor(S.hist.length/240))===0),
-    trades:TR.slice(-80).map(t=>({t:Math.round(t.t),q:t.q,p:t.p,ch:t.ch,cl:t.cl||"",r:Math.round(t.r)})),
-    calls:S.calls.slice(0,50).map(c=>({at:Math.round(c.at),cl:c.cl.n,ty:c.two?"Two-way":c.mm?"MM":"Client px",sz:c.size,res:c.res,rt:c.qt!=null?+c.qt.toFixed(1):null}))};
+  const sc=S.sc,TR=S.trades,u=unreal(),tot=S.real+u,dur=Math.max(1,S.sim/60),vol=TR.reduce((a,t)=>a+Math.abs(t.q),0),
+    cl=TR.filter(t=>t.r),wins=cl.filter(t=>t.r>0),loss=cl.filter(t=>t.r<0),
+    gw=wins.reduce((a,t)=>a+t.r,0),gl=Math.abs(loss.reduce((a,t)=>a+t.r,0)),
+    by=(f,g)=>TR.filter(f).reduce((a,t)=>a+g(t),0),
+    edge=TR.filter(t=>t.m&&t.c).map(t=>{const raw=(t.q>0?t.m-t.p:t.p-t.m)*Math.abs(t.q)*t.c*1e6,v=sc.fi?-raw:raw;return{t,e:v,p:(t.q>0?t.m-t.p:t.p-t.m)/sc.pip*(sc.fi?-1:1)}}),
+    ef=f=>edge.filter(f).reduce((a,x)=>a+x.e,0),
+    rP=by(t=>t.ch==="rfq",t=>t.r),bP=by(t=>t.ch!=="rfq",t=>t.r),
+    ts=S.ts||[[0,0,0,0],[S.sim,Math.round(S.real),Math.round(u),+S.pos.toFixed(2)]],
+    rets=[];for(let i=1;i<ts.length;i++)rets.push(ts[i][1]+ts[i][2]-ts[i-1][1]-ts[i-1][2]);
+  const mu=rets.length?rets.reduce((a,b)=>a+b,0)/rets.length:0,sd=rets.length>1?Math.sqrt(rets.reduce((a,b)=>a+(b-mu)**2,0)/(rets.length-1)):0,
+    sh=sd?+(mu/sd*Math.sqrt(ts.length)).toFixed(2):0,
+    ps=ts.map(x=>Math.abs(x[3])),avgP=ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:0,
+    qts=S.calls.filter(c=>c.qt!==undefined).map(c=>c.qt),avgQ=qts.length?+(qts.reduce((a,b)=>a+b,0)/qts.length).toFixed(1):null,
+    pct=Math.round(50+Math.max(-45,Math.min(48,tot/15000+sh*6)));
+  const limU=sc.limit*sc.px*1e6*(sc.fi?bdur(byld(sc.px,sc.cpn,sc.yrs,sc.frq),sc.cpn,sc.yrs,sc.frq)*1e-4:cv()),matL=limU*(S.room?S.room.mat:.25),matN=ps.filter(p=>p/sc.limit*limU>matL).length,
+    qN=by(t=>t.k==="q",t=>Math.abs(t.q)),mmN=by(t=>t.k==="mm",t=>Math.abs(t.q)),brN=by(t=>t.ch==="ladder"&&t.k!=="mm",t=>Math.abs(t.q)),
+    qE=ef(x=>x.t.k==="q"),mmE=ef(x=>x.t.k==="mm"),brE=ef(x=>x.t.ch==="ladder"&&x.t.k!=="mm"),
+    cS=Math.round(tot/2500),cR=Math.round((qE+mmE+brE)/2500),idx=Math.max(1,Math.min(99,Math.round(50+(cS+cR)/4)));
+  return{pair:sc.pair,title:sc.title,base:sc.base,limit:sc.limit,dur:+dur.toFixed(1),tot:Math.round(tot),real:Math.round(S.real),unr:Math.round(u),
+    n:TR.length,vol:+vol.toFixed(1),avgSz:TR.length?+(vol/TR.length).toFixed(1):0,
+    clN:cl.length,wN:wins.length,lN:loss.length,wr:cl.length?Math.round(wins.length/cl.length*100):0,
+    avgW:wins.length?Math.round(gw/wins.length):0,avgL:loss.length?Math.round(gl/loss.length):0,pf:gl?+(gw/gl).toFixed(2):gw?99:0,
+    rN:TR.filter(t=>t.ch==="rfq").length,lTr:TR.filter(t=>t.ch==="ladder").length,oN:TR.filter(t=>t.ch==="limit").length,
+    rV:+by(t=>t.ch==="rfq",t=>Math.abs(t.q)).toFixed(1),bV:+by(t=>t.ch!=="rfq",t=>Math.abs(t.q)).toFixed(1),
+    rP:Math.round(rP),bP:Math.round(bP),rE:Math.round(ef(x=>x.t.ch==="rfq")),bE:Math.round(ef(x=>x.t.ch!=="rfq")),
+    totE:Math.round(ef(()=>true)),avgPip:edge.length?+(edge.reduce((a,x)=>a+x.p,0)/edge.length).toFixed(2):0,
+    sent:S.st.sent,hit:S.st.hit,pass:S.st.pass,exp:S.st.exp,hitR:S.st.sent?Math.round(S.st.hit/S.st.sent*100):0,avgQ,
+    maxP:+S.maxPos.toFixed(1),maxPct:Math.round(S.maxPos/sc.limit*100),avgPct:Math.round(avgP/sc.limit*100),endP:+S.pos.toFixed(1),
+    dd:Math.round(S.dd),sh,pnlM:Math.round(tot/dur),bank:S.bank,evN:sc.ev.filter(e=>e.fired).length,pct,
+    limU:Math.round(limU),matL:Math.round(matL),matPct:S.room?Math.round(S.room.mat*100):25,matN,
+    qN:+qN.toFixed(1),mmN:+mmN.toFixed(1),brN:+brN.toFixed(1),qE:Math.round(qE),mmE:Math.round(mmE),brE:Math.round(brE),cS,cR,idx,
+    cl:Object.entries(S.rel).map(([n,[a,f]])=>({n,a,f,e:Math.round(ef(x=>x.t.cl===n))})),
+    tr:TR.slice(-60).map(t=>[Math.round(t.t),t.q,t.p,t.ch,t.cl||"",Math.round(t.r)]),ts};
 }
-const TIP={pl:"Total profit or loss in USD at session end (realized + unrealized).",real:"Profit locked in from closed positions.",unr:"Mark-to-market P&L on inventory still open at the close.",wr:"Share of closing trades that made money.",pf:"Gross profit on winning trades divided by gross loss on losing trades. Above 1.5 is healthy.",exp:"Average USD P&L per closing trade: (win rate × avg win) − (loss rate × avg loss).",sh:"Annualized Sharpe-like ratio from 5-second P&L changes. Measures return per unit of P&L volatility.",dd:"Largest peak-to-trough drop in cumulative P&L during the session.",mat:"Maximum Acceptable Tolerance — your loss budget (set by the host as % of position limit). Loss beyond −100% MAT breaches risk tolerance.",edge:"Average spread captured on client RFQs at the moment of fill, in pips relative to mid.",adv5:"Average price move against your new position 5 seconds after filling a client RFQ (adverse selection / toxicity).",adv30:"Average price move against your position 30 seconds after filling a client RFQ.",hhi:"Client concentration (Herfindahl index, 0–1). Above 0.40 means heavy reliance on one client.",tu:"Total traded volume divided by 2 × position limit."};
-const tip=k=>`<span class="tip" title="${TIP[k]}">ⓘ</span>`;
-function narrative(M,rk,tot){
-  const p=[],v=M.pl>=0?"profit":"loss",pc=tot>1?Math.round((1-(rk-1)/(tot-1))*100):100;
-  p.push(`You finished the ${Math.round(M.dur/60)}-minute <b>${M.pair}</b> session with a net ${v} of <b>${fU(M.pl)} USD</b>`+(M.mat>0?` (${M.pct>=0?"+":""}${M.pct.toFixed(1)}% of your ${fU(M.mat)} MAT risk budget)`:``)+(tot>1?`, ranking <b>${ordn(rk)} of ${tot}</b> globally (top ${Math.max(1,100-pc)}%)`:``)+`. Of this, ${fU(M.real)} was realized and ${fU(M.unr)} remained unrealized on open inventory.`);
-  const mix=`${M.byCh.rfq.n} client RFQs, ${M.byCh.ladder.n} broker-screen trades, and ${M.byCh.limit.n} resting limit orders`;
-  p.push(`Across <b>${M.n} executions</b> (${fM(M.vol)} ${M.base} total volume, ${M.turnover.toFixed(1)}× limit turnover) — ${mix} — `+(M.wr!=null?`you closed ${M.nClose} round-trips with a <b>${M.wr.toFixed(0)}% win rate</b> and a profit factor of <b>${M.pf>=50?"∞":M.pf.toFixed(2)}</b>.`:`no positions were closed during the session.`));
-  if(M.edge!=null)p.push(`On client quotes you captured an average spread edge of <b>${M.edge.toFixed(2)} pips</b>, while 30-second post-trade adverse selection averaged <b>${M.adv30.toFixed(2)} pips</b> (${M.adv30>M.edge?"informed flow eroded your spread":"your spread more than covered toxic flow"}). Average quote response time was <b>${M.resp.toFixed(1)} s</b> (${M.hit}/${M.sent} quotes filled).`);
-  p.push(`Peak inventory reached <b>${fM(M.maxPos)} ${M.base}</b> (${M.limPct.toFixed(0)}% of limit) with ${M.breaches} limit breach${M.breaches===1?"":"es"}, a maximum drawdown of <b>${fU(-M.dd)}</b>, and an intraday Sharpe ratio of <b>${M.sh.toFixed(2)}</b>.`);
-  return p.map(x=>`<p class="nr">${x}</p>`).join("");
-}
-function verdict(M){
-  if(M.mat>0&&M.pl<-M.mat)return["RISK BREACH","dn","Loss exceeded your Maximum Acceptable Tolerance (−100% MAT)."];
-  if(M.pl>0&&M.sh>=1&&M.breaches===0)return["STRONG DESK PERFORMANCE","up","Profitable with disciplined risk and clean limit compliance."];
-  if(M.pl>0)return["PROFITABLE SESSION","up","Positive P&L; tighten inventory control and quote skew to lift Sharpe."];
-  if(M.n===0)return["NO ACTIVITY","am","No trades executed during this session."];
-  return["DRAWDOWN SESSION","dn","Finished negative; review adverse selection and hedging speed below."];
-}
-function diagnosis(M){
-  const out=[];
-  if(!M.n)return["You did not execute any trades. Quote incoming client RFQs and use the broker ladder to manage inventory."];
-  if(M.mat>0&&M.pl<-M.mat)out.push(`<b>MAT breach:</b> Net loss (${fU(M.pl)}) exceeded your ${fU(M.mat)} tolerance. Cut losing inventory earlier on the broker screen.`);
-  if(M.breaches>0)out.push(`<b>Limit discipline:</b> You breached the position limit ${M.breaches} time(s) and were locked out of trading. Hedge proactively once inventory passes 70% of limit.`);
-  if(M.limPct>85&&!M.breaches)out.push(`<b>Near-limit exposure:</b> Peak position reached ${M.limPct.toFixed(0)}% of limit — skew quotes earlier to attract offsetting client flow.`);
-  if(M.edge!=null&&M.adv30!=null&&M.adv30>M.edge)out.push(`<b>Adverse selection:</b> Post-trade drift (${M.adv30.toFixed(2)} pips at 30s) exceeded your quoted spread (${M.edge.toFixed(2)} pips). Widen quotes to hedge funds and on large tickets.`);
-  if(M.resp>10)out.push(`<b>Slow quoting:</b> Average response time was ${M.resp.toFixed(1)} s — faster quotes win more flow before clients time out (${M.expC} missed).`);
-  if(M.sent>3&&M.hit/M.sent<.3)out.push(`<b>Low hit ratio (${Math.round(M.hit/M.sent*100)}%):</b> Quotes were too wide relative to the market spread; tighten pricing on small corporate tickets.`);
-  if(M.byCh.ladder.r<0&&M.byCh.rfq.r>0)out.push(`<b>Hedging drag:</b> Client market-making earned ${fU(M.byCh.rfq.r)}, but broker hedging lost ${fU(M.byCh.ladder.r)}. Avoid crossing the spread aggressively in thin liquidity.`);
-  if(Math.abs(M.unr)>Math.abs(M.real)*.5&&M.unr<0)out.push(`<b>Unclosed risk:</b> ${fU(M.unr)} of unrealized loss was left open at the bell — flatten inventory into the close.`);
-  if(M.hhi>.45)out.push(`<b>Client concentration:</b> Herfindahl index ${M.hhi.toFixed(2)} shows heavy reliance on one counterparty.`);
-  if(!out.length)out.push("<b>Balanced execution:</b> Positive spread capture, controlled inventory, and clean limit compliance across the session.");
-  return out;
-}
-
 async function finishSession(){
-  if(finishing)return;finishing=1;S.fin=true;S.paused=true;
-  const M=metrics();let ok=false;
-  if(sb&&SESS&&!SESS.dead)ok=await saveNow(true,M);
-  if(SESS)LS("mts_sess",null);
-  if(sb&&SESS){await showReport(SESS.id,M,ok)}else renderReport({id:"local",player_name:nameU,game_no:1,pair:M.pair,pnl:M.pl,metrics:M,finished_at:new Date().toISOString()},M,ok)
-}
-$("finB").onclick=()=>{if(confirm("Finish and record this session now? The game will be locked and your report generated."))finishSession()};
+  if(finishing)return;finishing=1;S.fin=true;S.paused=true;$("run").textContent="Ended";render();
+  const M=metrics();if(SESS){const ok=await saveNow(true,M);if(ok){LS("mts_sess",null);showReport(SESS.id);return}else alert("Could not save session to server. Showing local report.")}
+  showReport(null,M)}
+$("finB").onclick=()=>{if(!S||S.fin)return;if(confirm("Finish the session now and record your result on the global leaderboard?"))finishSession()};
 
-async function showReport(id,fallbackM,savedOk){
-  CH.forEach(c=>c.destroy());CH=[];$("rep").style.display="block";$("rep").innerHTML='<div class="pg"><p>Loading report…</p></div>';
-  const {data}=sb?await sb.from("dealer_sessions").select("*").eq("id",id).single():{data:null};
-  const row=data||{id,player_name:nameU,game_no:1,pair:fallbackM.pair,pnl:fallbackM.pl,metrics:fallbackM,finished_at:new Date().toISOString()};
-  renderReport(row,row.metrics||fallbackM,data?true:savedOk);
-}
-function renderReport(row,M,savedOk){
-  CH.forEach(c=>c.destroy());CH=[];$("rep").style.display="block";
-  const all=(LBD||[]).slice().sort((a,b)=>b.pnl-a.pnl),rk=Math.max(1,all.findIndex(x=>x.id===row.id)+1),tot=Math.max(all.length,1);
-  const pct=tot>1?Math.round((1-(rk-1)/(tot-1))*100):100,[vd,vc,vs]=verdict(M);
-  const c=(l,v,k,cl)=>`<div class="c"><small>${l}${k?tip(k):""}</small><b class="${cl||""}">${v}</b></div>`;
-  const kv=(l,v,k)=>`<div class="kv"><span>${l}${k?tip(k):""}</span><b>${v}</b></div>`;
-  $("rep").innerHTML=`<div class="pg">
-   <div class="bar noprint"><button id="rback">← Back to lobby</button><span class="sp"></span>${savedOk===false?'<span style="color:#d23a3f">Offline: not saved to cloud</span>':'<span style="color:#0a8f5a">✓ Recorded to profile &amp; leaderboard</span>'}<button id="rprint" class="pri">Download PDF</button></div>
-   <div class="sec"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px"><div><small>DEALING SIMULATION · PERFORMANCE REPORT</small><h1>${row.player_name} — Game #${row.game_no}</h1><small>${M.title} (${M.pair}) · Played ${mm(M.used)} of ${mm(M.dur)} · ${new Date(row.finished_at||Date.now()).toLocaleString()}</small></div><div style="text-align:right"><span class="bd ${vc}">${vd}</span><small style="margin-top:4px">${vs}</small></div></div>
-   <h3 style="margin-top:14px">Executive Summary</h3>${narrative(M,rk,tot)}</div>
-   <div class="sec"><h2>Key Performance &amp; Risk Metrics</h2><div class="g">
-    ${c("Total P&L (USD)",fU(M.pl),"pl",cu(M.pl))}${c("Realized P&L",fU(M.real),"real",cu(M.real))}${c("Unrealized P&L",fU(M.unr),"unr",cu(M.unr))}
-    ${c("% of MAT",M.mat>0?(M.pct>=0?"+":"")+M.pct.toFixed(1)+"%":"—","mat",M.pct<-100?"dn":cu(M.pct))}${c("MAT Budget",M.mat>0?fU(M.mat):"—","mat")}
-    ${c("Global Rank",`#${rk} / ${tot} (top ${Math.max(1,100-pct)}%)`)}${c("Intraday Sharpe",M.sh.toFixed(2),"sh")}${c("Max Drawdown",fU(-M.dd),"dd","dn")}
-    ${c("Win Rate",M.wr!=null?M.wr.toFixed(1)+"% ("+M.wins+"/"+M.nClose+")":"—","wr")}${c("Profit Factor",M.pf>=50?"∞":M.pf.toFixed(2),"pf")}${c("Expectancy / Trade",fU(M.exp),"exp",cu(M.exp))}
-    ${c("Total Volume",fM(M.vol)+" "+M.base)}${c("Notional (USD)","$"+fM(M.notional/1e6))}${c("Limit Turnover",M.turnover.toFixed(2)+"×","tu")}
-    ${c("Peak Inventory",`${fM(M.maxPos)} (${M.limPct.toFixed(0)}%)`)}${c("Limit Breaches",M.breaches,"",M.breaches?"dn":"")}${c("Quote Edge (pips)",M.edge!=null?M.edge.toFixed(2):"—","edge")}
-    ${c("Adverse Sel. 30s",M.adv30!=null?M.adv30.toFixed(2)+" pips":"—","adv30")}${c("Avg Quote Time",M.resp?M.resp.toFixed(1)+" s":"—")}${c("Bank's View",M.bank+" pts")}
-   </div></div>
-   <div class="g2">
-    <div class="sec"><h2>Cumulative P&amp;L Curve (USD)</h2><div class="cw"><canvas id="ch1"></canvas></div></div>
-    <div class="sec"><h2>${M.pair} Price Path &amp; Fills</h2><div class="cw"><canvas id="ch2"></canvas></div></div>
-   </div>
-   <div class="g2">
-    <div class="sec"><h2>Execution &amp; Channel Breakdown</h2>
-     <table><thead><tr><th>Channel</th><th>Trades</th><th>Volume</th><th>Realized P&amp;L</th></tr></thead><tbody>
-      ${[["Client RFQs","rfq"],["Broker Ladder","ladder"],["Resting Limits","limit"]].map(([l,k])=>`<tr><td>${l}</td><td>${M.byCh[k].n}</td><td>${fM(M.byCh[k].vol)}</td><td class="${cu(M.byCh[k].r)}">${fU(M.byCh[k].r)}</td></tr>`).join("")}
-     </tbody></table>
-     <h3>RFQ &amp; Market-Making Quality</h3>
-     ${kv("Quotes sent / filled / passed",`${M.sent} / ${M.hit} / ${M.pass}`)}
-     ${kv("Expired / missed calls",M.expC)}
-     ${kv("Average spread capture",M.edge!=null?M.edge.toFixed(2)+" pips":"—","edge")}
-     ${kv("Adverse selection (5s / 30s)",M.adv5!=null?`${M.adv5.toFixed(2)} / ${M.adv30.toFixed(2)} pips`:"—","adv30")}
-     ${kv("Client concentration (HHI)",M.hhi.toFixed(2),"hhi")}
-    </div>
-    <div class="sec"><h2>Counterparty Breakdown</h2>
-     <table><thead><tr><th>Client</th><th>Type</th><th>Fills</th><th>Volume</th><th>Realized</th></tr></thead><tbody>
-      ${Object.entries(M.byCl).map(([n,v])=>`<tr><td>${n}</td><td>${v.ty}</td><td>${v.n}</td><td>${fM(v.vol)}</td><td class="${cu(v.r)}">${fU(v.r)}</td></tr>`).join("")}
-     </tbody></table>
-     <h3>Risk &amp; Inventory</h3>
-     ${kv("Average win / loss",`${fU(M.avgWin)} / ${fU(-M.avgLoss)}`)}
-     ${kv("Average / peak |position|",`${fM(M.avgAbsPos)} / ${fM(M.maxPos)} ${M.base}`)}
-     ${kv("Longest drawdown recovery",mm(M.ddDur))}
-    </div>
-   </div>
-   <div class="sec"><h2>Automated Desk Diagnosis &amp; Coaching</h2><ol>${diagnosis(M).map(x=>`<li>${x}</li>`).join("")}</ol></div>
-   <div class="sec"><h2>Execution Blotter (last ${M.trades.length} fills)</h2>
-    <table><thead><tr><th>Time</th><th>Side</th><th>Size</th><th>Price</th><th>Channel</th><th>Client</th><th>Realized</th></tr></thead><tbody>
-     ${M.trades.map(t=>`<tr><td>${TT(t.t)}</td><td class="${t.q>0?"up":"dn"}">${t.q>0?"BUY":"SELL"}</td><td>${fM(Math.abs(t.q))}</td><td>${t.p}</td><td>${t.ch}</td><td>${t.cl||"—"}</td><td class="${cu(t.r)}">${t.r?fU(t.r):"—"}</td></tr>`).join("")||`<tr><td colspan="7">No trades</td></tr>`}
-    </tbody></table></div>
-  </div>`;
-  $("rback").onclick=()=>location.reload();$("rprint").onclick=()=>window.print();
-  if(window.Chart){
-    CH.push(new Chart($("ch1"),{type:"line",data:{labels:M.ts.map(x=>TT(x[0])),datasets:[
-      {label:"Total P&L",data:M.ts.map(x=>x[1]+x[2]),borderColor:"#3b6fd4",backgroundColor:"rgba(59,111,212,.12)",fill:true,tension:.2,pointRadius:0},
-      {label:"Realized",data:M.ts.map(x=>x[1]),borderColor:"#0a8f5a",borderDash:[4,3],tension:.2,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}}}}));
-    const hs=M.hist||[];
-    CH.push(new Chart($("ch2"),{type:"line",data:{labels:hs.map(x=>TT(x[0])),datasets:[
-      {label:M.pair,data:hs.map(x=>x[1]),borderColor:"#475467",tension:.15,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}}}}));
-  }
+/* --- A4 printable report --- */
+async function showReport(id,localM){
+  CH.forEach(c=>c.destroy());CH=[];const rp=$("rep");rp.style.display="block";rp.innerHTML='<div class="pg">Loading report…</div>';
+  let row=null,M=localM,all=[];
+  if(sb&&id){const [a,b]=await Promise.all([sb.from("dealer_sessions").select("*").eq("id",id).single(),sb.from("dealer_sessions").select("id,player_name,game_no,pair,pnl,pct,duration_sec,used_sec,metrics").eq("status","finished").order("pnl",{ascending:false}).limit(100)]);
+    row=a.data;if(row)M=row.metrics;all=b.data||[]}
+  if(!M){rp.innerHTML='<div class="pg"><p>Report unavailable.</p><button onclick="$(\'rep\').style.display=\'none\'">Close</button></div>';return}
+  const rk=row&&all.length?all.findIndex(x=>x.id===row.id)+1:0,
+    gd=M.tot>60000&&M.dd<30000&&M.maxPct<=85?"A":M.tot>15000&&M.maxPct<=95?"B":M.tot>=0?"C":"D",
+    gs={A:"Strong risk-adjusted return with disciplined inventory control.",B:"Profitable session with solid execution.",C:"Modest result; review spread capture and inventory skew.",D:"Loss-making session; tighten risk limits and avoid chasing moves."}[gd],
+    nt=[];
+  if(M.rE>0&&M.bE<0)nt.push(`Client flow generated ${fU(M.rE)} in spread capture, while broker hedging cost ${fU(M.bE)} in spread/slippage — typical market-maker profile.`);
+  if(M.rE<0)nt.push(`Client quoting lost ${fU(M.rE)} vs mid at fill — widen quotes or skew more aggressively when inventory builds.`);
+  if(M.wr>=55)nt.push(`Closing win rate of ${M.wr}% (profit factor ${M.pf}) shows disciplined profit-taking.`);
+  else if(M.clN>=3)nt.push(`Closing win rate was ${M.wr}% (avg win ${fU(M.avgW)} vs avg loss ${fU(-M.avgL)}) — cut losing positions earlier.`);
+  if(M.maxPct>85)nt.push(`Peak inventory reached ${M.maxPct}% of the ${M.limit}M limit; hedge earlier in the broker screen.`);
+  else nt.push(`Inventory stayed well inside limits (peak ${M.maxPct}%, average ${M.avgPct}%).`);
+  if(M.avgQ!==null)nt.push(`Average RFQ response time was ${M.avgQ} s with a ${M.hitR}% fill rate (${M.hit}/${M.sent} quotes).`);
+  if(Math.abs(M.unr)>Math.abs(M.real)*.5&&M.endP)nt.push(`Session ended with an open position of ${M.endP}M ${M.base} (${fU(M.unr)} unrealized) — consider flattening before the close.`);
+  const cd=(l,v,s)=>`<div class="c"><small>${l}</small><b>${v}</b>${s?`<small>${s}</small>`:""}</div>`,kv=(a,b)=>`<div class="kv"><span>${a}</span><b>${b}</b></div>`;
+  const rkR=rk?`Rank #${rk} of ${all.length} (${ordn(Math.round((1-(rk-1)/all.length)*100))} percentile) · `:"";
+  rp.innerHTML=`<div class="pg"><div class="bar noprint"><button onclick="window.print()" class="pri">Print / Save PDF</button><button id="rbk">Back to lobby</button><span class="sp"></span><span class="mu2">A4 report</span></div>
+  <div class="sec"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><small>DEALING SIMULATION · PERFORMANCE REPORT</small><h1>${row?row.player_name+" — Game #"+row.game_no:nameU}</h1><div class="mu2">${M.title} · ${M.pair} · ${M.dur} min played · ${rkR}Performance grade ${gd}</div></div><div style="text-align:right"><small>TOTAL P&amp;L (USD)</small><b class="${cu(M.tot)}" style="font-size:28px">${fU(M.tot)}</b><small>Grade ${gd}: ${gs}</small></div></div>
+  <div class="g" style="margin-top:12px">${cd("Realized P&L",`<span class="${cu(M.real)}">${fU(M.real)}</span>`)}${cd("Unrealized P&L",`<span class="${cu(M.unr)}">${fU(M.unr)}</span>`,`End pos ${M.endP}M`)}${cd("P&L / minute",`<span class="${cu(M.pnlM)}">${fU(M.pnlM)}</span>`)}${cd("Sharpe (session)",M.sh,"Annualized-style intrarun")}${cd("Max drawdown",fU(-M.dd))}${cd("Closing win rate",M.clN?M.wr+"%":"—",`${M.wN}W / ${M.lN}L · PF ${M.pf}`)}</div></div>
+  ${(()=>{const s=M.cS||0,r=M.cR||0,t=s+r,ix=M.idx||50,bd=t>0?["Outperform","up"]:t<0?["Underperform","dn"]:["In line","am"],
+    tip=(a,b)=>`${a}<span class="tip" title="${b}">ⓘ</span>`,nt=(n,v)=>`<tr><td>${n}</td><td class="${cu(v)}"><b>${v>0?"+"+v:v}</b></td></tr>`,
+    rm=row&&row.room_code?`<div class="mu2" style="margin-bottom:6px">Server: <b>${row.room_code}</b></div>`:"";
+    return `<div class="sec"><h2>Scorecard <span class="mu2">Session appraisal</span></h2>${rm}<div class="g2">
+    <div><h3>Risk limit &amp; trading behaviour</h3>${kv("Limit utilization (max / avg)",`${M.maxPct}% / ${M.avgPct}%`)}${kv("Limit value (USD eq.)",fU(M.limU).slice(1))}${kv("Maximum acceptable tolerance",fU(M.matL||0).slice(1)+" ("+(M.matPct||25)+"% of limit)")}${kv("MAT breaches (5-s samples)",M.matN||0)}
+    <h3 style="margin-top:12px">Activity breakdown</h3><table><thead><tr><th>Channel</th><th>Notional</th><th>Capture vs mid</th></tr></thead><tbody><tr><td>Client quotes</td><td>${M.qN||0}M</td><td class="${cu(M.qE||0)}">${fU(M.qE||0)}</td></tr><tr><td>Interbank market makers</td><td>${M.mmN||0}M</td><td class="${cu(M.mmE||0)}">${fU(M.mmE||0)}</td></tr><tr><td>Direct broker / orders</td><td>${M.brN||0}M</td><td class="${cu(M.brE||0)}">${fU(M.brE||0)}</td></tr></tbody></table></div>
+    <div><h3>Score contributions &amp; overall rating</h3><table><thead><tr><th>Component</th><th>Contribution</th></tr></thead><tbody>${nt(tip("Session P&L","1 point per $2,500 of total session P&L (realized + unrealized)."),s)}${nt(tip("Execution & spread capture","1 point per $2,500 captured versus mid-market price at the moment of each fill."),r)}<tr><td><b>Total score</b></td><td class="${cu(t)}"><b>${t>0?"+"+t:t}</b></td></tr></tbody></table>
+    <div style="text-align:center;margin-top:14px"><div class="mu2" style="margin-bottom:6px">Overall session index: <b>${ordn(ix)} percentile</b></div><span class="bd ${bd[1]}">${bd[0]}</span></div></div></div>
+    <p class="nr" style="margin-top:12px">During the ${M.dur}-minute ${M.pair} session, you completed <b>${M.n}</b> transactions for a total volume of <b>${M.vol}M ${M.base}</b>, with a maximum inventory utilization of <b>${M.maxPct}%</b>${M.matN?` (breaching the ${M.matPct||25}% tolerance on ${M.matN} intervals)`:""}. Total P&amp;L ended at <b class="${cu(M.tot)}">${fU(M.tot)}</b> (${fU(M.real)} realized, ${fU(M.unr)} unrealized), and net execution vs mid contributed <b class="${cu(M.totE)}">${fU(M.totE)}</b>. Overall performance ranks at the <b>${ordn(ix)} percentile</b> (<b>${bd[0]}</b>).</p></div>`})()}
+  <div class="sec"><div class="g2"><div><h2>Cumulative P&amp;L curve</h2><div class="cw"><canvas id="c1"></canvas></div></div><div><h2>Inventory &amp; P&amp;L attribution</h2><div class="cw"><canvas id="c2"></canvas></div></div></div></div>
+  <div class="sec"><div class="g2"><div><h2>Execution &amp; Channel Attribution</h2>
+    ${kv("Total trades / volume",`${M.n} trades · ${M.vol}M ${M.base}`)}${kv("Average trade size",M.avgSz+"M "+M.base)}
+    ${kv("Client RFQ trades / volume",`${M.rN} · ${M.rV}M ${M.base}`)}${kv("Broker & limit trades / volume",`${M.lTr+M.oN} · ${M.bV}M ${M.base}`)}
+    ${kv("Realized P&L — Client vs Broker",`${fU(M.rP)} / ${fU(M.bP)}`)}${kv("Execution vs mid — Client vs Broker",`${fU(M.rE)} / ${fU(M.bE)}`)}${kv("Net execution capture vs mid",`${fU(M.totE)} (${M.avgPip} pips/trade)`)}
+  </div><div><h2>Client Quoting &amp; Risk Discipline</h2>
+    ${kv("Quotes sent / filled / hit rate",`${M.sent} / ${M.hit} (${M.hitR}%)`)}${kv("Passed / expired calls",`${M.pass} / ${M.exp}`)}${kv("Avg response time",M.avgQ!==null?M.avgQ+" s":"—")}
+    ${kv("Peak / average position",`${M.maxP}M (${M.maxPct}%) / ${M.avgPct}%`)}${kv("Avg winning / losing close",`${fU(M.avgW)} / ${fU(-M.avgL)}`)}${kv("Bank's view score",`${M.bank} pts (${M.evN} events)`)}
+  </div></div><h3 style="margin-top:14px">Performance Commentary</h3><ol>${nt.map(x=>`<li>${x}</li>`).join("")}</ol></div>
+  <div class="sec"><h2>Client Breakdown</h2><table><thead><tr><th>Client</th><th>Quoted</th><th>Filled</th><th>Hit rate</th><th>Capture vs mid</th></tr></thead><tbody>${M.cl.map(c=>`<tr><td>${c.n}</td><td>${c.a}</td><td>${c.f}</td><td>${c.a?Math.round(c.f/c.a*100):0}%</td><td class="${cu(c.e)}">${fU(c.e)}</td></tr>`).join("")||'<tr><td colspan="5">No client quotes.</td></tr>'}</tbody></table>
+  <h2 style="margin-top:16px">Trade Log <span class="mu2">(last ${M.tr.length})</span></h2><table><thead><tr><th>Time</th><th>Side</th><th>Size</th><th>Price</th><th>Channel</th><th>Counterparty</th><th>Realized P&amp;L</th></tr></thead><tbody>${M.tr.map(t=>`<tr><td>${TT(t[0])}</td><td class="${t[1]>0?"up":"dn"}">${t[1]>0?"Buy":"Sell"}</td><td>${Math.abs(t[1])}M</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]||"Broker"}</td><td class="${cu(t[5])}">${t[5]?fU(t[5]):"—"}</td></tr>`).join("")||'<tr><td colspan="7">No trades.</td></tr>'}</tbody></table></div>
+  ${all.length?`<div class="sec"><h2>Global Leaderboard <span class="mu2">(finished sessions)</span></h2><table><thead><tr><th>#</th><th>Player</th><th>Pair</th><th>Duration</th><th>P&amp;L (USD)</th><th>Percentile</th></tr></thead><tbody>${all.slice(0,25).map((r,i)=>`<tr style="${row&&r.id===row.id?"font-weight:700;background:#eef4ff":""}"><td>${i+1}</td><td>${r.player_name} #${r.game_no}</td><td>${r.pair}</td><td>${Math.round(r.used_sec/60)}m</td><td class="${cu(r.pnl)}">${fU(r.pnl)}</td><td>${ordn(r.pct)}</td></tr>`).join("")}</tbody></table></div>`:""}</div>`;
+  $("rbk").onclick=()=>location.reload();
+  if(window.Chart&&M.ts&&M.ts.length){const lb=M.ts.map(x=>TT(x[0]));
+    CH.push(new Chart($("c1"),{type:"line",data:{labels:lb,datasets:[{label:"Total P&L",data:M.ts.map(x=>x[1]+x[2]),borderColor:"#2563eb",tension:.2,pointRadius:0},{label:"Realized",data:M.ts.map(x=>x[1]),borderColor:"#0a8f5a",borderDash:[4,3],tension:.2,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}}}}));
+    CH.push(new Chart($("c2"),{type:"bar",data:{labels:["Client capture","Broker capture","Realized","Unrealized"],datasets:[{data:[M.rE,M.bE,M.real,M.unr],backgroundColor:[M.rE>=0?"#0a8f5a":"#d23a3f",M.bE>=0?"#0a8f5a":"#d23a3f","#2563eb","#7c3aed"]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}}))}
 }
 
 /* --- boot --- */
 if(!sb)$("cfgw").style.display="block";
-init(0);loadLB($("lbBox"),1);
-const sp=LS("mts_prof");if(sp&&sp.name&&sp.pin)profLogin(sp.name,sp.pin,true);
+loadLB($("lbBox"),1);
+const saved=LS("mts_prof");if(saved&&saved.name&&saved.pin){$("cn").value=saved.name;profLogin(saved.name,saved.pin,true)}
+init(0);
 </script>
 </body>
 </html>
