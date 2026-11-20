@@ -12,6 +12,8 @@ body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.4 Inter,system-ui
 button,input,select{font:inherit;color:var(--tx);background:var(--in);border:1px solid var(--ln);border-radius:5px;padding:5px 9px}
 button{cursor:pointer}button:hover:not(:disabled){border-color:var(--mu)}button:disabled{opacity:.45;cursor:default}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--bl);outline-offset:1px}
+/* Masking PIN tanpa type="password" agar browser tidak memicu Save Password */
+.pin-mask{-webkit-text-security:disc;text-security:disc}
 header{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:9px 14px 6px;position:relative}
 #scn{font-weight:650;font-size:15px;border:0;background:none;padding:0;max-width:230px}
 .nm{border:1px solid var(--ln);border-radius:5px;padding:4px 9px;color:var(--mu)}.nm b{color:var(--tx)}
@@ -23,13 +25,20 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:9px 14px 
 #tl i{position:absolute;bottom:0;width:2px;background:var(--tx);opacity:.8}
 #tl b{position:absolute;left:0;bottom:-1px;height:3px;background:var(--bl)}
 #banner{margin:8px 14px 0;padding:10px 14px;border-radius:6px;background:var(--bn);border:1px solid #6b5518;display:none}
-main{display:grid;grid-template-columns:310px minmax(0,1.1fr) minmax(0,1fr) 380px;gap:10px;padding:10px 14px 18px;align-items:stretch}
-@media(max-width:1100px){main{grid-template-columns:1fr 1fr}}
-@media(max-width:850px){main{grid-template-columns:1fr}}
-.col{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:90px}
-.pn{position:relative;background:var(--pn);border:1px solid #1e1e1e;border-radius:6px;padding:12px}
-.pn>.ph,.pn>.tabs{padding-right:22px}.tabs button{white-space:nowrap}
-.gr{position:absolute;top:7px;right:7px;width:18px;height:18px;line-height:18px;text-align:center;color:var(--mu);cursor:grab;border-radius:4px;user-select:none;touch-action:none;opacity:.55}.gr:hover{opacity:1;background:var(--in)}
+/* Main layout fleksibel dengan splitter antar kolom */
+main{display:flex;gap:0;padding:10px 14px 18px;align-items:stretch;overflow-x:auto;min-height:calc(100vh - 68px)}
+.col{display:flex;flex-direction:column;gap:10px;min-width:220px;min-height:90px;flex-shrink:0}
+.col-resizer{width:10px;cursor:col-resize;flex:none;position:relative;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:none}
+.col-resizer::after{content:"";width:2px;height:36px;border-radius:2px;background:var(--ln);transition:background .15s,height .15s}
+.col-resizer:hover::after,.col-resizer.act::after{background:var(--bl);height:64px}
+@media(max-width:950px){main{flex-wrap:wrap;gap:10px}.col{width:100%!important;flex:1 1 45%}.col-resizer{display:none}}
+@media(max-width:650px){.col{flex:1 1 100%}}
+.pn{position:relative;background:var(--pn);border:1px solid #1e1e1e;border-radius:6px;padding:12px;overflow:auto;min-height:85px;min-width:200px;display:flex;flex-direction:column}
+.pn>.ph,.pn>.tabs{padding-right:22px;flex-shrink:0}.tabs button{white-space:nowrap}
+.gr{position:absolute;top:7px;right:7px;width:18px;height:18px;line-height:18px;text-align:center;color:var(--mu);cursor:grab;border-radius:4px;user-select:none;touch-action:none;opacity:.55;z-index:5}.gr:hover{opacity:1;background:var(--in)}
+/* Resize handle pojok kanan bawah panel */
+.rsz{position:absolute;right:2px;bottom:2px;width:14px;height:14px;cursor:nwse-resize;user-select:none;touch-action:none;opacity:.45;z-index:5;background:linear-gradient(135deg,transparent 50%,var(--mu) 50%,var(--mu) 62%,transparent 62%,transparent 75%,var(--mu) 75%)}
+.rsz:hover{opacity:1}
 .pn.drag{position:fixed;z-index:60;pointer-events:none;opacity:.92;box-shadow:0 12px 36px #000c}.phd{border:1px dashed var(--mu);border-radius:6px;background:#ffffff0a}
 .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .ph h3{margin:0;font-size:15px;font-weight:600;border-left:3px solid var(--bl);padding-left:8px}.ph h3 span{font-weight:300;color:var(--mu)}
@@ -54,11 +63,12 @@ main{display:grid;grid-template-columns:310px minmax(0,1.1fr) minmax(0,1fr) 380p
 .lr div{display:flex;justify-content:space-between;padding:3px 6px;margin:1px;cursor:pointer}
 .lr .l{background:linear-gradient(to left,rgba(255,107,107,.28) var(--w),transparent 0)}.lr .r{background:linear-gradient(to right,rgba(53,212,154,.28) var(--w),transparent 0)}
 .lr small{font-size:11.5px;color:var(--mu);align-self:center}
-canvas{width:100%;height:290px;display:block}
+#p-chart canvas{width:100%;flex:1;min-height:220px;height:290px;display:block}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,td{padding:4px 6px;text-align:right;border-bottom:1px solid var(--ln)}th:first-child,td:first-child{text-align:left}th{color:var(--mu);font-weight:500}
 .lg{display:flex;gap:9px;padding:7px 0;border-top:1px solid var(--ln)}.lg:first-child{border:0}.ic{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#06141c;font-weight:700}
 .lg b{display:block}.lg small{color:var(--mu)}
-#nbody{max-height:640px;overflow:auto}
+#nbody{flex:1;min-height:120px;overflow:auto}
+#logB{flex:1;min-height:80px;overflow:auto}
 .nw{padding:8px 0;border-top:1px solid var(--ln)}.nw .t{color:var(--mu);font-size:12px;display:flex;justify-content:space-between}.nw h4{margin:3px 0;font-size:15px}.nw p{margin:4px 0;color:var(--mu)}
 .vt{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--ln);border-radius:5px;margin-top:6px}.vt button{border:0;border-radius:0;background:none;font-size:15px}.vt button.on{background:var(--bl);color:#fff}
 .ev{display:grid;grid-template-columns:62px 1fr 56px 56px;gap:6px;padding:6px 0;border-top:1px solid var(--ln)}.ev small{color:var(--mu)}
@@ -152,30 +162,33 @@ body.isfi #cmm{width:auto!important;display:block;margin-left:auto}
 <div id="tl"><b id="tlp"></b></div>
 <div id="banner"></div>
 <main>
-  <div class="col">
+  <div class="col" style="width:310px">
     <section class="pn" id="p-pos"><div class="ph"><h3 id="posT"></h3></div><div id="posB"></div></section>
     <section class="pn" id="p-watch"><div class="ph"><h3>Scenario watch</h3></div><div id="watchB"></div></section>
     <section class="pn fionly" id="p-risk"><div class="ph"><h3>Bond risk</h3></div><div id="riskB"></div></section>
     <section class="pn" id="p-brk"><div class="ph"><h3 id="brkT"></h3></div>
       <div class="l4"><span id="szb"></span><button class="s" id="mSell"></button><button class="b" id="mBuy"></button><span id="sza"></span></div>
       <div class="bb" id="best"></div><div class="lr" id="lad"></div>
-      <div class="ent"><span class="mu" id="ccy"></span><input id="size" type="number" min="1" step="1" value="20" aria-label="Size in millions"><span class="mu">M</span></div>
-      <div class="pr"><input id="pb" aria-label="Bid price"><button id="bBid">Bid</button><input id="pa" aria-label="Ask price"><button id="bAsk">Ask</button></div>
+      <div class="ent"><span class="mu" id="ccy"></span><input id="size" type="number" min="1" step="1" value="20" aria-label="Size in millions" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><span class="mu">M</span></div>
+      <div class="pr"><input id="pb" aria-label="Bid price" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><button id="bBid">Bid</button><input id="pa" aria-label="Ask price" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><button id="bAsk">Ask</button></div>
     </section>
   </div>
-  <div class="col"><section class="pn fionly" id="p-calc"><div class="ph"><h3 id="calcT"></h3></div><div id="calcB"></div></section><section class="pn" id="p-calls">
+  <div class="col-resizer" title="Drag to resize column"></div>
+  <div class="col" style="flex:1.1"><section class="pn fionly" id="p-calc"><div class="ph"><h3 id="calcT"></h3></div><div id="calcB"></div></section><section class="pn" id="p-calls">
     <div class="ph"><h3>Calls</h3><span class="mu" id="wait"></span></div>
     <div class="row" style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="tabs"><button id="tA" class="on"></button><button id="tR"></button></div><span class="mu">Auto-quote<span class="sw" id="auto" role="switch" aria-checked="false" tabindex="0"></span><span id="aq"></span></span></div>
     <div style="margin-bottom:8px"><button id="cmm" style="width:100%">☎ Call market makers</button></div>
     <div id="clist"></div>
   </section></div>
-  <div class="col">
+  <div class="col-resizer" title="Drag to resize column"></div>
+  <div class="col" style="flex:1">
     <section class="pn" id="p-chart"><div class="ph"><h3 id="chT"></h3><span class="mu" id="chR"></span></div>
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:4px"><span class="mu">Last</span><b class="big" id="last"></b><span id="dlt"></span><span class="sp"></span><select id="ctype" aria-label="Chart type"><option value="line">Line</option><option value="candle">Candles</option><option value="area">Area</option></select><button id="indB" class="ib" title="Indicators">∿</button><button id="drwB" class="ib" title="Drawing tools">✎</button></div><div class="pop" id="indM"></div><div id="dtb"></div><canvas id="cv"></canvas></section>
     <section class="pn" id="p-ord"><div class="ph"><h3>Orders</h3><span class="mu" id="onum"></span></div><div id="ordB"></div></section>
     <section class="pn" id="p-log"><div class="ph"><h3>Log</h3><span class="mu" id="lnum"></span></div><div id="logB" style="max-height:300px;overflow:auto"></div></section>
   </div>
-  <div class="col"><section class="pn" id="p-news">
+  <div class="col-resizer" title="Drag to resize column"></div>
+  <div class="col" style="width:380px"><section class="pn" id="p-news">
     <div class="tabs" style="margin-bottom:8px"><button id="nT" class="on">News</button><button id="cT">Calendar</button><button class="lnk" id="brief2" style="margin-left:auto">Morning brief</button></div>
     <div id="nbody"></div><div class="ph" style="margin-top:8px"><span class="mu">Online</span><b id="onl">10</b></div>
   </section></div>
@@ -186,8 +199,8 @@ body.isfi #cmm{width:auto!important;display:block;margin-left:auto}
  <h1>Market Dealer Simulator</h1><div class="mu">One profile, many dealing games on host-locked servers (same rules, same market for every player). Games are saved online: pause, close the tab, continue later (also from another device). Every game appears on the leaderboard while it is played.</div>
  <div id="cfgw" class="warn"><b>Supabase is not configured.</b> Fill in <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> at the top of the &lt;script&gt; block.</div>
  <div id="auth"><div class="tabs"><button id="lt1" class="on">New Profile</button><button id="lt2">Continue Profile</button></div>
- <div id="lp1"><input id="nn" placeholder="Player name" maxlength="24" autocomplete="off"><input id="np" placeholder="PIN (4-6 digits)" inputmode="numeric" maxlength="6" type="password" autocomplete="off"><button id="nGo" class="pri" style="width:100%;padding:10px">Create profile</button></div>
- <div id="lp2" style="display:none"><input id="cn" placeholder="Player name" maxlength="24" autocomplete="off"><input id="cp" placeholder="PIN" inputmode="numeric" maxlength="6" type="password" autocomplete="off"><button id="cGo" style="width:100%;padding:10px">Sign in</button></div></div>
+ <div id="lp1"><input id="nn" placeholder="Player name" maxlength="24" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><input id="np" class="pin-mask" placeholder="PIN (4-6 digits)" inputmode="numeric" maxlength="6" type="text" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><button id="nGo" class="pri" style="width:100%;padding:10px">Create profile</button></div>
+ <div id="lp2" style="display:none"><input id="cn" placeholder="Player name" maxlength="24" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><input id="cp" class="pin-mask" placeholder="PIN" inputmode="numeric" maxlength="6" type="text" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><button id="cGo" style="width:100%;padding:10px">Sign in</button></div></div>
  <div id="prof" style="display:none"><div class="kv" style="align-items:center;margin-top:14px"><span>Signed in as <b id="pnm"></b></span><button id="pout">Sign out</button></div><div id="qc"></div>
   <div class="pr2"><button id="hostB" class="pri" style="padding:12px">Create Server (Host)</button><button id="joinB" style="padding:12px">Join Server (Player)</button></div><div id="rm"></div><h2>Server tersedia <span class="mu" style="font-size:12px;font-weight:400">dibuat pemain lain · refresh tiap 5 dtk</span></h2><div id="rl" style="overflow-x:auto"></div><h2>Server tersedia <span class="mu" style="font-size:12px;font-weight:400">dibuat pemain lain, refresh tiap 5 dtk</span></h2><div id="srv"></div><h2>My games</h2><div id="glist"></div></div>
  <div id="lmsg"></div><h2>Global leaderboard <span class="mu" style="font-size:12px;font-weight:400">live, refreshes every 5 s</span></h2><div id="lbBox"></div></div></div>
@@ -227,11 +240,10 @@ SCB.push({id:"jpy",title:"Monetary Motion Mayhem",pair:"USD/JPY",base:"USD",qUSD
  nw:[{t:200,h:"Japan MoF official warns against excessive yen moves",b:"The vice finance minister said the government is watching FX closely and will respond to disorderly moves.",i:-35},{t:700,h:"US Treasury yields climb as Fed signals patience",b:"Higher US yields widened the rate gap with Japan.",i:30},{t:1200,h:"BoJ's Ueda: will keep adjusting policy if outlook is realised",b:"He said further rate rises remain possible if inflation and wages evolve as projected.",i:-25},{t:1800,h:"Risk-off in equities lifts the yen as a safe haven",b:"A global equity sell-off prompted a sharp unwind of carry trades.",i:-30},{t:2400,h:"Strong US retail sales lift the dollar",b:"Consumer spending beat forecasts, reducing expectations of near-term Fed cuts.",i:25}]});
 (()=>{const K={idr:{vol:.25,spr:6,step:5,es:.3,dv:.3,strong:7,weak:3},cny:{vol:.055,es:.5,dv:.2,strong:4,weak:1.5},eur:{vol:.33,es:.4,dv:.35,strong:11,weak:4},chf:{vol:.38,es:.4,dv:.35,strong:12,weak:4},jpy:{vol:.55,dv:.5,es:.6}};
 SCB.forEach(c=>{const k=K[c.id];if(!k)return;const {es,...r}=k;Object.assign(c,r);c.ev.forEach(e=>e.s*=es);c.nw.forEach(n=>n.i*=es)})})();
-/* ===== KATALOG SKENARIO + GENERATOR INSTRUMEN (v3) — hanya APPEND ke SCB agar indeks game lama tetap valid ===== */
+/* ===== KATALOG SKENARIO + GENERATOR INSTRUMEN (v3) ===== */
 const hz=(s,k)=>{let a=2166136261;const t=s+"#"+k;for(let i=0;i<t.length;i++){a^=t.charCodeAt(i);a=Math.imul(a,16777619)}return((a>>>0)%10007)/10007};
 const esc=t=>String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;");
 const CCY={USD:["USA",1],EUR:["EUR",1.08],GBP:["GBR",1.29],JPY:["JPN",.0065],CHF:["CHE",1.12],CAD:["CAN",.72],AUD:["AUS",.66],MXN:["MEX",.054],BRL:["BRA",.18],TRY:["TUR",.026],PLN:["POL",.25],NGN:["NGA",.00065],IDR:["IDN",.000061],CNY:["CHN",.14],HKD:["HKG",.128]};
-/* [bank, rate, cpi, aktivitas, fc, sd, desimal, unit] */
 const REG={USA:["FOMC Rate Decision",4,3,"Nonfarm Payrolls",175,40,0,"k"],EUR:["ECB Rate Decision",2,2.2,"German Manufacturing PMI",45,1.2,1,""],GBR:["BoE Rate Decision",4,3.4,"GDP (QoQ)",.2,.2,1,"%"],JPN:["BoJ Rate Decision",.5,2.8,"Tankan Large Manufacturers",12,3,0,""],CHE:["SNB Rate Decision",0,.3,"KOF Economic Barometer",101,2,1,""],CAN:["BoC Rate Decision",2.75,2.2,"Employment Change",25,20,0,"k"],AUS:["RBA Rate Decision",3.6,3,"Employment Change",20,15,0,"k"],MEX:["Banxico Rate Decision",7,3.8,"Industrial Production (YoY)",1,1.2,1,"%"],BRA:["Copom Rate Decision",14.5,5,"Retail Sales (MoM)",.3,.6,1,"%"],TUR:["CBRT Rate Decision",40,33,"Trade Balance",-7,1.5,1,"B"],POL:["NBP Rate Decision",4.5,3.2,"Retail Sales (YoY)",3,1.5,1,"%"],NGA:["CBN MPC Rate Decision",27,22,"Trade Balance",1.2,.6,1,"T"],IDN:["BI Rate Decision",5,2,"Trade Balance",2.4,.6,1,"B"],CHN:["PBoC Loan Prime Rate (1Y)",3,.3,"Caixin Manufacturing PMI",50.5,.6,1,""],HKG:["HKMA Base Rate",4.5,1.8,"Retail Sales (YoY)",2,2,1,"%"]};
 function genEv(c){const ev=[],v=c.vol,sym=c.pair;let n=0;
   if(c.sp==="stk")ev.push({n:"Quarterly Earnings (EPS)",c:sym,fc:1.2,pv:1.05,sd:.15,d:2,u:"",s:+(70*v/.15).toFixed(2)*(hz(sym,"e")<.5?-1:1)});
@@ -259,16 +271,13 @@ const BRX={FX:"is quoted all session by corporates, hedge funds and real-money c
 /* ===== v4: Fixed Income (quote dalam yield) ===== */
 const bpx=(y,c,n,f)=>{const r=y/100/f,N=Math.round(n*f);let s=0,d=1;for(let k=1;k<=N;k++){d/=1+r;s+=c/f*d}return s+100*d};
 const byld=(p,c,n,f)=>{let y=c>0?c:2;for(let i=0;i<10;i++){const a=bpx(y,c,n,f),sl=(bpx(y+.01,c,n,f)-a)/.01;if(!sl)break;y-=(a-p)/sl;if(y<-5)y=-5;if(y>60)y=60}return y};
-/* TTS: MD = (Pd - P1)/(Pd x dy), P1 = harga bila yield turun 1bp (dy = -0.01%) */
 const bdur=(y,c,n,f)=>{const p=bpx(y,c,n,f);return(bpx(y-.01,c,n,f)-p)/(p*1e-4)};
-/* TTS convexity: selisih kedua +/-1bp dibagi P0, skala 1m (contoh slide 37: 5Y 3% @2.80% => 0.26) */
 const bcvx=(y,c,n,f)=>{const p=bpx(y,c,n,f);return(bpx(y+.01,c,n,f)+bpx(y-.01,c,n,f)-2*p)/p*1e6};
 function bondInit(c,o){const ten=c.ten||10,m=/\s([\d.]+)\//.exec(c.pair),my=/\/(\d{4})/.exec(c.pair);c.fi=1;c.yrs=ten;c.frq=2;c.base="USD";
   const yg=1.8+ten*.04;c.cpn=m?+m[1]:c.pair==="US10Y"?1.625:Math.round(yg*8)/8;
   let y0=byld(c.px,c.cpn,ten,2);if(!(y0>.2&&y0<12)){c.px=+bpx(yg,c.cpn,ten,2).toFixed(3);y0=yg}
   c.iss=c.pair==="US10Y"?"15.02.2016":"15.02."+(my?my[1]-ten:2026-Math.floor(ten/2));
   const ppb=c.px*bdur(y0,c.cpn,ten,2)*1e-4;c.pip=.001;
-  /* vol harian 10Y (bp) ~ MOVE 80-100 => 5-6 bp; gilt/BTP tertinggi, JGB terendah. Sesi = jam aktif => dipadatkan x1.3 */
   const rg=/^DE/.test(c.pair)?4.5:/^IT/.test(c.pair)?6.3:/^UK/.test(c.pair)?6.5:/^CA/.test(c.pair)?5:/^JGB/.test(c.pair)?3.5:/^ID/.test(c.pair)?3.6:/^(MSFT|TENT|TNCT|BCGPP|SIEG)/.test(c.pair)?6:5.4,
     tf=ten<=3?1.05:ten<=7?1.05:ten<=10?1:.92;c.dvol=+(rg*tf).toFixed(2);c.kv=c.dvol/5.4;c.ppbp=ppb/.001;
   c.fvol=c.dvol/Math.sqrt(6.5)*2.5/60*c.ppbp;c.dv=+(c.ppbp*.07).toFixed(2);c.spr=Math.max(2,Math.round(.2*ppb/.001));o.step=1;o.dec=8;
@@ -284,7 +293,7 @@ const EQQ=(sym,px,h,o)=>{o=o||{};const ix=px>=1000,pip=px>=10000?1:px>=1000?.5:p
 const FIQ=(sym,px,ten,o)=>{o=o||{};finishI({pair:sym,base:sym,qUSD:false,k:1,qv:.01,px,pip:.01,spr:2,sizes:[5,10,20,25,50,100],limit:150,cls:o.cls||"FI",ten:ten,reg:o.reg||["USA"]},o.cls?.02+.008*ten:.1+.03*ten,o)};
 const CDSQ=(sym,px,qv)=>finishI({pair:sym,base:sym,qUSD:false,k:1,qv,px,pip:.1,spr:3,sizes:[5,10,20,25,50,100],limit:100,cls:"CDS",reg:["IDN"]},.6,{});
 const SWQ=(sym,px,reg)=>finishI({pair:sym,base:sym,qUSD:false,k:1,qv:.0001,px,pip:.1,spr:3,sizes:[10,25,50,75,100,150],limit:300,cls:"FXSWP",reg,fx:1},.8,{});
-const CMQ=(sym,px,h,o)=>{o=o||{};finishI({pair:sym,base:o.base||sym,qUSD:false,k:1,qv:o.qv||1,px,pip:o.pip||.01,spr:o.spr||3,sizes:o.sizes||[.2,.5,1,1.5,2,3],limit:o.limit||5,cls:"CM",reg:o.reg||["USA","CHN"],sp:o.sp||""},h,o)};
+const CMQ=(sym,px,h,o)=>{o=o||{};finishI({pair:sym,base:o.base||sym,qUSD:false,k:1,qv:o.qv||1,px,pip:o.pip||.01,spr:o.spr||3,sizes:o.sizes||[.2,.5,1,1.5,2,3],limit:5,cls:"CM",reg:o.reg||["USA","CHN"],sp:o.sp||""},h,o)};
 SCB.forEach(c=>{if(!c.cls)c.cls="FX"});
 /* --- FX --- */
 FXQ("USD/MXN",18.6,.10,{spr:8});FXQ("USD/BRL",5.5,.12,{spr:15});FXQ("AUD/USD",.66,.07);FXQ("EUR/USD",1.085,.06);FXQ("USD/CHF",.89,.06);FXQ("USD/CAD",1.38,.05);
@@ -314,7 +323,7 @@ CMQ("OIL",68,.3,{sp:"oil"});CMQ("OIL-CL.1",68,.3,{sp:"oil"});CMQ("OIL-CLM22",68,
 CMQ("GOLD-GC",3400,.25,{pip:.1,spr:4,qv:.001,base:"k-oz",sizes:[1,2,5,10,15,20],limit:50});CMQ("COPPER-HGC1",4.7,.35,{pip:.0005,spr:3,sizes:[.5,1,2,3,5,10],limit:20});
 CMQ("ETHK24",2.9,.4,{pip:.001,spr:5,qv:.18,reg:["BRA"],sizes:[5,10,20,30,50,75],limit:100});CMQ("ETHK",2.9,.4,{pip:.001,spr:5,qv:.18,reg:["BRA"],sizes:[5,10,20,30,50,75],limit:100});CMQ("LTC",9.5,.5,{spr:6,reg:["CHN","USA"],sizes:[.5,1,2,3,5,10],limit:20});
 CMQ("BTC-F",95000,.4,{pip:5,spr:8,qv:1e-5,base:"lot",sizes:[1,2,3,5,8,10],limit:20,reg:["USA"]});
-/* --- Katalog 213 skenario: Judul|durasi(mnt)|instrumen;instrumen|tingkat (e/m/h) --- */
+/* --- Katalog 213 skenario --- */
 const AL={"China Mobile":"0941.HK","USD10Y":"US10Y"};
 const CATTXT=`Order, Progress and Pinata|60|USD/MXN;USD/BRL|m
 Dodging a bullet|60|China Mobile;HSI|m
@@ -539,7 +548,7 @@ const MMN=["Atlas Securities","Meridian Bank","Pacific Markets","Sentosa FX"];
 const BOTN=["Alex M.","Priya S.","Jordan K.","Mei L.","Tomás R.","Sara B.","Kenji O.","Nadia F.","Liam W."];
 const DEFCFG={on:1,int:15,ans:30,large:20,one:25,two:25,prop:50,ib:1,br:1,pl:30,pm:2,ref:5};let CFG={...DEFCFG};try{Object.assign(CFG,JSON.parse(localStorage.getItem("mts_cfg")))}catch(e){}
 let S,ALL=[],cur=0,pi=0,fd=0,nameU=localStorage.getItem("mts_name")||"Trader";
-const yld=p=>byld(p,S.sc.cpn,S.sc.yrs,S.sc.frq),dur=()=>bdur(yld(S.mid),S.sc.cpn,S.sc.yrs,S.sc.frq),/* DV01 = N x (Pd/100) x MD x 0.01% ($ untuk turun 1bp; long = positif). PV01 = Pd x MD x 0.01% per 100 nominal */
+const yld=p=>byld(p,S.sc.cpn,S.sc.yrs,S.sc.frq),dur=()=>bdur(yld(S.mid),S.sc.cpn,S.sc.yrs,S.sc.frq),
 dv01=q=>q*1e6*(S.mid/100)*dur()*1e-4,pv01=()=>S.mid*dur()*1e-4;
 const fpv=v=>v.toFixed(S.sc.fi?4:S.sc.dec),fp=p=>fpv(S.sc.fi?yld(p):p),fu=p=>fp(p)+(S.sc.fi?"%":""),pips=x=>x/S.sc.pip,ip=v=>S.sc.fi?bpx(+(+v).toFixed(5),S.sc.cpn,S.sc.yrs,S.sc.frq):v;
 const fK=v=>{const a=Math.abs(v);return a>=1e6?(a/1e6).toFixed(2)+"M":a>=1e3?(a/1e3).toFixed(1)+"K":a.toFixed(0)},sK=v=>(v<0?"−":"")+fK(v);
@@ -556,7 +565,6 @@ function pp(t){const x=S;S=t;const v=t.real+unreal();S=x;return v}
 function tune(sc,rm){const f=SESSION/3600,nm={std:1,calm:.5,vol:1.6,off:0}[rm.news];sc.limit=rm.limit;sc.px=rm.px||sc.px;if(!nm){sc.ev=[];sc.nw=[]}
   sc.ev.forEach(e=>{e.t*=f;e.s*=nm});sc.nw.forEach(n=>{n.t*=f;n.i*=nm})}
 const cfgOf=r=>({on:1,int:r.int,ans:r.ans,large:r.large,one:0,two:r.two,prop:r.prop,ib:r.ib,br:r.br,pl:r.pl,pm:r.pm,ref:r.ref});
-/* ===== v6 (v5 + DV01/PV01 ala TTS, regime vol MOVE, berita per instrumen, katalog kartu) ===== */
 
 /* ===== v6: tipe skenario + panel "Scenario watch" ===== */
 const regOf=p=>/^US/.test(p)?"US":/^DE/.test(p)?"DE":/^IT/.test(p)?"IT":/^UK/.test(p)?"UK":/^JGB/.test(p)?"JP":/^ID/.test(p)?"ID":/^CA/.test(p)?"CA":"X",isCorp=p=>/^(MSFT|TENT|TNCT|BCGPP|SIEG)/.test(p);
@@ -594,7 +602,7 @@ function renderWatch(){const sc=S.sc,t=S.sty||"outright",P=SPF[t]||SPF.outright,
     h+=kv("DV01-neutral hedge on "+r0.pair,S.pos?((d>0?"sell ":"buy ")+(Math.abs(d)/((Pr/100)*1e-4*Mr)/1e6).toFixed(1)+"M"):"flat position")}
   $("watchB").innerHTML=h+`<ul class="hint" style="margin:8px 0 0;padding-left:16px">${P.w.map(x=>`<li>${x}</li>`).join("")}</ul>`}
 
-/* ===== v5: news & kalender acak per sesi (tidak bisa dihafal) ===== */
+/* ===== v5: news & kalender acak per sesi ===== */
 const sxSeed=()=>{try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]}catch(e){return(Math.random()*4294967296)>>>0}};
 const mkP=s=>{s>>>=0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}};
 const BK={USA:"Fed",EUR:"ECB",GBR:"Bank of England",JPN:"Bank of Japan",CHE:"SNB",CAN:"Bank of Canada",AUS:"RBA",MEX:"Banxico",BRA:"Brazil's central bank",TUR:"Turkey's central bank",POL:"Poland's central bank",NGA:"Nigeria's central bank",IDN:"Bank Indonesia",CHN:"PBoC",HKG:"HKMA"};
@@ -624,7 +632,6 @@ const GLH={riskoff:[["Global stocks slide as risk aversion spreads","Investors c
  oildn:[["Oil slumps on demand worries","Weak data from major importers hit crude prices."],["US crude stocks build more than expected","Inventories rose, signalling softer demand."]]};
 const NOISE=[["Positioning data show crowded trades in {S}","Dealers report one-sided client flow, raising reversal risk."],["Liquidity thins ahead of key data","Quotes in {S} widened as participants stepped back."],["Large corporate flow reported in {S}","Several desks noted sizeable orders late in the session."],["Month-end rebalancing flows expected","Real-money accounts may adjust holdings into the close."],["Options expiry looms for {S}","Large strikes could pin prices into the expiry."],["Analysts split on near-term outlook for {S}","Strategists disagree on whether the recent move will extend."]];
 const FIX=(s,r,sym)=>String(s).replace(/\{B\}/g,BK[r]||"Central bank").replace(/\{N\}/g,NA[r]||"Local").replace(/\{S\}/g,sym);
-const ccyOf=rg=>{for(const k in CCY)if(CCY[k][0]===rg)return k;return null};
 function themeOf(txt){const t=(txt||"").toLowerCase(),o={rg:{},tg:{}};
   [[/fed|fomc|treasur|us10|us2|\bust\b/,"USA"],[/ecb|europe|bund|euro|de10|de2|btp|it10/,"EUR"],[/boj|japan|yen|jgb|jpy/,"JPN"],[/china|tencent|pboc|cny|tent/,"CHN"],[/\buk\b|gilt|boe|sterling|gbp/,"GBR"],[/indonesia|idr|rupiah|\bbi\b/,"IDN"]].forEach(([r,k])=>{if(r.test(t))o.rg[k]=1});
   [[/yield|curve|steep|flat|peaks|valley/,"curve"],[/border|spread|btp|across/,"spread"],[/tariff|trade/,"trade"],[/oil|energy|crude/,"oil"],[/infl|cpi|price/,"inf"],[/job|payroll|nfp|employ/,"jobs"],[/risk|crisis|bear|fear/,"risk"]].forEach(([r,k])=>{if(r.test(t))o.tg[k]=1});return o}
@@ -648,7 +655,7 @@ function newsPool(sc,th){const C=[],sym=sc.pair,cls=sc.cls||"FX",R0=sc.reg||[],a
     (PN[sym]||[]).forEach(p=>add(p,p[2],1.8,"","pair"));
     [["Exporters sell into rallies in {S}","Corporate offers capped the upside.",-.6],["Real-money accounts buy {S} dips","Bids appeared on pullbacks.",.6],["Stop-loss orders triggered above the recent high in {S}","Short covering accelerated the move.",.9],["Stop-loss orders triggered below the recent low in {S}","Long liquidation accelerated the move.",-.9],["Fixing flows skew to {S} buying","Dealers flagged one-sided demand at the fix.",.5],["Large option barrier sits near spot in {S}","Hedging flows may pin the price.",0]].forEach(p=>add(p,p[2],.9,"","tech"));
   }
-  else if(cls==="FI"||cls==="IRS"||cls==="BFUT"){const sgn=cls==="BFUT"?1:-1;/* e=efek ke harga; yield naik => harga turun */
+  else if(cls==="FI"||cls==="IRS"||cls==="BFUT"){const sgn=cls==="BFUT"?1:-1;
     const yl=(p,y,w,rg,tg)=>add(p,sgn*y,w,rg,tg);
     R0.slice(0,2).forEach(rg=>{CB_H.forEach(p=>yl(p,1,1.1,rg,"cb"));CB_D.forEach(p=>yl(p,-1,1.1,rg,"cb"));D_UP.forEach(p=>yl(p,.8,.9,rg,"data"));D_DN.forEach(p=>yl(p,-.8,.9,rg,"data"));
       [["{N} government plans a larger bond sale","Bigger issuance raises supply worries and cheapens the curve.",1],["Strong demand at {N} 10-year auction","Bid-to-cover came in above average, easing supply concerns.",-1],["{N} 10-year auction tails","Weak demand forced the sale to price at a higher yield.",1],["{N} inflation expectations climb","Breakevens widened after sticky price data.",1],["{N} inflation expectations fall","Breakevens narrowed as price pressures eased.",-1],["Investors demand more term premium on deficit worries","Heavy issuance and fiscal concerns pushed long yields higher.",1]].forEach(p=>yl(p,p[2],1,rg,"supply"))});
@@ -673,7 +680,6 @@ function newsPool(sc,th){const C=[],sym=sc.pair,cls=sc.cls||"FX",R0=sc.reg||[],a
   else if(cls==="CDS"){[[sym+" sovereign outlook cut by rating agency","Investors demanded more protection against default.",1],["Strong debt auction narrows spreads","Demand for the sovereign's bonds improved.",-1],["IMF programme talks make progress","Officials signalled a deal is near.",-1],["Political turmoil widens sovereign spreads","Uncertainty over fiscal policy rose.",1]].forEach(p=>add(p,p[2],1.2,"","spec"));gl("riskoff",g=>g.cds);gl("riskon",g=>g.cds)}
   else if(cls==="CM"){[["Producers signal tighter supply","Output cuts and outages reduced available supply.",1],["Inventories build more than expected","Stocks rose, hinting at softer demand.",-1],["Dollar weakens, commodities firm","A softer dollar made commodities cheaper for buyers abroad.",.7],["China demand data disappoints","Weak imports hit the outlook for demand.",-1],["China stimulus lifts demand outlook","Investors expect higher consumption of raw materials.",.9],["Recession fears weigh on commodities","Investors trimmed exposure to cyclical assets.",-.8]].forEach(p=>add(p,p[2],1.1,"","spec"));gl("riskoff",g=>g.cm);gl("riskon",g=>g.cm);gl("oilup",g=>g.cm);gl("oildn",g=>g.cm)}
   else{(sc.nw||[]).forEach(n=>C.push({h:n.h,b:n.b,e:Math.sign(n.i||0),w:1,rg:"",tg:"",fx:1}))}
-  /* berita kurasi bawaan skenario ikut masuk kolam */
   if(cls!=="FXSWP")(sc.nw||[]).forEach(n=>{if(n.h&&!C.some(c=>c.h===n.h))C.push({h:n.h,b:n.b,e:Math.sign(n.i||0)||0,w:1.2,rg:"",tg:"",cur:Math.abs(n.i||0)})});
   NOISE.forEach(p=>C.push({h:FIX(p[0],"",sym),b:FIX(p[1],"",sym),e:0,w:.5,rg:"",tg:"noise"}));
   C.forEach(c=>{if(c.rg&&th.rg[c.rg])c.w*=3;if(c.tg&&th.tg[c.tg])c.w*=2.5});return C}
@@ -688,18 +694,15 @@ function bombNews(sc,R,nm){const pr={calm:.12,std:.35,vol:.6}[nm||"std"];if(!(R(
   else{h=up?`BREAKING: Shock announcement lifts ${sym}`:`BREAKING: Unexpected shock rocks ${sym}`;b="Participants rushed to reprice after the news crossed the wires.";e=up?1:-1;size=(90+R()*70)*sc.vol}
   sc.nw.push({t,h,b,i:+(e*size).toFixed(2),bomb:1});sc.nw.sort((a,b)=>a.t-b.t)}
 function randSession(sc,label,nm){const _t=(label||"");const sx=sxSeed(),R=mkP(sx),v=sc.vol,th=themeOf((label||"")+" "+sc.pair);if(/Across Borders|Visor|Horizon II|Orchestra|Peaks/i.test(_t)){th.tg.curve=1;th.tg.spread=1}if(/Triple A|Tencent/i.test(_t))th.tg.credit=1;sc.sx=sx;
-  /* regime volatilitas acak per sesi: MOVE 2026 berkisar ~62 (tenang) - ~115 (stres); 1 MOVE-pt ~ 1/sqrt(252) bp per hari */
   if(sc.fi){const q=R(),rg=q<.25?["Calm",.72]:q<.75?["Normal",1]:["Stressed",1.3];sc.vm=rg[1];sc.vr=rg[0];sc.vol=+(sc.vol*rg[1]).toFixed(3);sc.dvol=+(sc.dvol*rg[1]).toFixed(2);sc.move=Math.round(sc.dvol*15.87);sc.brief+=" Rate-vol regime today: "+rg[0]+" (~"+sc.dvol+" bp/day, MOVE-equivalent ~"+sc.move+")."}
-  /* kalender: urutan, waktu, forecast/previous diacak */
   const E=shuf(R,sc.ev.slice()),k=Math.min(E.length,Math.max(3,E.length-(R()<.35?1:0))),ev=E.slice(0,k),ts=rndTimes(R,k,120,3300,200);
   ev.forEach((e,i)=>{e.t=ts[i];if(!/decision|lpr|loan prime/i.test(e.n)){e.fc=+(e.fc+(R()-.5)*e.sd*.8).toFixed(e.d);e.pv=+(e.fc+(R()-.5)*e.sd*1.6).toFixed(e.d)}});sc.ev=ev.sort((a,b)=>a.t-b.t);
-  /* news: pilih 6-9 dari kolam berbobot, waktu & dampak acak */
   let pool=newsPool(sc,th),n=8+Math.floor(R()*5),pick=[],mag=sc.fi?sc.ppbp:v;
   n=Math.min(n,pool.length);for(let q=0;q<n;q++){const tot=pool.reduce((s,c)=>s+c.w,0);let r=R()*tot,ix=0;for(;ix<pool.length-1;ix++){r-=pool[ix].w;if(r<=0)break}pick.push(pool.splice(ix,1)[0])}
   const tt=rndTimes(R,n,90,3450,150);
   sc.nw=pick.map((c,i)=>{let size=sc.fi?(.5+R())*sc.kv*sc.ppbp*(sc.vm||1):(18+R()*22)*v;
     if(c.cur!=null&&c.cur>0)size=c.cur*(.7+R()*.6);
-    let sg=c.e===0?(R()<.5?-1:1):Math.sign(c.e);if(c.e===0)size*=.15;else if(R()<.15)size*=-.4; /* kadang pasar "menjual berita" */
+    let sg=c.e===0?(R()<.5?-1:1):Math.sign(c.e);if(c.e===0)size*=.15;else if(R()<.15)size*=-.4;
     return{t:tt[i],h:c.h,b:c.b,i:+(sg*Math.abs(size)*(c.e!==0&&c.cur==null?Math.min(1.2,Math.abs(c.e)):1)).toFixed(2)}}).sort((a,b)=>a.t-b.t);bombNews(sc,R,nm)}
 function mk(i,rm){
   const sc=JSON.parse(JSON.stringify(SCB[i]));const rng={m:rm?rm.seed|0:1,c:rm?(rm.seed^0x9e3779b9)|0:2,a:rm?(rm.seed^0x85ebca6b)|0:3};RNGS=rng;RK="m";randSession(sc,rm&&rm.scn,rm&&rm.news);if(rm)tune(sc,rm);
@@ -783,7 +786,6 @@ function sendQuote(c,b,a){
   c.qb=b;c.qa=a;c.pend=true;c.wait=c.rw||2;S.st.sent++;S.v2++;
 }
 function evalQuote(c){
-  /* Two-way RFQ: client direction is hidden; client hits our bid (sells) or lifts our offer (buys) only if price, spread width, size and speed are acceptable. */
   const sp=S.sc.spr,buyC=c.d>0,b=c.qb,a=c.qa,ib=bidP(),ia=askP(),w=pips(a-b),ex=buyC?pips(a-ia):pips(ib-b),
     wide=sp*c.tol*(1.5+.4*Math.log2(1+c.size/S.sc.sizes[0])),off=Math.abs(pips((a+b)/2-S.mid))>3*sp,
     el=c.qt||0,tf=el<=c.pat*.45?1:Math.max(.12,1-(el-c.pat*.45)/(c.pat*.55)*.88),R=S.rel[c.cl.n]=S.rel[c.cl.n]||[0,0],rf=.85+.3*(R[1]+1)/(R[0]+2);
@@ -811,7 +813,6 @@ function callTick(dt){
 function step(dt){
   S.sim+=dt;const zz=randn();let m=S.fv+S.sc.pip*S.sc.vol*(S.vz||1)*zz*Math.sqrt(dt);
   S.imp=S.imp.filter(i=>{m+=i.per*Math.min(dt,i.left)*S.sc.pip;i.left-=dt;return i.left>0});S.fv=m;stepWatch(dt,zz);
-  /* harga hanya diperbarui tiap ref x (0.7-1.3) detik (medium: ref=5 => min 3.5 dtk). Percepatan HANYA saat berita/data sangat besar (S.big) */
   if(S.sim>=S.nextRef){const df=S.fv-S.mid,big=S.sim<(S.big||0),cp=big?Math.abs(df)+1:Math.max(S.sc.pip*S.sc.vol*2.5,Math.abs(df)*.35);S.mid=qz(S.mid+Math.max(-cp,Math.min(cp,df)));S.nextRef=S.sim+(S.cfg.ref||5)*(big?.45:1)*rnd(.7,1.3)}
   S.disp+=(S.mid-S.disp)*(1-Math.exp(-dt/.35));
   for(let k=0;k<=10;k++){S.zB[k]+=(S.tB[k]-S.zB[k])*.12*dt+rnd(-15,15)*(S.sc.fi?.1:1)*dt;S.zA[k]+=(S.tA[k]-S.zA[k])*.12*dt+rnd(-15,15)*(S.sc.fi?.1:1)*dt;S.zB[k]=Math.max(S.sc.fi?6:20,S.zB[k]);S.zA[k]=Math.max(S.sc.fi?6:20,S.zA[k])}
@@ -873,14 +874,14 @@ function _renderCalls0(){
     const head=`<div class="ch"><b>${S.sc.pair}</b>${c.two?`<span>Two-way <b style="font-size:16px">${c.size}M</b> ${S.sc.base}</span>`:`<span class="${c.d<0?"dn":"up"}">They ${c.d<0?"sell":"buy"} <b style="font-size:16px;color:var(--tx)">${c.size}M</b> ${S.sc.base}</span>`}${c.st==="active"?`<span class="tm" data-tm="${c.id}"></span>`:""}</div><div class="cn">${c.cl.n}${S.sc.fi?"":`<small>${c.cl.ty}${c.one?" · asks your price":""}</small>`}</div>`;
     if(c.st==="done")return `<div class="call" data-id="${c.id}">${head}<div class="${c.rc}">${c.res} <span class="mu">· ${TT(c.at)}</span></div></div>`;
     if(c.pend)return `<div class="call" data-id="${c.id}">${head}<div class="mu">Quote sent ${fp(c.qb)} / ${fp(c.qa)}, waiting for client…</div></div>`;
-    if(c.one)return `<div class="call" data-id="${c.id}">${head}<div class="cr"><span class="mu">Your ${c.d>0?"offer":"bid"}</span><input data-cp value="${c.uv!=null?c.uv:fp(c.d>0?c.qa:c.qb)}" aria-label="Price">${S.sc.fi?"":"<button data-mkt1>Market</button>"}<button class="go" data-send1>Send ${S.sc.fi?"quote":"price"}</button><button data-pass>Pass</button></div></div>`;
-    return `<div class="call" data-id="${c.id}">${head}`+(c.two?`<div class="cr"><span class="mu">Bid</span><input data-cb value="${c.ub!=null?c.ub:fp(c.qb)}" aria-label="Bid"><span class="mu">Ask</span><input data-ca value="${c.ua!=null?c.ua:fp(c.qa)}" aria-label="Ask"></div><div class="cr" style="margin-top:6px"><button data-mkt>Market</button><button class="go" data-send>Send quote</button><button data-pass>Pass</button></div>`
+    if(c.one)return `<div class="call" data-id="${c.id}">${head}<div class="cr"><span class="mu">Your ${c.d>0?"offer":"bid"}</span><input data-cp value="${c.uv!=null?c.uv:fp(c.d>0?c.qa:c.qb)}" aria-label="Price" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore>${S.sc.fi?"":"<button data-mkt1>Market</button>"}<button class="go" data-send1>Send ${S.sc.fi?"quote":"price"}</button><button data-pass>Pass</button></div></div>`;
+    return `<div class="call" data-id="${c.id}">${head}`+(c.two?`<div class="cr"><span class="mu">Bid</span><input data-cb value="${c.ub!=null?c.ub:fp(c.qb)}" aria-label="Bid" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><span class="mu">Ask</span><input data-ca value="${c.ua!=null?c.ua:fp(c.qa)}" aria-label="Ask" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore></div><div class="cr" style="margin-top:6px"><button class="mkt" data-mkt>Market</button><button class="go" data-send>Send quote</button><button data-pass>Pass</button></div>`
       :`<div class="cr"><span class="mu">Client price</span><b style="font-size:17px">${fu(c.px)}</b><button class="go" data-acc>Accept</button><button data-dec>Decline</button></div>`)+`</div>`}).join("")||`<div class="mu" style="padding:16px 0;text-align:center">${S.tab==="active"?"No active calls."+(S.cfg.on?"":" Client calls are off in Settings."):"No recent calls."}</div>`;
 }
 function renderCalls(){
   $("tA").className=S.tab==="active"?"on":"";$("tR").className=S.tab==="recent"?"on":"";
   const cl=$("clist"),list=S.calls.filter(c=>S.tab==="active"?c.st==="active":c.st==="done"),sg=S.tab+"|"+list.map(c=>[c.id,c.st,c.pend?1:0,c.mm?1:0,c.res||""].join(":")).join("|");
-  if(cl._s===S&&cl._sg===sg)return; /* tidak ada perubahan struktur: JANGAN bangun ulang (angka yang sedang diketik tetap utuh) */
+  if(cl._s===S&&cl._sg===sg)return;
   cl._s=S;cl._sg=sg;
   const ae=document.activeElement,ci=ae&&ae.closest?ae.closest(".call"):null,fo=ci&&cl.contains(ae)?{id:ci.dataset.id,k:["cb","ca","cp"].find(k=>ae.hasAttribute("data-"+k)),a:ae.selectionStart,b:ae.selectionEnd}:null;
   _renderCalls0();
@@ -917,7 +918,7 @@ function renderFI(){const sc=S.sc,d=dv01(S.pos),u=unreal(),dd=S.pos?sK(-d):"0";
 function initCalc(){const sc=S.sc;$("calcT").innerHTML=`${sc.pair} <span>Calculator</span>`;
   const row=(a,b)=>`<div class="crw"><span class="mu">${a}</span><span>${b}</span></div>`;
   $("calcB").innerHTML=row("Face value",100)+row("Coupon",sc.cpn+'<small class="mu">%</small>')+row("Issue date",sc.iss)+row("Years",sc.yrs)+row("Frequency","Semiannual")+
-   `<div class="cbox"><span class="mu">Yield</span><input id="cy" type="number" step="any"><small class="mu">%</small></div><div class="cbox"><span class="mu">Price</span><input id="cpx" type="number" step="any"></div>`;
+   `<div class="cbox"><span class="mu">Yield</span><input id="cy" type="number" step="any" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><small class="mu">%</small></div><div class="cbox"><span class="mu">Price</span><input id="cpx" type="number" step="any" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore></div>`;
   const y=yld(S.mid);$("cy").value=y.toFixed(4);$("cpx").value=bpx(y,sc.cpn,sc.yrs,sc.frq).toFixed(4);
   $("cy").oninput=()=>{const v=+$("cy").value;if(v>-5)$("cpx").value=bpx(v,sc.cpn,sc.yrs,sc.frq).toFixed(4)};
   $("cpx").oninput=()=>{const p=+$("cpx").value;if(p>0)$("cy").value=byld(p,sc.cpn,sc.yrs,sc.frq).toFixed(4)}}
@@ -1045,8 +1046,8 @@ function showHelp(){
    <li><b>Broker</b>: SELL/BUY menyapu likuiditas di layar (harga bisa bergeser kalau size besar). Isi harga lalu tekan Bid/Ask untuk memasang order limit sendiri. Klik harga di ladder untuk mengisi kolom harga.</li>
    <li><b>Calls</b>: klien meminta kuotasi. <i>Two-way</i>: kamu isi Bid dan Ask, klien memilih sisi atau menolak (makin lebar dari pasar, makin kecil peluang terisi). <i>They sell/buy</i>: harga sudah ditentukan klien, pilih Accept atau Decline. Waktu terbatas. Hedge fund cenderung "informed" (harga sering bergerak searah mereka setelah transaksi), korporasi tidak. Auto-quote mengirim kuotasi otomatis dengan skew sesuai posisi.</li>
    <li><b>News & Calendar</b>: rilis data memicu pergerakan sesuai kejutan (actual vs forecast) dan spread melebar. Sebelum rilis besar ada voting <i>Your bank's view</i>; skor 2 poin kalau tepat, 1 poin kalau arahnya benar.</li>
-   <li><b>Kontrol sesi</b>: Resume/Pause dan kecepatan 1x–8x (kamu jadi trainer sendiri). Saat pause semua aksi ditolak seperti di aslinya.</li>
-   <li><b>Dashboard</b>: laporan performa dan leaderboard (bot). Muncul otomatis saat sesi selesai.</li></ul>`;$("dlg").showModal();
+   <li><b>Ukuran & Tata Letak Kotak</b>: tarik ikon <code>⠿</code> di pojok kanan atas panel untuk memindahkan posisi kotak. Tarik pojok kanan bawah panel (<code>↘</code>) untuk memanjangkan/memendekkan atau melebar-sempitkan panel, atau tarik garis pemisah antar kolom untuk mengubah lebar kolom.</li>
+   <li><b>Dashboard</b>: laporan performa dan leaderboard. Muncul otomatis saat sesi selesai.</li></ul>`;$("dlg").showModal();
 }
 
 /* ---------- kontrol ---------- */
@@ -1085,13 +1086,55 @@ $("layB").onclick=e=>{e.stopPropagation();const m=$("lay");m.style.display=m.sty
 $("who").textContent=nameU;$("notyou").onclick=()=>{const n=prompt("Trading as:",nameU);if(n&&n.trim()){nameU=n.trim().slice(0,30);localStorage.setItem("mts_name",nameU);$("who").textContent=nameU}};
 SCB.forEach((c,i)=>{const o=document.createElement("option");o.value=i;o.textContent=c.title+" · "+c.pair;$("scn").appendChild(o)});
 $("scn").onchange=()=>{if(S.sim>0&&!S.fin&&!confirm("Ganti valas akan memulai sesi baru. Lanjut?")){$("scn").value=pi;return}init(+$("scn").value);showBrief(true)};
-/* ---------- drag & drop panel ---------- */
-const LK="mts_layout2",COLS=()=>[...document.querySelectorAll("main .col")],ids=c=>[...c.querySelectorAll(":scope>.pn")].map(p=>p.id);
+
+/* ---------- drag, drop & resize panel + column splitter ---------- */
+const LK="mts_layout2",SZK="mts_panel_sizes",COLS=()=>[...document.querySelectorAll("main .col")],ids=c=>[...c.querySelectorAll(":scope>.pn")].map(p=>p.id);
 const DEF=COLS().map(ids);
+const DEF_COL_W=["310px","","","380px"];
+
+function saveSizes(){
+  const cols=COLS().map(c=>c.style.width||"");
+  const pans={};
+  document.querySelectorAll(".pn").forEach(p=>{
+    if(p.style.height||p.style.width)pans[p.id]={h:p.style.height||"",w:p.style.width||""};
+  });
+  lsS(SZK,{cols,pans});
+}
+function applySizes(sz){
+  if(!sz)return;
+  if(sz.cols)COLS().forEach((c,i)=>{
+    if(sz.cols[i]){c.style.width=sz.cols[i];c.style.flex="none"}
+    else{c.style.width=DEF_COL_W[i]||"";c.style.flex=DEF_COL_W[i]?"none":(i===1?"1.1":"1")}
+  });
+  document.querySelectorAll(".pn").forEach(p=>{
+    const s=sz.pans&&sz.pans[p.id];
+    p.style.height=s&&s.h?s.h:"";
+    p.style.width=s&&s.w?s.w:"";
+  });
+  if(typeof S!=="undefined"&&S)drawChart();
+}
+function resetSizes(){
+  lsS(SZK,null);
+  COLS().forEach((c,i)=>{
+    c.style.width=DEF_COL_W[i]||"";
+    c.style.flex=DEF_COL_W[i]?"none":(i===1?"1.1":"1");
+  });
+  document.querySelectorAll(".pn").forEach(p=>{p.style.height="";p.style.width=""});
+  if(typeof S!=="undefined"&&S)drawChart();
+}
+
 const saveLay=()=>{try{localStorage.setItem(document.body.classList.contains("isfi")?"mts_layout_fi":LK,JSON.stringify(COLS().map(ids)))}catch(e){}};
 const applyLay=L=>{const cs=COLS();if(!L||L.length!==cs.length)return;L.forEach((a,i)=>a.forEach(id=>{const p=$(id);if(p)cs[i].appendChild(p)}))};
-document.querySelectorAll(".pn").forEach(p=>{const g=document.createElement("span");g.className="gr";g.textContent="⠿";g.title="Drag to move panel";p.appendChild(g)});
+
+// Tambahkan handle geser (⠿) dan handle resize (↘) ke tiap panel
+document.querySelectorAll(".pn").forEach(p=>{
+  const g=document.createElement("span");g.className="gr";g.textContent="⠿";g.title="Drag to move panel";p.appendChild(g);
+  const r=document.createElement("span");r.className="rsz";r.title="Drag to resize panel (height & width)";p.appendChild(r);
+});
 try{applyLay(JSON.parse(localStorage.getItem(LK)))}catch(e){}
+applySizes(lsG(SZK));
+
+// Drag & drop panel antar/dalam kolom
 document.addEventListener("pointerdown",e=>{
   const g=e.target.closest(".gr");if(!g)return;e.preventDefault();
   const p=g.parentElement,r=p.getBoundingClientRect(),ph=document.createElement("div"),ox=e.clientX-r.left,oy=e.clientY-r.top;
@@ -1102,10 +1145,54 @@ document.addEventListener("pointerdown",e=>{
     let before=null;for(const k of col.children){if(k===p||k===ph)continue;const b=k.getBoundingClientRect();if(ev.clientY<b.top+b.height/2){before=k;break}}
     if(before)col.insertBefore(ph,before);else col.appendChild(ph)};
   const up=()=>{document.removeEventListener("pointermove",mv);document.removeEventListener("pointerup",up);
-    ph.replaceWith(p);p.classList.remove("drag");p.style.left=p.style.top=p.style.width="";saveLay()};
+    ph.replaceWith(p);p.classList.remove("drag");p.style.left=p.style.top="";
+    const saved=lsG(SZK);p.style.width=(saved&&saved.pans&&saved.pans[p.id]&&saved.pans[p.id].w)||"";
+    saveLay()};
   document.addEventListener("pointermove",mv);document.addEventListener("pointerup",up)});
-$("lay").insertAdjacentHTML("beforeend",'<button id="lrst" style="margin-top:6px">Reset layout</button>');
-$("lrst").onclick=()=>{applyLay(document.body.classList.contains("isfi")?FIA:DEF);saveLay()};
+
+// Resize panel (panjang/pendek & lebar/sempit)
+document.addEventListener("pointerdown",e=>{
+  const rsz=e.target.closest(".rsz");if(!rsz)return;e.preventDefault();
+  const p=rsz.parentElement,col=p.closest(".col"),rect=p.getBoundingClientRect(),cRect=col.getBoundingClientRect();
+  const sx=e.clientX,sy=e.clientY,sw=rect.width,sh=rect.height,scw=cRect.width;
+  const mv=ev=>{
+    const nh=Math.max(85,Math.round(sh+(ev.clientY-sy)));
+    const nw=Math.max(220,Math.round(sw+(ev.clientX-sx)));
+    p.style.height=nh+"px";
+    if(Math.abs(ev.clientX-sx)>4){
+      const ncw=Math.max(220,Math.round(scw+(ev.clientX-sx)));
+      col.style.width=ncw+"px";col.style.flex="none";
+    }
+    if(p.id==="p-chart"&&typeof S!=="undefined"&&S)drawChart();
+  };
+  const up=()=>{document.removeEventListener("pointermove",mv);document.removeEventListener("pointerup",up);saveSizes()};
+  document.addEventListener("pointermove",mv);document.addEventListener("pointerup",up);
+});
+
+// Resize kolom lewat splitter antar kolom
+document.querySelectorAll(".col-resizer").forEach(sep=>{
+  sep.addEventListener("pointerdown",e=>{
+    e.preventDefault();
+    const leftCol=sep.previousElementSibling,rightCol=sep.nextElementSibling;
+    if(!leftCol||!rightCol)return;
+    sep.classList.add("act");
+    const sx=e.clientX,lw=leftCol.getBoundingClientRect().width,rw=rightCol.getBoundingClientRect().width;
+    const mv=ev=>{
+      const dx=ev.clientX-sx;
+      const nlw=Math.max(220,Math.round(lw+dx));
+      const nrw=Math.max(220,Math.round(rw-dx));
+      leftCol.style.width=nlw+"px";leftCol.style.flex="none";
+      rightCol.style.width=nrw+"px";rightCol.style.flex="none";
+      if(typeof S!=="undefined"&&S)drawChart();
+    };
+    const up=()=>{sep.classList.remove("act");document.removeEventListener("pointermove",mv);document.removeEventListener("pointerup",up);saveSizes()};
+    document.addEventListener("pointermove",mv);document.addEventListener("pointerup",up);
+  });
+});
+
+$("lay").insertAdjacentHTML("beforeend",'<button id="lrst" style="margin-top:6px;width:100%">Reset layout &amp; sizes</button>');
+$("lrst").onclick=()=>{applyLay(document.body.classList.contains("isfi")?FIA:DEF);saveLay();resetSizes()};
+
 /* ================= ONLINE LAYER (Supabase) ================= */
 const sb=(window.supabase&&!/ISI_/.test(SUPABASE_URL+SUPABASE_ANON_KEY))?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}):null;
 let SESS=null,saving=0,KIND="",finishing=0,CH=[],LBD=[],LBS="pnl",LBF=false;
@@ -1113,7 +1200,7 @@ const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k))
 const snap=()=>({pi,usd:USDIDR,S:Object.assign({},S,{log:S.log.slice(0,150)})});
 const ordn=n=>{n=Math.round(n);const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
 
-/* --- hooks into the original engine (no original logic removed) --- */
+/* --- hooks into the original engine --- */
 const _fill=fill,_ev=evalQuote,_acc=accept,_sq=sendQuote,_step=step,_tr=toggleRun,_rn=render;
 fill=function(q,p,ch,cl){const m=S.mid,c=cv();_fill(q,p,ch,cl);const t=S.trades[S.trades.length-1];if(t){t.m=m;t.c=c;if(KIND)t.k=KIND}};
 evalQuote=function(c){KIND="q";try{_ev(c)}finally{KIND=""}};
@@ -1132,7 +1219,7 @@ async function saveNow(fin,M){
   try{const r=await sb.rpc("dealer_save",{p_id:SESS.id,p_token:SESS.token,p_remaining:nowS(),p_used:Math.round(S.sim),p_pnl:+(S.real+unreal()).toFixed(2),p_state:snap(),p_paused:!!S.paused,p_finish:!!fin,p_metrics:M||null,p_pct:M?M.pct:0,p_hash:S.room?liveH():null});
     ok=!!(r.data&&r.data.ok);if(r.data&&r.data.ok===false&&!fin)kick();else if(ok&&!fin)LS("mts_sess",{...SESS,rem:nowS()})}catch(e){}
   saving=0;return ok}
-async function ping(){ /* ringan: P&L + waktu + status ke leaderboard tiap 5 detik */
+async function ping(){
   if(!sb||!SESS||SESS.dead||S.fin||finishing)return;
   try{const r=await sb.rpc("dealer_ping",{p_id:SESS.id,p_token:SESS.token,p_pnl:+(S.real+unreal()).toFixed(2),p_used:Math.round(S.sim),p_remaining:nowS(),p_paused:!!S.paused,p_hash:S.room?liveH():null});if(r.data&&r.data.ok===false)kick()}catch(e){}}
 function kick(){if(SESS.dead)return;SESS.dead=true;ALL.forEach(t=>t.paused=true);$("run").textContent="▶ Resume";
@@ -1148,7 +1235,7 @@ let PROF=null;
 const msg=t=>{$("lmsg").textContent=t||""};
 $("lt1").onclick=()=>{$("lp1").style.display="";$("lp2").style.display="none";$("lt1").className="on";$("lt2").className=""};
 $("lt2").onclick=()=>{$("lp2").style.display="";$("lp1").style.display="none";$("lt2").className="on";$("lt1").className=""};
-const ERR={name_taken:"That name is already taken.",bad_name:"Name: 2-24 characters (letters, digits, space . _ -).",bad_pin:"PIN must be 4-6 digits.",invalid:"Wrong name or PIN.",finished:"This game is finished and locked. Use View Report.",not_found:"Game not found.",no_room:"Server tidak ditemukan atau sudah ditutup.",room_limit:"Maksimal 10 server aktif per profil.",code_taken:"Kode bentrok, coba lagi.",bad_config:"Konfigurasi tidak valid.",room_limit:"Maksimal 10 server per profil. Hapus server lama dulu.",bad_room:"Konfigurasi server tidak valid.",code_taken:"Kode bentrok, coba buat lagi.",limit:"Maximum 30 games per profile. Delete an old game first."};
+const ERR={name_taken:"That name is already taken.",bad_name:"Name: 2-24 characters (letters, digits, space . _ -).",bad_pin:"PIN must be 4-6 digits.",invalid:"Wrong name or PIN.",finished:"This game is finished and locked. Use View Report.",not_found:"Game not found.",no_room:"Server tidak ditemukan atau sudah ditutup.",room_limit:"Maksimal 10 server aktif per profil.",code_taken:"Kode bentrok, coba lagi.",bad_config:"Konfigurasi tidak valid.",bad_room:"Konfigurasi server tidak valid.",limit:"Maximum 30 games per profile. Delete an old game first."};
 const stl=g=>g.status==="finished"?["✓ Finished","mu"]:g.status==="active"&&Date.now()-Date.parse(g.updated_at)<30000?["● Live","up"]:["❚❚ Paused","am"];
 function enter(r,pin,pair,room){
   SESS={id:r.id,name:r.name,pin,token:r.token,no:r.no};nameU=r.name;$("who").textContent=nameU+" · Game #"+r.no;
@@ -1188,7 +1275,7 @@ const pubRoom=r=>{const L=LS("dlr_rooms")||{};L[r.code]={tok:tokOf(r),t:Date.now
 const liveH=()=>rh({...S.room,pair:S.sc.pair,dur:SESSION/60,int:S.cfg.int,ans:S.cfg.ans,large:S.cfg.large,two:S.cfg.two,prop:S.cfg.prop,ib:S.cfg.ib,limit:S.sc.limit,br:S.cfg.br,pl:S.cfg.pl,pm:S.cfg.pm,ref:S.cfg.ref});
 function tamper(){if(SESS.dead)return;SESS.dead=true;ALL.forEach(t=>t.paused=true);$("dc").innerHTML='<h2 style="margin:0 0 8px">Game dihentikan</h2><p>Pengaturan di browser ini tidak cocok dengan aturan server (checksum gagal). Game dikunci demi keadilan kompetisi.</p><button id="kr">Kembali ke lobby</button>';$("dx").style.display="none";$("dlg").showModal();$("kr").onclick=()=>location.reload()}
 setInterval(()=>{if(S&&S.room&&SESS&&!SESS.dead&&!S.fin&&liveH()!==S.room.hash)tamper()},2000);
-const num=(k,l,v)=>`<label class="fl">${l}<input id="h_${k}" type="number" step="any" value="${v}" min="${LIM[k][0]}" max="${LIM[k][1]}"></label>`;
+const num=(k,l,v)=>`<label class="fl">${l}<input id="h_${k}" type="number" step="any" value="${v}" min="${LIM[k][0]}" max="${LIM[k][1]}" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore></label>`;
 const sel2=(k,l,o)=>`<label class="fl">${l}<select id="h_${k}">${o.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")}</select></label>`;
 const CLSN={FX:"FX",EQ:"Equity/Index",FI:"Bond",CM:"Commodity",FXSWP:"FX Swap",IRS:"IRS",BFUT:"Bond Futures",CDS:"CDS"};
 const DP={easy:{int:20,ans:25,large:10,two:80,br:1,pl:20,pm:2,ib:1,news:"calm",lf:1.5,ref:7},medium:{int:15,ans:15,large:20,two:70,br:1,pl:30,pm:2,ib:1,news:"std",lf:1,ref:5},hard:{int:8,ans:9,large:30,two:55,br:1,pl:45,pm:3,ib:1,news:"vol",lf:.7,ref:3.5}};
@@ -1210,12 +1297,12 @@ function showHost(){const p=SCB[0];PICK=null;PLEG=null;
   const grp={};SCB.forEach((c,i)=>(grp[c.cls]=grp[c.cls]||[]).push([i,c.pair]));
   const opts=Object.entries(grp).map(([k,v])=>`<optgroup label="${CLSN[k]||k}">${v.map(([i,n])=>`<option value="${i}">${esc(n)}</option>`).join("")}</optgroup>`).join("");
   $("rm").innerHTML=`<div class="rm2"><h2 style="margin-top:0">Create Server (Host)</h2><div class="mu">Pilih skenario dari katalog → aturan terisi otomatis sesuai tingkat kesulitan & durasinya. Boleh diubah (jadi "Custom") atau dibuat dari nol. Aturan dikunci untuk semua pemain: pasar, berita, dan urutan call RFQ identik (seed sama).</div>
- <h3 style="margin:14px 0 0">Scenarios</h3><div class="scf"><input id="c_q" placeholder="Search scenario or instrument…" autocomplete="off">${[1,2,3].map(n=>`<select id="c_a${n}"><option value="">Asset ${n}</option>${ALLINS.map(x=>`<option>${esc(x)}</option>`).join("")}</select>`).join("")}<select id="c_d"><option value="">All difficulties</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select><span class="hint" id="c_n"></span><button class="lnk" id="c_clr">Clear filters</button></div><div id="c_list" class="scg"></div><div id="c_pick" class="hint" style="margin-bottom:8px"></div>
- <label class="fl">Nama server<input id="h_name" maxlength="30" value="Server ${PROF.name}"></label><label class="fl">Instrumen<select id="h_pair">${opts}</select></label>
+ <h3 style="margin:14px 0 0">Scenarios</h3><div class="scf"><input id="c_q" placeholder="Search scenario or instrument…" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore>${[1,2,3].map(n=>`<select id="c_a${n}"><option value="">Asset ${n}</option>${ALLINS.map(x=>`<option>${esc(x)}</option>`).join("")}</select>`).join("")}<select id="c_d"><option value="">All difficulties</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select><span class="hint" id="c_n"></span><button class="lnk" id="c_clr">Clear filters</button></div><div id="c_list" class="scg"></div><div id="c_pick" class="hint" style="margin-bottom:8px"></div>
+ <label class="fl">Nama server<input id="h_name" maxlength="30" value="Server ${PROF.name}" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore></label><label class="fl">Instrumen<select id="h_pair">${opts}</select></label>
  ${num("dur","Durasi sesi (menit)",60)}${num("int","Frekuensi call RFQ: rata-rata tiap … detik",15)}${num("ans","Kesabaran klien (detik)",12)}${num("large","Klien tiket besar (%)",20)}${num("two","Porsi RFQ two-way (%) — sisanya klien mengajukan harga",70)}
  ${num("limit","Batas limit posisi (juta)",p.limit)}${num("mat","MAT (% dari nilai limit)",.25)}${sel2("br","Jeda trading saat breach limit",[[1,"Aktif"],[0,"Nonaktif"]])}${num("pl","Lama jeda breach pertama (dtk)",30)}${num("pm","Pengali jeda breach berulang",2)}${num("ref","Interval refresh kurs (dtk)",5)}
  ${sel2("ib","Call interbank (market maker)",[[1,"Aktif"],[0,"Nonaktif"]])}${sel2("news","Skenario berita ekonomi",Object.entries(NEWS))}
- <label class="fl">Harga awal (kosong = bawaan instrumen; harga bawaan hanya perkiraan)<input id="h_px" type="number" step="any" placeholder="${p.px}"></label>
+ <label class="fl">Harga awal (kosong = bawaan instrumen; harga bawaan hanya perkiraan)<input id="h_px" type="number" step="any" placeholder="${p.px}" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore></label>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button data-a="mk" class="pri" style="padding:10px">Buat server</button><button data-a="mkplay" class="pri" style="padding:10px">Buat &amp; langsung main (practice)</button></div><div id="h_out"></div></div>`;
   drawCat();drawPick();
   ["c_q","c_a1","c_a2","c_a3","c_d"].forEach(id=>{$(id).oninput=drawCat});$("c_clr").onclick=()=>{["c_q","c_a1","c_a2","c_a3","c_d"].forEach(id=>$(id).value="");drawCat()};
@@ -1236,147 +1323,200 @@ function pickRoom(c){const x=RL.find(r=>r.code===c);if(!x)return null;const r=ro
 async function loadRooms(){if(!sb||!PROF)return;
   try{const [a,b]=await Promise.all([sb.from("dealer_rooms").select("code,name,host_name,config,cfg_hash,created_at").eq("closed",false).order("created_at",{ascending:false}).limit(50),sb.from("dealer_sessions").select("room_code,status,updated_at").not("room_code","is",null)]);
     if(a.error){$("rl").innerHTML='<div class="dn">Tabel server belum ada. Jalankan supabase_setup_v2.sql di Supabase.</div>';return}
-    RL=a.data||[];const cnt={};(b.data||[]).forEach(g=>{const o=cnt[g.room_code]=cnt[g.room_code]||[0,0];o[0]++;if(g.status==="active"&&Date.now()-Date.parse(g.updated_at)<30000)o[1]++});
-    $("rl").innerHTML=RL.length?`<table><thead><tr><th>Server</th><th>Host</th><th>Pair</th><th>Durasi</th><th>Pemain</th><th>Dibuat</th><th></th></tr></thead><tbody>${RL.map(x=>{const r=roomOf(x),c=cnt[x.code]||[0,0],me=x.host_name===PROF.name;return `<tr><td>${x.name}<br><span class="mu">${x.code}${x.config&&x.config.scn?" · "+esc(x.config.scn):""}</span></td><td>${x.host_name}${me?" (kamu)":""}</td><td>${r.pair}</td><td>${r.dur}m</td><td>${c[0]} (${c[1]} live)</td><td>${ago(x.created_at)}</td><td style="white-space:nowrap"><button data-a="det" data-c="${x.code}">Lihat</button> <button data-a="play" class="pri" data-c="${x.code}">Join</button>${me?` <button data-a="close" data-c="${x.code}">Tutup</button>`:""}</td></tr>`}).join("")}</tbody></table>`:'<div class="mu">Belum ada server. Buat yang pertama.</div>'}catch(e){}}
-setInterval(()=>{if(PROF&&$("lobby").style.display!=="none")loadRooms()},5000);
-async function startRoom(room){msg("Membuat game…");const k=SCB.findIndex(c=>c.pair===room.pair);
-  const {data,error}=await sb.rpc("dealer_new_game",{p_name:PROF.name,p_pin:PROF.pin,p_room:room.code});
-  if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Failed.");msg("");enter({id:data.id,name:PROF.name,token:data.token,no:data.game_no},PROF.pin,k,room)}
-async function mkHost(play){const r=mkRoom();if(!r)return;msg("Membuat server…");const cfg={};RF.forEach(k=>{if(k!=="code"&&k!=="name")cfg[k]=r[k]});cfg.scn=r.scn;cfg.cls=(SCB.find(x=>x.pair===r.pair)||{}).cls||"FX";
-  const {data,error}=await sb.rpc("dealer_create_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:r.code,p_roomname:r.name,p_config:cfg,p_hash:r.hash});
-  if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Gagal.");msg("");RMS=r;if(play)return startRoom(r);
-  $("rm").innerHTML=`<div class="rm2">Server <b>${r.name}</b> (${r.code}) sudah dibuat dan tampil untuk semua pemain. <button data-a="play" class="pri">Main di server ini</button></div>`;loadRooms()}
-$("hostB").onclick=showHost;$("joinB").onclick=()=>{$("rm").innerHTML="";loadRooms()};
-$("prof").addEventListener("click",async e=>{const d=e.target.dataset;if(!d.a||!sb)return;
-  if(d.a==="mk")mkHost();else if(d.a==="mkplay")mkHost(true);
-  else if(d.a==="det"){const r=pickRoom(d.c);if(r){RMS=r;$("rm").innerHTML=preview(r)}}
-  else if(d.a==="play"){const r=d.c?pickRoom(d.c):RMS;if(r)startRoom(r)}
-  else if(d.a==="close"){if(!confirm("Tutup server ini? Server hilang dari daftar (game yang sedang berjalan tetap bisa dilanjutkan)."))return;
-    const {data}=await sb.rpc("dealer_close_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:d.c});if(!data||!data.ok)return msg("Gagal menutup server.");loadRooms()}});
-
-$("pout").onclick=()=>{$("rm").innerHTML="";PROF=null;LS("mts_prof",null);LS("mts_sess",null);$("prof").style.display="none";$("auth").style.display="";msg("")};
-$("nGo").onclick=async()=>{
-  const n=$("nn").value.trim(),p=$("np").value.trim();if(!sb)return msg("Supabase is not configured.");
-  if(!/^[A-Za-z0-9 ._-]{2,24}$/.test(n))return msg(ERR.bad_name);if(!/^\d{4,6}$/.test(p))return msg(ERR.bad_pin);
-  msg("Creating profile…");const {data,error}=await sb.rpc("dealer_create_profile",{p_name:n,p_pin:p});
-  if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Failed.");profLogin(n,p)};
+    RL=a.data||[];const cnt={};(b.data||[]).forEach(s=>{const k=s.room_code;if(!cnt[k])cnt[k]=[0,0];cnt[k][1]++;if(s.status==="active"&&Date.now()-Date.parse(s.updated_at)<30000)cnt[k][0]++});
+    $("rl").innerHTML=RL.length?`<table><thead><tr><th>Server</th><th>Host</th><th>Skenario / Pair</th><th>Durasi</th><th>Limit</th><th>Pemain</th><th>Dibuat</th><th></th></tr></thead><tbody>${RL.map(r=>{const c=r.config||{},[lv,tot]=cnt[r.code]||[0,0];return `<tr><td><b>${r.name}</b> <span class="mu">(${r.code})</span></td><td>${r.host_name}</td><td>${c.scn&&c.scn!=="Custom"?c.scn+" · ":""}${c.pair||""}</td><td>${c.dur||60}m</td><td>${c.limit||""}M</td><td>${lv} live / ${tot}</td><td class="mu">${ago(r.created_at)}</td><td style="white-space:nowrap"><button data-jr="${r.code}" class="pri">Join</button>${r.host_name===PROF.name?` <button data-cr="${r.code}">Tutup</button>`:""}</td></tr>`}).join("")}</tbody></table>`:'<p class="mu">Belum ada server terbuka. Klik <b>Create Server (Host)</b> untuk membuat.</p>'}catch(e){}}
+async function joinRoom(r){if(!sb)return msg("Supabase is not configured.");msg("Joining server…");
+  const {data,error}=await sb.rpc("dealer_join_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:r.code});
+  if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Gagal masuk server.");
+  const rm=roomOf(data.room);if(rh(rm)!==rm.hash||!OK(rm))return msg("Config server dari database rusak.");
+  msg("");enter({id:data.id,name:PROF.name,token:data.token,no:data.game_no},PROF.pin,SCB.findIndex(c=>c.pair===rm.pair),rm)}
+function showJoin(){$("rm").innerHTML=`<div class="rm2"><h2 style="margin-top:0">Join Server (Player)</h2><div class="mu">Klik <b>Join</b> pada daftar server di bawah, atau masukkan kode 6 huruf / token dari host.</div>
+ <input id="j_in" placeholder="Kode 6 huruf (mis. 8K3P2A) atau token DLR1..." autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><div id="j_pv"></div></div>`;
+  const go=async()=>{const v=$("j_in").value.trim();if(!v){$("j_pv").innerHTML="";return}
+    if(v.length<=8){const r=pickRoom(v.toUpperCase());if(r){RMS=r;$("j_pv").innerHTML=preview(r);return}
+      if(sb){const {data}=await sb.from("dealer_rooms").select("code,name,host_name,config,cfg_hash").eq("code",v.toUpperCase()).eq("closed",false).maybeSingle();
+        if(data){const rm=roomOf(data);if(rh(rm)===rm.hash&&OK(rm)){RMS=rm;$("j_pv").innerHTML=preview(rm);return}}}
+      $("j_pv").innerHTML='<div class="dn" style="margin-top:6px">Server tidak ditemukan atau sudah ditutup.</div>';return}
+    const r=parseTok(v);if(!r){$("j_pv").innerHTML='<div class="dn" style="margin-top:6px">Token tidak valid.</div>';return}
+    RMS=r;$("j_pv").innerHTML=preview(r)};$("j_in").oninput=go}
+$("rl").onclick=async e=>{const d=e.target.dataset;
+  if(d.jr){const r=pickRoom(d.jr);if(!r)return;RMS=r;$("rm").innerHTML=preview(r);$("rm").scrollIntoView({behavior:"smooth"})}
+  else if(d.cr){if(!confirm("Tutup server ini? Pemain baru tidak bisa masuk lagi (game yang sudah berjalan tetap lanjut)."))return;
+    const {data}=await sb.rpc("dealer_close_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:d.cr});if(!data||!data.ok)return msg(ERR[data&&data.error]||"Gagal menutup server.");loadRooms()}};
+$("hostB").onclick=showHost;$("joinB").onclick=showJoin;
+$("rm").onclick=async e=>{const a=e.target.dataset.a;if(!a)return;msg("");
+  if(a==="mk"||a==="mkplay"){const r=mkRoom();if(!r)return;if(!sb)return msg("Supabase is not configured.");msg("Membuat server…");
+    const {data,error}=await sb.rpc("dealer_create_room",{p_name:PROF.name,p_pin:PROF.pin,p_code:r.code,p_room_name:r.name,p_config:r,p_hash:r.hash});
+    if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Gagal membuat server.");msg("");loadRooms();
+    if(a==="mkplay")return joinRoom(r);
+    const tok=tokOf(r);$("h_out").innerHTML=`<div class="rm2" style="margin-top:10px"><div class="up"><b>Server dibuka!</b> Otomatis muncul di daftar "Server tersedia" semua pemain.</div><div class="kv"><span>Kode server</span><b style="font-size:18px">${r.code}</b></div><div class="kv"><span>Checksum</span><b>${r.hash}</b></div><button data-a="cp" class="pri" style="width:100%;margin-top:8px">Copy kode &amp; info server</button><button data-a="play" style="width:100%;margin-top:6px">Mulai main di server ini</button></div>`;RMS=r}
+  else if(a==="cp")navigator.clipboard.writeText(`Dealer Server: ${RMS.name} | Kode: ${RMS.code} | ${RMS.pair} ${RMS.dur}m | Checksum: ${RMS.hash} | Token: ${tokOf(RMS)}`).then(()=>msg("Info & token server disalin."));
+  else if(a==="play"&&RMS)joinRoom(RMS)};
+$("nGo").onclick=async()=>{const n=$("nn").value.trim(),p=$("np").value.trim();if(!sb)return msg("Supabase is not configured.");msg("Creating profile…");
+  let r0;try{r0=await Promise.race([sb.rpc("dealer_register",{p_name:n,p_pin:p}),new Promise((_,j)=>setTimeout(()=>j(new Error("Server tidak merespons (timeout 15 dtk).")),15000))])}catch(e){return msg(e.message)}const {data,error}=r0;
+  if(error||!data||!data.ok)return msg(error?error.message:ERR[data.error]||"Could not create profile.");msg("");profLogin(data.name,p)};
 $("cGo").onclick=()=>profLogin($("cn").value.trim(),$("cp").value.trim());
-function lobbyInit(){
-  if(!sb)$("cfgw").style.display="block";
-  const pr=LS("mts_prof");if(pr&&pr.name&&pr.pin&&sb)profLogin(pr.name,pr.pin,true);
-  loadLB($("lbBox"));
-  setInterval(()=>{if($("lobby").style.display!=="none"){loadLB($("lbBox"),1);if(PROF)loadRooms()};const b=$("lbBox2");if(b&&$("rep").style.display==="block"&&b.isConnected)loadLB(b,1)},5000)}
-$("notyou").textContent="Exit to lobby";$("notyou").onclick=async()=>{if(SESS&&!S.fin&&!SESS.dead){S.paused=true;await saveNow()}location.reload()};
-$("finB").onclick=()=>finishSession(true);
+$("pout").onclick=()=>{PROF=null;LS("mts_prof",null);$("prof").style.display="none";$("auth").style.display="block";msg("")};
+$("notyou").onclick=()=>{if(SESS&&S&&!S.fin){S.paused=true;saveNow()}location.reload()};
 
-/* --- leaderboard (semua game: live, paused, finished) --- */
-async function loadLB(b,quiet){
-  if(!b)return;if(!sb){b.innerHTML="";return}if(!quiet)b.innerHTML='<span class="mu">Loading…</span>';
-  try{const {data}=await sb.from("dealer_sessions").select("id,player_name,game_no,pair,status,pnl,overall_percentile,time_used,updated_at,room_code,flagged").order("updated_at",{ascending:false}).limit(500);LBD=data||[]}catch(e){}drawLB(b)}
-function drawLB(b){
-  const key={pnl:r=>r.pnl,pct:r=>r.status==="finished"?r.overall_percentile:-1,eff:r=>r.pnl/Math.max(1,r.time_used/60)}[LBS],rows=LBD.filter(r=>!r.flagged&&(!LBF||r.status==="finished")).sort((x,y)=>key(y)-key(x));
-  b.innerHTML=`<div class="tabs" style="margin:6px 0;align-items:center">${[["pnl","Total P&amp;L (USD)"],["pct","Overall Index"],["eff","Efficiency (P&amp;L / min)"]].map(([s,l])=>`<button data-s="${s}" class="${LBS===s?"on":""}">${l}</button>`).join("")}<label style="margin-left:12px;white-space:nowrap"><input type="checkbox" data-f style="width:auto" ${LBF?"checked":""}> Finished only</label></div>
-  <div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Player</th><th>Server</th><th>Pair</th><th>Status</th><th>Time</th><th>P&amp;L (USD)</th><th>Index</th><th>P&amp;L / min</th><th></th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.player_name} <span class="mu">#${r.game_no}</span></td><td>${r.room_code||"—"}</td><td>${r.pair}</td><td class="${stl(r)[1]}">${stl(r)[0]}</td><td>${mm(r.time_used)}</td><td class="${cu(r.pnl)}">${fU(r.pnl)}</td><td>${r.status==="finished"?ordn(r.overall_percentile):"—"}</td><td class="${cu(r.pnl)}">${fU(r.pnl/Math.max(1,r.time_used/60))}</td><td>${r.status==="finished"?`<button data-r="${r.id}">View Report</button>`:""}</td></tr>`).join("")||'<tr><td colspan="9" class="mu">No games yet.</td></tr>'}</tbody></table></div>`;
-  b.onclick=e=>{const d=e.target.dataset;if(d.s){LBS=d.s;drawLB(b)}else if(d.f!==undefined){LBF=e.target.checked;drawLB(b)}else if(d.r)showReport(d.r)}}
+/* --- global leaderboard --- */
+async function loadLB(box,lim){
+  if(!sb)return;
+  try{const {data}=await sb.from("dealer_sessions").select("id,player_name,game_no,pair,status,pnl,pct,duration_sec,used_sec,updated_at,room_code,room_name").order("pnl",{ascending:false}).limit(200);
+    if(!data)return;LBD=data;if(box===lbBox)drawLB()}catch(e){}}
+function drawLB(){const box=$("lbBox"),Q=(LBD||[]).filter(r=>!LBF||r.status==="finished");
+  const m=Q.slice().sort((a,b)=>LBS==="pct"?(b.pct||0)-(a.pct||0):b.pnl-a.pnl),f=LBF?"checked":"";
+  box.innerHTML=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap"><span class="mu">Urut:</span><button data-s="pnl" class="${LBS==="pnl"?"pri":""}">Total P&amp;L (USD)</button><button data-s="pct" class="${LBS==="pct"?"pri":""}">% terhadap MAT</button><label style="margin-left:auto;cursor:pointer"><input type="checkbox" id="lbf" ${f}> Hanya yang selesai</label></div>`+(m.length?`<table><thead><tr><th>#</th><th>Player</th><th>Game</th><th>Server</th><th>Pair</th><th>Status</th><th>P&amp;L (USD)</th><th>% MAT</th><th>Time</th></tr></thead><tbody>${m.slice(0,25).map((r,i)=>{
+    const lv=r.status==="finished"?["Finished","mu"]:Date.now()-Date.parse(r.updated_at)<30000?["Live","up"]:["Paused","am"],me=SESS&&r.id===SESS.id,pc=r.pct;
+    return `<tr style="${me?"font-weight:700":""}"><td>${i+1}</td><td>${r.player_name}</td><td>#${r.game_no}</td><td>${r.room_name||"—"}</td><td>${r.pair}</td><td class="${lv[1]}">${lv[0]}</td><td class="${cu(r.pnl)}">${fU(r.pnl)}</td><td class="${pc==null?"mu":cu(pc)}">${pc==null?"—":(pc>=0?"+":"")+pc.toFixed(1)+"%"}</td><td>${mm(r.used_sec)} / ${mm(r.duration_sec)}</td></tr>`}).join("")}</tbody></table>`:'<p class="mu">Belum ada sesi.</p>');
+  box.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{LBS=b.dataset.s;drawLB()});$("lbf").onchange=e=>{LBF=e.target.checked;drawLB()}}
+setInterval(()=>{if($("lobby").style.display!=="none"){loadLB($("lbBox"),1);loadRooms()}},5000);
 
-/* --- scoring --- */
-const PIL=[["perf","Performance"],["eng","Engagement"],["mm","Market making"],["mt","Market taking"],["cd","Client dealing"],["mac","Macro"],["dd","Risk management – drawdown"],["pm","Position management"]];
-const FB={perf:"Review pricing discipline: widen quotes when volatility rises and size risk to what you can earn.",eng:"Get involved on every channel: answer every client call, price quickly and vote on each news release.",mm:"Improve price making: quote tighter on small tickets, skew with your inventory and use resting orders to earn the spread.",mt:"Choose your moments: take liquidity when the price is about to move your way, not just because it is live.",cd:"Convert more client flow: answer faster and keep quotes competitive against the screen.",mac:"Read the calendar: vote before every release and position ahead of the surprise.",dd:"Cut unrealized losses earlier: define your exit before you enter.",pm:"Keep inventory in the comfort zone: hedge on the broker screen before you approach the limit."};
-function blend(x,a,arr){arr=arr.filter(Number.isFinite);if(!Number.isFinite(x)||a==null)return null;if(!arr.length)return Math.round(a);
-  const r=(arr.filter(v=>v<x).length+.5*arr.filter(v=>v===x).length)/arr.length*100;return Math.round((r*arr.length+a*3)/(arr.length+3))}
-function score(M,O){const sc={};PIL.forEach(([k])=>sc[k]=blend(M.raw[k],M.abs[k],O.map(o=>o.raw[k])));
-  const v=Object.values(sc).filter(x=>x!=null),idx=v.reduce((a,b)=>a+b,0)/(v.length||1);return{sc,idx,pct:blend(idx,idx,O.map(o=>o.idx))}}
+/* --- metrics & post-session report --- */
+function metrics(){
+  const sc=S.sc,TR=S.trades,pl=S.real+unreal(),cl=TR.filter(t=>t.r),wn=cl.filter(t=>t.r>0),ls=cl.filter(t=>t.r<0),
+    sum=(a,f)=>a.reduce((s,x)=>s+f(x),0),avg=a=>a.length?sum(a,x=>x)/a.length:0,sd=a=>{if(a.length<2)return 0;const m=avg(a);return Math.sqrt(sum(a,x=>(x-m)**2)/(a.length-1))};
+  const ts=S.ts&&S.ts.length>1?S.ts:[[0,0,0,0],[S.sim,Math.round(S.real),Math.round(unreal()),S.pos]];
+  const tot=ts.map(x=>x[1]+x[2]),rets=[];for(let i=1;i<tot.length;i++)rets.push(tot[i]-tot[i-1]);
+  const mu=avg(rets),sg=sd(rets),sh=sg>0?(mu/sg)*Math.sqrt(720):0;
+  let pk=0,dd=0,t0=0,dur=0;ts.forEach(([t,r,u])=>{const v=r+u;if(v>=pk){pk=v;t0=t;dur=0}else{dd=Math.max(dd,pk-v);dur=Math.max(dur,t-t0)}});
+  const wP=avg(wn.map(t=>t.r)),lP=Math.abs(avg(ls.map(t=>t.r))),pf=sum(ls,t=>-t.r)>0?sum(wn,t=>t.r)/sum(ls,t=>-t.r):wn.length?99:0;
+  const exp=cl.length?(wn.length/cl.length)*wP-(ls.length/cl.length)*lP:0;
+  const vol=sum(TR,t=>Math.abs(t.q)),nt=sum(TR,t=>t.q*t.c*1e6),tu=sc.limit>0?vol/(2*sc.limit):0;
+  const byCh={};["ladder","limit","rfq"].forEach(k=>{const a=TR.filter(t=>t.ch===k);byCh[k]={n:a.length,vol:sum(a,t=>Math.abs(t.q)),r:sum(a,t=>t.r)}});
+  const byCl={};CL.forEach(c=>{const a=TR.filter(t=>t.cl===c.n);byCl[c.n]={n:a.length,vol:sum(a,t=>Math.abs(t.q)),r:sum(a,t=>t.r),ty:c.ty}});
+  const qtr=TR.filter(t=>t.k==="q"&&t.m!=null),edg=avg(qtr.map(t=>Math.sign(-t.q)*(t.p-t.m)/sc.pip)),
+    ad5=avg(qtr.map(t=>{const p=S.hist.find(h=>h[0]>=t.t+5);return p?Math.sign(t.q)*(p[1]-t.p)/sc.pip:null}).filter(x=>x!=null)),
+    ad30=avg(qtr.map(t=>{const p=S.hist.find(h=>h[0]>=t.t+30);return p?Math.sign(t.q)*(p[1]-t.p)/sc.pip:null}).filter(x=>x!=null));
+  const rts=S.calls.filter(c=>c.qt!=null).map(c=>c.qt),fcalls=S.calls.filter(c=>c.st==="done"&&!c.mm);
+  const mktP=sc.px*sc.k*1e6/(sc.id==="idr"?sc.px*1000:USDIDR),mat=S.room?S.room.mat*sc.limit/100*mktP:0,pct=mat>0?pl/mat*100:0;
+  const hhi=vol>0?sum(Object.values(byCl),x=>(x.vol/vol)**2):0;
+  const inv=ts.map(x=>Math.abs(x[3]));
+  return{ver:1,pair:sc.pair,base:sc.base,title:sc.title,used:Math.round(S.sim),dur:SESSION,pl,real:S.real,unr:unreal(),mat,pct,
+    n:TR.length,nClose:cl.length,wins:wn.length,losses:ls.length,wr:cl.length?wn.length/cl.length*100:null,
+    avgWin:wP,avgLoss:lP,pf,exp,sh,dd,ddDur:Math.round(dur),
+    vol,notional:nt,turnover:tu,avgSz:TR.length?vol/TR.length:0,maxPos:S.maxPos,avgAbsPos:avg(inv),limPct:S.maxPos/sc.limit*100,breaches:S.nbr||0,
+    byCh,byCl,edge:qtr.length?edg:null,adv5:qtr.length?ad5:null,adv30:qtr.length?ad30:null,
+    callsTot:fcalls.length,sent:S.st.sent,hit:S.st.hit,pass:S.st.pass,expC:S.st.exp,resp:avg(rts),hhi,bank:S.bank,
+    ts,hist:S.hist.filter((_,i)=>i%Math.max(1,Math.floor(S.hist.length/240))===0),
+    trades:TR.slice(-80).map(t=>({t:Math.round(t.t),q:t.q,p:t.p,ch:t.ch,cl:t.cl||"",r:Math.round(t.r)})),
+    calls:S.calls.slice(0,50).map(c=>({at:Math.round(c.at),cl:c.cl.n,ty:c.two?"Two-way":c.mm?"MM":"Client px",sz:c.size,res:c.res,rt:c.qt!=null?+c.qt.toFixed(1):null}))};
+}
+const TIP={pl:"Total profit or loss in USD at session end (realized + unrealized).",real:"Profit locked in from closed positions.",unr:"Mark-to-market P&L on inventory still open at the close.",wr:"Share of closing trades that made money.",pf:"Gross profit on winning trades divided by gross loss on losing trades. Above 1.5 is healthy.",exp:"Average USD P&L per closing trade: (win rate × avg win) − (loss rate × avg loss).",sh:"Annualized Sharpe-like ratio from 5-second P&L changes. Measures return per unit of P&L volatility.",dd:"Largest peak-to-trough drop in cumulative P&L during the session.",mat:"Maximum Acceptable Tolerance — your loss budget (set by the host as % of position limit). Loss beyond −100% MAT breaches risk tolerance.",edge:"Average spread captured on client RFQs at the moment of fill, in pips relative to mid.",adv5:"Average price move against your new position 5 seconds after filling a client RFQ (adverse selection / toxicity).",adv30:"Average price move against your position 30 seconds after filling a client RFQ.",hhi:"Client concentration (Herfindahl index, 0–1). Above 0.40 means heavy reliance on one client.",tu:"Total traded volume divided by 2 × position limit."};
+const tip=k=>`<span class="tip" title="${TIP[k]}">ⓘ</span>`;
+function narrative(M,rk,tot){
+  const p=[],v=M.pl>=0?"profit":"loss",pc=tot>1?Math.round((1-(rk-1)/(tot-1))*100):100;
+  p.push(`You finished the ${Math.round(M.dur/60)}-minute <b>${M.pair}</b> session with a net ${v} of <b>${fU(M.pl)} USD</b>`+(M.mat>0?` (${M.pct>=0?"+":""}${M.pct.toFixed(1)}% of your ${fU(M.mat)} MAT risk budget)`:``)+(tot>1?`, ranking <b>${ordn(rk)} of ${tot}</b> globally (top ${Math.max(1,100-pc)}%)`:``)+`. Of this, ${fU(M.real)} was realized and ${fU(M.unr)} remained unrealized on open inventory.`);
+  const mix=`${M.byCh.rfq.n} client RFQs, ${M.byCh.ladder.n} broker-screen trades, and ${M.byCh.limit.n} resting limit orders`;
+  p.push(`Across <b>${M.n} executions</b> (${fM(M.vol)} ${M.base} total volume, ${M.turnover.toFixed(1)}× limit turnover) — ${mix} — `+(M.wr!=null?`you closed ${M.nClose} round-trips with a <b>${M.wr.toFixed(0)}% win rate</b> and a profit factor of <b>${M.pf>=50?"∞":M.pf.toFixed(2)}</b>.`:`no positions were closed during the session.`));
+  if(M.edge!=null)p.push(`On client quotes you captured an average spread edge of <b>${M.edge.toFixed(2)} pips</b>, while 30-second post-trade adverse selection averaged <b>${M.adv30.toFixed(2)} pips</b> (${M.adv30>M.edge?"informed flow eroded your spread":"your spread more than covered toxic flow"}). Average quote response time was <b>${M.resp.toFixed(1)} s</b> (${M.hit}/${M.sent} quotes filled).`);
+  p.push(`Peak inventory reached <b>${fM(M.maxPos)} ${M.base}</b> (${M.limPct.toFixed(0)}% of limit) with ${M.breaches} limit breach${M.breaches===1?"":"es"}, a maximum drawdown of <b>${fU(-M.dd)}</b>, and an intraday Sharpe ratio of <b>${M.sh.toFixed(2)}</b>.`);
+  return p.map(x=>`<p class="nr">${x}</p>`).join("");
+}
+function verdict(M){
+  if(M.mat>0&&M.pl<-M.mat)return["RISK BREACH","dn","Loss exceeded your Maximum Acceptable Tolerance (−100% MAT)."];
+  if(M.pl>0&&M.sh>=1&&M.breaches===0)return["STRONG DESK PERFORMANCE","up","Profitable with disciplined risk and clean limit compliance."];
+  if(M.pl>0)return["PROFITABLE SESSION","up","Positive P&L; tighten inventory control and quote skew to lift Sharpe."];
+  if(M.n===0)return["NO ACTIVITY","am","No trades executed during this session."];
+  return["DRAWDOWN SESSION","dn","Finished negative; review adverse selection and hedging speed below."];
+}
+function diagnosis(M){
+  const out=[];
+  if(!M.n)return["You did not execute any trades. Quote incoming client RFQs and use the broker ladder to manage inventory."];
+  if(M.mat>0&&M.pl<-M.mat)out.push(`<b>MAT breach:</b> Net loss (${fU(M.pl)}) exceeded your ${fU(M.mat)} tolerance. Cut losing inventory earlier on the broker screen.`);
+  if(M.breaches>0)out.push(`<b>Limit discipline:</b> You breached the position limit ${M.breaches} time(s) and were locked out of trading. Hedge proactively once inventory passes 70% of limit.`);
+  if(M.limPct>85&&!M.breaches)out.push(`<b>Near-limit exposure:</b> Peak position reached ${M.limPct.toFixed(0)}% of limit — skew quotes earlier to attract offsetting client flow.`);
+  if(M.edge!=null&&M.adv30!=null&&M.adv30>M.edge)out.push(`<b>Adverse selection:</b> Post-trade drift (${M.adv30.toFixed(2)} pips at 30s) exceeded your quoted spread (${M.edge.toFixed(2)} pips). Widen quotes to hedge funds and on large tickets.`);
+  if(M.resp>10)out.push(`<b>Slow quoting:</b> Average response time was ${M.resp.toFixed(1)} s — faster quotes win more flow before clients time out (${M.expC} missed).`);
+  if(M.sent>3&&M.hit/M.sent<.3)out.push(`<b>Low hit ratio (${Math.round(M.hit/M.sent*100)}%):</b> Quotes were too wide relative to the market spread; tighten pricing on small corporate tickets.`);
+  if(M.byCh.ladder.r<0&&M.byCh.rfq.r>0)out.push(`<b>Hedging drag:</b> Client market-making earned ${fU(M.byCh.rfq.r)}, but broker hedging lost ${fU(M.byCh.ladder.r)}. Avoid crossing the spread aggressively in thin liquidity.`);
+  if(Math.abs(M.unr)>Math.abs(M.real)*.5&&M.unr<0)out.push(`<b>Unclosed risk:</b> ${fU(M.unr)} of unrealized loss was left open at the bell — flatten inventory into the close.`);
+  if(M.hhi>.45)out.push(`<b>Client concentration:</b> Herfindahl index ${M.hhi.toFixed(2)} shows heavy reliance on one counterparty.`);
+  if(!out.length)out.push("<b>Balanced execution:</b> Positive spread capture, controlled inventory, and clean limit compliance across the session.");
+  return out;
+}
 
-/* --- metrics from the live game state --- */
-function buildReport(){
-  const sc=S.sc,T=S.trades,ts=S.ts||[],C=S.calls.filter(c=>!c.mm),sim=S.sim,g=o=>o||0;
-  const usd=(sc.id==="idr"||sc.base==="USD")?1:sc.qv!=null?S.mid*sc.qv:S.mid/USDIDR,MAT=-(((S.room&&S.room.mat)||.25)/100)*sc.limit*1e6*usd,pl=S.real+unreal();
-  const kd=t=>t.k||t.ch,ed=t=>t.q*(t.m-t.p)*t.c*1e6,E={},V={};
-  T.forEach(t=>{const k=kd(t);E[k]=g(E[k])+ed(t);V[k]=g(V[k])+Math.abs(t.q)});
-  const maker=g(E.q)+g(E.prop)+g(E.limit),taker=g(E.ladder)+g(E.mm),inv=pl-maker-taker;
-  const vC=g(V.q)+g(V.prop),vM=g(V.limit),vT=g(V.ladder)+g(V.mm),vA=vC+vM+vT,volU=vA*1e6*usd;
-  const wp=f=>{let a=0,b=0;T.filter(f).forEach(t=>{a+=Math.sign(t.q)*(t.m-t.p)/sc.pip*Math.abs(t.q);b+=Math.abs(t.q)});return b?a/b:null};
-  const mkr=wp(t=>["q","prop","limit"].includes(kd(t))),hp=t=>{const h=S.hist;return h[Math.min(h.length-1,Math.max(0,Math.round(t)))][1]};
-  let a=0,b=0;T.filter(t=>["ladder","mm"].includes(kd(t))).forEach(t=>{a+=Math.sign(t.q)*(hp(t.t+30)-t.p)/sc.pip*Math.abs(t.q);b+=Math.abs(t.q)});const mo30=b?a/b:null;
-  const mean=x=>x.length?x.reduce((p,q)=>p+q,0)/x.length:0,sd=x=>{const m=mean(x);return Math.sqrt(mean(x.map(v=>(v-m)**2)))};
-  const tt=ts.map(x=>x[0]),tot=ts.map(x=>x[1]+x[2]),at=t=>{const i=tt.findIndex(x=>x>=t);return tot[i<0?tot.length-1:i]||0};
-  const df=tot.slice(1).map((v,i)=>v-tot[i]),tst=df.length>2&&sd(df)>0?mean(df)/(sd(df)/Math.sqrt(df.length)):0;
-  const ap=ts.map(x=>Math.abs(x[3])),avgAbs=mean(ap),hi=ap.filter(x=>x>=.9*sc.limit).length/(ap.length||1),lo=ap.filter(x=>x<.25*sc.limit).length/(ap.length||1),sa=ap.reduce((p,q)=>p+q,0),dir=sa?50+50*ts.reduce((p,x)=>p+x[3],0)/sa:50;
-  const ans=C.filter(c=>c.qt!==undefined),con=ans.filter(c=>c.rc==="up"),ttq=ans.length?mean(ans.map(c=>c.qt)):null,ar=C.length?ans.length/C.length:0,conv=ans.length?con.length/ans.length:0;
-  const two=ans.filter(c=>!c.one&&c.qa>c.qb),avgSp=two.length?mean(two.map(c=>(c.qa-c.qb)/sc.pip)):null;
-  /* events */
-  const rows={bull:[0,0,0,0],bear:[0,0,0,0],neu:[0,0,0,0]};
-  const evl=sc.ev.map((e,i)=>({e,i})).filter(x=>x.e.fired).map(({e,i})=>{const im=(e.act-e.fc)*e.s,dr=Math.abs(im)<sc.weak?"neu":im>0?"bull":"bear",earn=at(e.t+120)-at(e.t),deals=T.filter(t=>t.t>=e.t&&t.t<=e.t+120).length,v=S.votes[i]==null?null:S.votes[i],r=rows[dr];
-    r[0]++;r[1]+=v!=null?1:0;r[2]+=deals;r[3]+=earn;return{n:e.n,c:e.c,dir:dr,earn,deals,v}});
-  const voted=evl.filter(x=>x.v!=null).length,vr=evl.length?voted/evl.length:0,vacc=voted?S.bank/(2*voted):0,evP=evl.reduce((p,x)=>p+x.earn,0),se=evl.slice().sort((x,y)=>y.earn-x.earn);
-  /* holding behaviour (FIFO lots) */
-  const lots=[],H={w:[],l:[]};
-  T.forEach(t=>{let q=t.q;while(Math.abs(q)>1e-9&&lots.length&&Math.sign(lots[0].q)!==Math.sign(q)){const L0=lots[0],c=Math.min(Math.abs(q),Math.abs(L0.q)),pn=Math.sign(L0.q)*(t.p-L0.p);(pn>=0?H.w:H.l).push([t.t-L0.t,c]);L0.q-=Math.sign(L0.q)*c;q-=Math.sign(q)*c;if(Math.abs(L0.q)<1e-9)lots.shift()}
-    if(Math.abs(q)>1e-9)lots.push({t:t.t,q,p:t.p})});
-  const avgH=x=>{let n=0,d=0;x.forEach(([h,c])=>{n+=h*c;d+=c});return d?n/d:null},hw=avgH(H.w),hl=avgH(H.l),hAll=avgH(H.w.concat(H.l));
-  const gaps=T.slice(1).map((t,i)=>t.t-T[i].t).sort((x,y)=>x-y),med=gaps.length?gaps[gaps.length>>1]:null,cp=x=>Math.max(0,Math.min(100,Math.round(x)));
-  const sty={risk:cp(S.maxPos/sc.limit*50+avgAbs/sc.limit*200),hold:hAll==null?50:cp(hAll/600*100),dir:cp(dir),tempo:cp(T.length/(Math.max(sim,60)/60)/6*100),liq:vA?cp((vC+vM)/vA*100):50,pat:med==null?null:cp(med/120*100)};
-  /* pillars */
-  const th=(x,s)=>Math.round(50+50*Math.tanh(x/s));
-  const raw={perf:pl,eng:.5*ar+.3*vr+.2*Math.min(1,T.length/60),mm:maker,mt:mo30,cd:.5*conv+.3*ar+.2*Math.max(0,1-(ttq==null?20:ttq)/20),mac:.5*vacc+.5*(.5+.5*Math.tanh(evP/50000)),dd:-S.dd,pm:(1-hi)*Math.exp(-(S.nbr||0)*.3)};
-  const abs={perf:th(pl,80000),eng:raw.eng*100,mm:th(maker,60000),mt:mo30==null?null:th(mo30,1.5),cd:raw.cd*100,mac:raw.mac*100,dd:100*Math.exp(-S.dd/100000),pm:raw.pm*100};
-  return{v:1,srv:S.room?S.room.name+" · "+S.room.code:"",name:SESS?SESS.name:nameU,game:SESS?SESS.no:0,pair:sc.pair,title:sc.title,used:Math.round(sim),pnl:pl,rov:volU?pl/volU*100:0,t:tst,raw,abs,
-    vol:{c:vC,m:vM,t:vT,usd:volU},att:{maker,inv,taker},ch:{prop:g(E.prop),q:g(E.q),mm:g(E.mm),lim:g(E.limit),lad:g(E.ladder)},
-    cs:{rel:(()=>{const v=Object.values(S.rel||{});return v.length?v.reduce((a,r)=>a+(r[1]+1)/(r[0]+2),0)/v.length:null})(),n:C.length,ans:ans.length,con:con.length,ttq,avgSp,mkr,mo30,cvol:con.reduce((p,c)=>p+c.size,0),nmm:S.calls.filter(c=>c.mm).length},
-    sty,bias:{dispo:hw&&hl?hl/hw:null,over:avgAbs>.01?vA/avgAbs:null},
-    mac:{rows,vr,vacc,evP,best:se.slice(0,3),worst:se.slice(-3).reverse().filter(x=>x.earn<0),n:evl.length},
-    rk:{dd:S.dd,br:S.nbr||0,pv:df.length?sd(df)/Math.abs(MAT)*100:0,rar:pl/(S.dd||1),hi,lo,avgAbs,pos:S.pos},
-    ser:{t:tt,r:ts.map(x=>x[1]),u:ts.map(x=>x[2]),p:ap,ttq:ans.map(c=>[Math.round(c.at),+c.qt.toFixed(1)])},mat:MAT,lim:sc.limit,base:sc.base}}
+async function finishSession(){
+  if(finishing)return;finishing=1;S.fin=true;S.paused=true;
+  const M=metrics();let ok=false;
+  if(sb&&SESS&&!SESS.dead)ok=await saveNow(true,M);
+  if(SESS)LS("mts_sess",null);
+  if(sb&&SESS){await showReport(SESS.id,M,ok)}else renderReport({id:"local",player_name:nameU,game_no:1,pair:M.pair,pnl:M.pl,metrics:M,finished_at:new Date().toISOString()},M,ok)
+}
+$("finB").onclick=()=>{if(confirm("Finish and record this session now? The game will be locked and your report generated."))finishSession()};
 
-/* --- finish --- */
-async function finishSession(manual){
-  if(finishing||!SESS||SESS.dead)return;
-  if(manual&&!confirm("Finish & record this session? The profile will be locked and cannot be continued."))return;
-  finishing=1;S.fin=true;S.paused=true;fd=1;ALL.forEach(t=>t.paused=true);$("run").textContent="Ended";render();
-  const M=buildReport();let O=[];
-  try{const {data}=await sb.from("dealer_sessions").select("id,raw:report_metrics->raw,idx:report_metrics->idx").eq("status","finished");O=(data||[]).filter(o=>o.raw)}catch(e){}
-  const R=score(M,O);M.idx=R.idx;M.pct=R.pct;
-  if(!await saveNow(true,M)){finishing=0;S.fin=false;S.paused=true;alert("Could not save to the server. Check your connection and press Finish again.");return}
-  LS("mts_sess",null);LS("mts_bk",null);showReport(SESS.id,M)}
+async function showReport(id,fallbackM,savedOk){
+  CH.forEach(c=>c.destroy());CH=[];$("rep").style.display="block";$("rep").innerHTML='<div class="pg"><p>Loading report…</p></div>';
+  const {data}=sb?await sb.from("dealer_sessions").select("*").eq("id",id).single():{data:null};
+  const row=data||{id,player_name:nameU,game_no:1,pair:fallbackM.pair,pnl:fallbackM.pl,metrics:fallbackM,finished_at:new Date().toISOString()};
+  renderReport(row,row.metrics||fallbackM,data?true:savedOk);
+}
+function renderReport(row,M,savedOk){
+  CH.forEach(c=>c.destroy());CH=[];$("rep").style.display="block";
+  const all=(LBD||[]).slice().sort((a,b)=>b.pnl-a.pnl),rk=Math.max(1,all.findIndex(x=>x.id===row.id)+1),tot=Math.max(all.length,1);
+  const pct=tot>1?Math.round((1-(rk-1)/(tot-1))*100):100,[vd,vc,vs]=verdict(M);
+  const c=(l,v,k,cl)=>`<div class="c"><small>${l}${k?tip(k):""}</small><b class="${cl||""}">${v}</b></div>`;
+  const kv=(l,v,k)=>`<div class="kv"><span>${l}${k?tip(k):""}</span><b>${v}</b></div>`;
+  $("rep").innerHTML=`<div class="pg">
+   <div class="bar noprint"><button id="rback">← Back to lobby</button><span class="sp"></span>${savedOk===false?'<span style="color:#d23a3f">Offline: not saved to cloud</span>':'<span style="color:#0a8f5a">✓ Recorded to profile &amp; leaderboard</span>'}<button id="rprint" class="pri">Download PDF</button></div>
+   <div class="sec"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px"><div><small>DEALING SIMULATION · PERFORMANCE REPORT</small><h1>${row.player_name} — Game #${row.game_no}</h1><small>${M.title} (${M.pair}) · Played ${mm(M.used)} of ${mm(M.dur)} · ${new Date(row.finished_at||Date.now()).toLocaleString()}</small></div><div style="text-align:right"><span class="bd ${vc}">${vd}</span><small style="margin-top:4px">${vs}</small></div></div>
+   <h3 style="margin-top:14px">Executive Summary</h3>${narrative(M,rk,tot)}</div>
+   <div class="sec"><h2>Key Performance &amp; Risk Metrics</h2><div class="g">
+    ${c("Total P&L (USD)",fU(M.pl),"pl",cu(M.pl))}${c("Realized P&L",fU(M.real),"real",cu(M.real))}${c("Unrealized P&L",fU(M.unr),"unr",cu(M.unr))}
+    ${c("% of MAT",M.mat>0?(M.pct>=0?"+":"")+M.pct.toFixed(1)+"%":"—","mat",M.pct<-100?"dn":cu(M.pct))}${c("MAT Budget",M.mat>0?fU(M.mat):"—","mat")}
+    ${c("Global Rank",`#${rk} / ${tot} (top ${Math.max(1,100-pct)}%)`)}${c("Intraday Sharpe",M.sh.toFixed(2),"sh")}${c("Max Drawdown",fU(-M.dd),"dd","dn")}
+    ${c("Win Rate",M.wr!=null?M.wr.toFixed(1)+"% ("+M.wins+"/"+M.nClose+")":"—","wr")}${c("Profit Factor",M.pf>=50?"∞":M.pf.toFixed(2),"pf")}${c("Expectancy / Trade",fU(M.exp),"exp",cu(M.exp))}
+    ${c("Total Volume",fM(M.vol)+" "+M.base)}${c("Notional (USD)","$"+fM(M.notional/1e6))}${c("Limit Turnover",M.turnover.toFixed(2)+"×","tu")}
+    ${c("Peak Inventory",`${fM(M.maxPos)} (${M.limPct.toFixed(0)}%)`)}${c("Limit Breaches",M.breaches,"",M.breaches?"dn":"")}${c("Quote Edge (pips)",M.edge!=null?M.edge.toFixed(2):"—","edge")}
+    ${c("Adverse Sel. 30s",M.adv30!=null?M.adv30.toFixed(2)+" pips":"—","adv30")}${c("Avg Quote Time",M.resp?M.resp.toFixed(1)+" s":"—")}${c("Bank's View",M.bank+" pts")}
+   </div></div>
+   <div class="g2">
+    <div class="sec"><h2>Cumulative P&amp;L Curve (USD)</h2><div class="cw"><canvas id="ch1"></canvas></div></div>
+    <div class="sec"><h2>${M.pair} Price Path &amp; Fills</h2><div class="cw"><canvas id="ch2"></canvas></div></div>
+   </div>
+   <div class="g2">
+    <div class="sec"><h2>Execution &amp; Channel Breakdown</h2>
+     <table><thead><tr><th>Channel</th><th>Trades</th><th>Volume</th><th>Realized P&amp;L</th></tr></thead><tbody>
+      ${[["Client RFQs","rfq"],["Broker Ladder","ladder"],["Resting Limits","limit"]].map(([l,k])=>`<tr><td>${l}</td><td>${M.byCh[k].n}</td><td>${fM(M.byCh[k].vol)}</td><td class="${cu(M.byCh[k].r)}">${fU(M.byCh[k].r)}</td></tr>`).join("")}
+     </tbody></table>
+     <h3>RFQ &amp; Market-Making Quality</h3>
+     ${kv("Quotes sent / filled / passed",`${M.sent} / ${M.hit} / ${M.pass}`)}
+     ${kv("Expired / missed calls",M.expC)}
+     ${kv("Average spread capture",M.edge!=null?M.edge.toFixed(2)+" pips":"—","edge")}
+     ${kv("Adverse selection (5s / 30s)",M.adv5!=null?`${M.adv5.toFixed(2)} / ${M.adv30.toFixed(2)} pips`:"—","adv30")}
+     ${kv("Client concentration (HHI)",M.hhi.toFixed(2),"hhi")}
+    </div>
+    <div class="sec"><h2>Counterparty Breakdown</h2>
+     <table><thead><tr><th>Client</th><th>Type</th><th>Fills</th><th>Volume</th><th>Realized</th></tr></thead><tbody>
+      ${Object.entries(M.byCl).map(([n,v])=>`<tr><td>${n}</td><td>${v.ty}</td><td>${v.n}</td><td>${fM(v.vol)}</td><td class="${cu(v.r)}">${fU(v.r)}</td></tr>`).join("")}
+     </tbody></table>
+     <h3>Risk &amp; Inventory</h3>
+     ${kv("Average win / loss",`${fU(M.avgWin)} / ${fU(-M.avgLoss)}`)}
+     ${kv("Average / peak |position|",`${fM(M.avgAbsPos)} / ${fM(M.maxPos)} ${M.base}`)}
+     ${kv("Longest drawdown recovery",mm(M.ddDur))}
+    </div>
+   </div>
+   <div class="sec"><h2>Automated Desk Diagnosis &amp; Coaching</h2><ol>${diagnosis(M).map(x=>`<li>${x}</li>`).join("")}</ol></div>
+   <div class="sec"><h2>Execution Blotter (last ${M.trades.length} fills)</h2>
+    <table><thead><tr><th>Time</th><th>Side</th><th>Size</th><th>Price</th><th>Channel</th><th>Client</th><th>Realized</th></tr></thead><tbody>
+     ${M.trades.map(t=>`<tr><td>${TT(t.t)}</td><td class="${t.q>0?"up":"dn"}">${t.q>0?"BUY":"SELL"}</td><td>${fM(Math.abs(t.q))}</td><td>${t.p}</td><td>${t.ch}</td><td>${t.cl||"—"}</td><td class="${cu(t.r)}">${t.r?fU(t.r):"—"}</td></tr>`).join("")||`<tr><td colspan="7">No trades</td></tr>`}
+    </tbody></table></div>
+  </div>`;
+  $("rback").onclick=()=>location.reload();$("rprint").onclick=()=>window.print();
+  if(window.Chart){
+    CH.push(new Chart($("ch1"),{type:"line",data:{labels:M.ts.map(x=>TT(x[0])),datasets:[
+      {label:"Total P&L",data:M.ts.map(x=>x[1]+x[2]),borderColor:"#3b6fd4",backgroundColor:"rgba(59,111,212,.12)",fill:true,tension:.2,pointRadius:0},
+      {label:"Realized",data:M.ts.map(x=>x[1]),borderColor:"#0a8f5a",borderDash:[4,3],tension:.2,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}}}}));
+    const hs=M.hist||[];
+    CH.push(new Chart($("ch2"),{type:"line",data:{labels:hs.map(x=>TT(x[0])),datasets:[
+      {label:M.pair,data:hs.map(x=>x[1]),borderColor:"#475467",tension:.15,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}}}}));
+  }
+}
 
-/* --- report --- */
-async function showReport(id,M){
-  const rep=$("rep");rep.style.display="block";rep.scrollTop=0;rep.innerHTML='<div class="pg">Loading report…</div>';
-  try{const {data:o}=await sb.from("dealer_sessions").select("id,raw:report_metrics->raw,idx:report_metrics->idx").eq("status","finished");
-    if(!M){const {data}=await sb.from("dealer_sessions").select("report_metrics").eq("id",id).single();M=data&&data.report_metrics}
-    if(!M)throw new Error("no report");drawReport(M,(o||[]).filter(x=>x.id!==id&&x.raw))}
-  catch(e){console.error(e);rep.innerHTML='<div class="pg"><button onclick="$(\'rep\').style.display=\'none\'">Close</button><p>Report not available.</p></div>'}}
-const mkc=(id,cfg)=>{const c=$(id);if(!c||!window.Chart)return;cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,animation:false},cfg.options||{});CH.push(new Chart(c,cfg))};
-function narr(M,sp,pk){
-  const A=M.att,cs=M.cs,rk=M.rk,pn=M.pnl,iv=A.inv,cv=cs.n?cs.con/cs.n:0,ar=cs.n?cs.ans/cs.n:1,fu=x=>(x<0?"−":"+")+Math.round(Math.abs(x)).toLocaleString("id-ID");
-  let p=`Selama ${mm(M.used)} sesi ${M.pair}, kamu ${pn>=0?"mencatat keuntungan":"mengalami kerugian"} ${fu(pn)} USD. `;
-  p+=Math.abs(sp)+Math.abs(iv)<1?"Belum ada transaksi yang tercatat, jadi belum ada sumber untung atau rugi yang bisa dianalisis. ":sp>0&&iv>=0?"Hasil ini datang dari dua sumber yang sehat: selisih harga dari melayani klien dan stok mata uang yang searah pasar. ":sp>0?`Jasa transaksimu menghasilkan ${fu(sp)}, tetapi stok mata uang yang dipegang merugi ${fu(iv)} sehingga sebagian untung terkikis. `:iv>0?`Untungmu lebih banyak berasal dari arah pasar yang kebetulan searah dengan stokmu (${fu(iv)}) daripada dari selisih harga, jadi hasilnya kurang bisa diulang. `:"Baik selisih harga maupun stok mata uang sama-sama merugi: harga yang kamu beri kemungkinan terlalu mepet pasar atau stok dipegang terlalu lama. ";
-  p+=rk.br===0&&pk<80?`Manajemen risiko tergolong aman: tidak ada pelanggaran batas dan pemakaian limit tertinggi hanya ${Math.round(pk)}%.`:`Risiko perlu diperhatikan: ${rk.br} kali melanggar batas, limit terpakai hingga ${Math.round(pk)}% dan saldo sempat turun ${Math.round(rk.dd).toLocaleString("id-ID")} USD.`;
-  const T=[[cs.ans>3&&cv<.4,"Turunkan tingkat 'ditolak klien': persempit selisih Bid-Ask untuk tiket kecil dan jangan terlalu jauh dari harga pasar."],[cs.ttq!=null&&cs.ttq>7,"Jawab klien lebih cepat (target di bawah 5 detik); klien yang menunggu lama sering membatalkan."],[rk.br>0||pk>80,"Kurangi stok sebelum limit terpakai 70% (jual/beli di layar broker) agar tidak kena jeda trading."],[iv<0&&Math.abs(iv)>Math.abs(sp),"Geser harga Bid-Ask ke arah posisimu untuk membuang stok, terutama saat melayani tiket besar."],[ar<.8,"Layani lebih banyak permintaan klien; setiap yang terlewat berarti peluang selisih harga hilang."],[sp<=0,"Lebarkan sedikit selisih saat pasar bergejolak atau ada berita, jangan memberi harga lebih murah dari pasar."],[1,"Pertahankan disiplin harga dan catat tiket mana yang paling sering gagal, lalu sesuaikan di sesi berikutnya."],[1,"Pilih satu skenario berita dan tentukan di awal apakah kamu mau ikut arah pasar atau menghindarinya."]].filter(x=>x[0]).slice(0,2);
-  return`<p class="nr">${p}</p><p class="nr"><b>Dua hal untuk diperbaiki:</b></p><ol>${T.map(x=>`<li>${x[1]}</li>`).join("")}</ol>`}
-function drawReport(M,O){
-  const R=score(M,O),A=M.att,cs=M.cs,rk=M.rk,st=M.sty,N=O.length+1,f=(x,d=0)=>x==null||!isFinite(x)?"—":(+x).toLocaleString("id-ID",{maximumFractionDigits:d,minimumFractionDigits:d}),
-    sg=(x,d=0)=>x==null||!isFinite(x)?"—":(x<0?"−":"+")+f(Math.abs(x),d),k=x=>x>=0?"up":"dn",tip=t=>`<span class="tip" title="${t}">ⓘ</span>`,z=x=>x==null||Math.round(x)===0,
-    kv=(l,v,t)=>v===""?"":`<div class="kv"><span>${l}${t?tip(t):""}</span><b>${v}</b></div>`,c=(l,v,s,t)=>`<div class="c"><small>${l}${t?tip(t):""}</small><b>${v}</b>${s?`<small>${s}</small>`:""}</div>`;
-  const sp=A.maker+A.taker,iv=A.inv,tt=Math.abs(sp)+Math.abs(iv)||1,pk=Math.max(0,...M.ser.p)/M.lim*100,cv=cs.n?cs.con/cs.n*100:0,
-    sf=rk.br===0&&pk<90?["AMAN","up"]:rk.br<=1&&pk<100?["WASPADA","am"]:["BERISIKO","dn"],
-    lab=[cs.ttq==null?"":cs.ttq<=5?"Tipe Cepat":cs.ttq<=9?"Tipe Cukup Sigap":"Tipe Pelan",st.dir>=60?"Aktif Membeli "+M.base:st.dir<=40?"Aktif Menjual "+M.base:"Seimbang Beli-Jual",rk.br===0&&pk<70?"Aman Menjaga Modal":rk.br>0?"Sering Menyentuh Batas":"Berani Memakai Limit"].filter(Boolean);
-  $("rep").innerHTML=`<div class="pg"><div class="noprint bar"><button onclick="$('rep').style.display='none'">✕ Close</button><button onclick="location.reload()">Back to lobby</button><span class="sp"></span><button class="pri" onclick="window.print()">Download / Print PDF</button></div>
-  <div class="sec"><div class="mu2">Kartu Skor Sesi${M.srv?" · "+M.srv:""}</div><h1>${M.name}${M.game?" · Game #"+M.game:""} · ${M.pair}</h1><div class="mu2">Durasi ${mm(M.used)} · nilai dalam USD</div>
-   <h2 style="margin-top:14px">1. Ringkasan Utama</h2><div class="g">${c("Total Untung/Rugi",`<span class="${k(M.pnl)}">${sg(M.pnl)}</span>`)}
-   ${c("Sumber Keuntungan",`${f(Math.abs(sp)/tt*100)}% selisih · ${f(Math.abs(iv)/tt*100)}% stok`,"porsi dari besarnya masing-masing sumber","Selisih = jasa transaksi; Stok = efek pergerakan harga pada mata uang yang kamu pegang")}
-   ${c("Skor Peringkat",f(R.pct)+" / 100","dibanding "+N+" pemain","Persentil gabungan dari 8 aspek keahlian; 50 = rata-rata pemain")}${c("Status Risiko",`<span class="bd ${sf[1]}">${sf[0]}</span>`)}</div>
-   ${kv("Untung dari Selisih Harga (Jasa Transaksi)",z(sp)?"":`<span class="${k(sp)}">${sg(sp)}</span>`,"Hasil dari memberi harga beli lebih rendah dan harga jual lebih tinggi kepada klien (Maker edge + biaya ambil harga)")}${kv("Untung/Rugi dari Stok Mata Uang",z(iv)?"":`<span class="${k(iv)}">${sg(iv)}</span>`,"Efek naik-turunnya kurs pada mata uang yang sedang kamu pegang (Inventory P&L)")}</div>
-  <div class="sec"><h2>2. Performa Layanan &amp; Gaya Main</h2><div class="g">${c("Permintaan Klien yang Dilayani",cs.ans+" / "+cs.n,f(cs.n?cs.ans/cs.n*100:0)+"%","Berapa permintaan harga klien yang kamu jawab sebelum klien pergi")}${c("Berhasil Jadi Transaksi",f(cv)+"%",cs.con+" deal","Klien menerima harga Bid/Ask-mu")}
-   ${cs.ttq==null?"":c("Rata-rata Respons",f(cs.ttq,1)+" dtk","makin cepat makin besar peluang deal")}${cs.rel==null?"":c("Skor Hubungan Klien",f(cs.rel*100)+"%","naik tiap klien deal, turun bila ditolak","Klien yang sering ditolak makin enggan menerima harga berikutnya")}</div>
-   <p style="font-size:15px"><b>Gaya main:</b> ${lab.join(", ").replace(/, ([^,]*)$/," dan $1")}</p></div>
-  <div class="sec"><h2>3. Kontrol Risiko</h2><div class="g">${c("Pelanggaran Batas",rk.br===0?"Tidak ada":rk.br+" kali","",  "Berapa kali posisi melewati batas limit")}${c("Penurunan Saldo Terbesar",f(rk.dd),"USD","Selisih terbesar antara puncak saldo dan titik terendah sesudahnya (Max drawdown)")}${c("Pemakaian Batas Modal",f(pk)+"%","puncak posisi vs limit "+M.lim+"M "+M.base)}</div></div>
-  <div class="sec"><h2>4. Kesimpulan &amp; Saran</h2>${narr(M,sp,pk)}</div>
-  <div class="sec noprint"><h2>Global leaderboard</h2><div id="lbBox2"></div></div></div>`;loadLB($("lbBox2"))}
-
-/* --- start --- */
-lobbyInit();
-
+/* --- boot --- */
+if(!sb)$("cfgw").style.display="block";
+init(0);loadLB($("lbBox"),1);
+const sp=LS("mts_prof");if(sp&&sp.name&&sp.pin)profLogin(sp.name,sp.pin,true);
 </script>
 </body>
 </html>
