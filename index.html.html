@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Market Trader Simulator v7</title>
+<title>Market Trader Simulator v8</title>
 <style>
 :root{--bg:#070707;--pn:#151515;--in:#0e0e0e;--ln:#2b2b2b;--tx:#f4f4f4;--mu:#9a9a9a;--bl:#5b8def;--up:#4fd39a;--dn:#ff6b6b;--am:#ffb340;--bn:#352607}
 [data-theme=light]{--bg:#eaf0f6;--pn:#fff;--in:#f2f6fa;--ln:#d3dde8;--tx:#0e1b26;--mu:#5d7083;--bn:#fff0cf}
@@ -280,7 +280,7 @@ function bondInit(c,o){const ten=c.ten||10,m=/\s([\d.]+)\//.exec(c.pair),my=/\/(
   const ppb=c.px*bdur(y0,c.cpn,ten,2)*1e-4;c.pip=.001;
   const rg=/^DE/.test(c.pair)?4.5:/^IT/.test(c.pair)?6.3:/^UK/.test(c.pair)?6.5:/^CA/.test(c.pair)?5:/^JGB/.test(c.pair)?3.5:/^ID/.test(c.pair)?3.6:/^(MSFT|TENT|TNCT|BCGPP|SIEG)/.test(c.pair)?6:5.4,
     tf=ten<=3?1.05:ten<=7?1.05:ten<=10?1:.92;c.dvol=+(rg*tf).toFixed(2);c.kv=c.dvol/5.4;c.ppbp=ppb/.001;
-  c.fvol=c.dvol/Math.sqrt(6.5)*2.5/60*c.ppbp;c.dv=+(c.ppbp*.07).toFixed(2);c.spr=Math.max(2,Math.round(.2*ppb/.001));o.step=1;o.dec=8;
+  c.fvol=c.kv*.11*c.ppbp;c.dv=+(c.ppbp*.07).toFixed(2);c.spr=Math.max(2,Math.round(.2*ppb/.001));o.step=1;o.dec=8;
   c.sizes=[10,25,50,75,100,150];c.limit=600}
 function finishI(c,h,o){c.id="x"+SCB.length;c.gen=1;c.title=c.pair;if(c.cls==="FI")bondInit(c,o);c.dec=o.dec!=null?o.dec:Math.max(0,Math.ceil(-Math.log10(c.pip)-1e-9));c.step=o.step||c.spr;
   c.vol=+(c.px*h/100/c.pip/60).toFixed(4);if(c.fi)c.vol=+c.fvol.toFixed(3);c.strong=Math.max(4,Math.round(c.vol*80));c.weak=Math.max(2,Math.round(c.vol*27));
@@ -693,11 +693,48 @@ function bombNews(sc,R,nm){const pr={calm:.12,std:.35,vol:.6}[nm||"std"];if(!(R(
     h=s>0?`BREAKING: ${B0} stuns markets with surprise rate hike`:`BREAKING: ${B0} ambushes markets with emergency rate cut`;b="The unexpected decision triggered a sharp repricing in "+sym+".";e=ix?-s:s;size=(90+R()*70)*sc.vol}
   else{h=up?`BREAKING: Shock announcement lifts ${sym}`:`BREAKING: Unexpected shock rocks ${sym}`;b="Participants rushed to reprice after the news crossed the wires.";e=up?1:-1;size=(90+R()*70)*sc.vol}
   sc.nw.push({t,h,b,i:+(e*size).toFixed(2),bomb:1});sc.nw.sort((a,b)=>a.t-b.t)}
-function randSession(sc,label,nm){const _t=(label||"");const sx=sxSeed(),R=mkP(sx),v=sc.vol,th=themeOf((label||"")+" "+sc.pair);if(/Across Borders|Visor|Horizon II|Orchestra|Peaks/i.test(_t)){th.tg.curve=1;th.tg.spread=1}if(/Triple A|Tencent/i.test(_t))th.tg.credit=1;sc.sx=sx;
+/* ===== v8: FI volatility & news cadence, calibrated from Vega "Bonds at Work (US10Y)" recording ===== */
+const FIV={tau:20,d:.69,sd:.09,pull:3000,cap:.6,lf:20,rev:.35,rl:50,rd:35,vote:30,evalAt:45,weak:.9,strong:2.2,cad:120,first:60};
+function fiGap(){const u=rnd(0,1);return u<.30?rnd(1,1.5):u<.58?rnd(2,3.5):u<.75?rnd(3.5,5.5):rnd(5.5,9)}
+const FIEXTRA=[["Markets hold their breath ahead of {B} guidance","Traders kept positions light as they waited for fresh signals on the next policy move. Volumes were thin, and most desks were reluctant to take large directional bets before the central bank speaks.",0],
+["{N} yields edge higher as supply weighs","Investors absorbed a heavy slate of government debt, and dealers said buyers asked for a small concession to take on more duration.",-.6],
+["Haven demand lifts government bonds as stocks wobble","A pullback in equities sent investors toward the safety of sovereign debt, pushing yields modestly lower.",.7],
+["{B} speaker sees policy well positioned","The official said the current stance is appropriate and gave no hint of a change in direction, leaving rate expectations little changed.",0],
+["Corporate bond issuance surges, hedging flows hit the curve","Large investment-grade deals triggered rate hedging by underwriters, adding selling pressure across maturities.",-.5],
+["Credit spreads tighten as demand for corporate debt stays strong","Investors kept chasing yield, and the rally in credit came with a slightly weaker bid for government bonds.",-.4],
+["Oil slides on supply glut worries, easing inflation fears","Lower energy prices reduced inflation expectations, which supported bond prices.",.6],
+["Oil jumps as producers signal tighter output","Higher crude prices revived inflation worries and weighed on government bonds.",-.6],
+["{N} job data points to a cooling labour market","Hiring slowed more than economists had expected, raising the odds that the central bank stays on hold for longer.",.8],
+["{N} wage growth runs hotter than forecast","Faster pay gains kept the focus on sticky services inflation and lifted rate-hike bets.",-.8],
+["{B} seen on hold for now, leaving the door open to a move later","Economists expect no change at the next meeting, but a growing minority see a risk of tightening within a few months if inflation stays firm.",-.3],
+["Pension funds step in to buy duration on the dip","Liability-driven buyers were seen adding to long positions as yields rose, which limited the sell-off.",.5],
+["Foreign investors trim holdings of {N} government debt","Fresh flow data showed overseas accounts reducing positions, a sign of softer external demand.",-.6],
+["Fiscal worries resurface as the budget deficit widens","A larger-than-expected shortfall raised questions about future borrowing needs and pressured long-dated bonds.",-.7],
+["Manufacturing survey shows a surprise slowdown","Factory orders fell for a second month, pointing to weaker growth and drawing buyers into bonds.",.7],
+["Consumer prices surprise to the upside","Core inflation ran above forecasts, prompting traders to bring forward expectations for tighter policy.",-.9],
+["Rating agency downgrades a miner's debt, sees limited contagion","The cut had been widely expected and the wider market reaction was muted, with bond prices little changed.",0],
+["Auction of {N} 10-year notes draws solid demand","Bids came in above average and the sale priced slightly inside the pre-auction level.",.5],
+["Dealers report thin liquidity as month-end approaches","Quotes were wider than usual and several desks said clients were reluctant to trade size.",0],
+["Geopolitical tensions flare, investors seek safety","Sovereign bonds caught a bid as investors moved out of risky assets after a fresh round of threats.",.9],
+["Central bank balance-sheet runoff continues on schedule","Officials repeated that the pace of asset reduction is unchanged, in line with expectations.",0],
+["Strong retail sales point to a resilient consumer","Spending data beat forecasts, reducing the chance of early rate cuts and nudging yields higher.",-.6]];
+function fiNews(sc,R,pool0,rmf){const f=rmf?SESSION/3600:1,rg0=(sc.reg||[])[0]||"USA",ex=FIEXTRA.map(x=>({h:FIX(x[0],rg0,sc.pair),b:FIX(x[1],rg0,sc.pair),e:x[2],w:.8})),all=pool0.concat(ex),n=Math.max(1,Math.floor((SESSION-FIV.first)/FIV.cad)+1),out=[];let pool=[];
+  const km=sc.kv*(sc.vm||1)*sc.ppbp;
+  for(let k=0;k<n;k++){if(!pool.length)pool=all.slice();const tot=pool.reduce((s,c)=>s+c.w,0);let r=R()*tot,ix=0;for(;ix<pool.length-1;ix++){r-=pool[ix].w;if(r<=0)break}const c=pool.splice(ix,1)[0];
+    let size=(.45+.9*R())*km;if(R()<.18)size*=1.8;if(c.cur!=null&&c.cur>0)size=Math.max(size,c.cur*(.7+R()*.6));
+    let sg=c.e===0?(R()<.5?-1:1):Math.sign(c.e);if(c.e===0)size*=.3;else{if(R()<.15)size*=-.4;size*=Math.min(1.2,Math.max(.6,Math.abs(c.e)))}
+    out.push({t:Math.round((FIV.first+k*FIV.cad)/f),h:c.h,b:c.b,i:+(sg*Math.abs(size)*(size<0?-1:1)).toFixed(2)})}
+  return out}
+function fiBrief(sc){const rg0=(sc.reg||[])[0]||"USA",B=BK[rg0]||"The central bank",e=sc.ev.slice().sort((a,b)=>a.t-b.t)[0],dv=sc.dvol;
+  const a=e?`Today the focus is on ${e.n} (${e.c}), with a forecast of ${e.fc}${e.u||""} against ${e.pv}${e.u||""} previously. The ${B} is widely expected to keep its stance unchanged, so any surprise in tone could move ${sc.pair} quickly.`:`Today the market waits for fresh guidance from the ${B}, and ${sc.pair} is trading on headlines.`;
+  return [[null,a],["Rates",`Rate volatility is ${String(sc.vr||"Normal").toLowerCase()} today, around ${dv} bp a day. Yields drift in small steps of a tenth of a basis point and jump when news lands, so keep your DV01 inside the limit.`],["Credit","Corporate bond spreads have been tightening, and supply is steady. A sudden risk-off move would pull government yields lower."],["Oil","Crude is little changed. A sharp move in energy prices would shift inflation expectations and be felt in longer maturities."]]}
+function niceStep(rng,max,steps){for(const s of steps)if(rng/s<=max)return s;return steps[steps.length-1]}
+function randSession(sc,label,nm,rmf){const _t=(label||"");const sx=sxSeed(),R=mkP(sx),v=sc.vol,th=themeOf((label||"")+" "+sc.pair);if(/Across Borders|Visor|Horizon II|Orchestra|Peaks/i.test(_t)){th.tg.curve=1;th.tg.spread=1}if(/Triple A|Tencent/i.test(_t))th.tg.credit=1;sc.sx=sx;
   if(sc.fi){const q=R(),rg=q<.25?["Calm",.72]:q<.75?["Normal",1]:["Stressed",1.3];sc.vm=rg[1];sc.vr=rg[0];sc.vol=+(sc.vol*rg[1]).toFixed(3);sc.dvol=+(sc.dvol*rg[1]).toFixed(2);sc.move=Math.round(sc.dvol*15.87);sc.brief+=" Rate-vol regime today: "+rg[0]+" (~"+sc.dvol+" bp/day, MOVE-equivalent ~"+sc.move+")."}
   const E=shuf(R,sc.ev.slice()),k=Math.min(E.length,Math.max(3,E.length-(R()<.35?1:0))),ev=E.slice(0,k),ts=rndTimes(R,k,120,3300,200);
   ev.forEach((e,i)=>{e.t=ts[i];if(!/decision|lpr|loan prime/i.test(e.n)){e.fc=+(e.fc+(R()-.5)*e.sd*.8).toFixed(e.d);e.pv=+(e.fc+(R()-.5)*e.sd*1.6).toFixed(e.d)}});sc.ev=ev.sort((a,b)=>a.t-b.t);
   let pool=newsPool(sc,th),n=8+Math.floor(R()*5),pick=[],mag=sc.fi?sc.ppbp:v;
+  if(sc.fi){sc.nw=fiNews(sc,R,pool,rmf);bombNews(sc,R,nm);return}
   n=Math.min(n,pool.length);for(let q=0;q<n;q++){const tot=pool.reduce((s,c)=>s+c.w,0);let r=R()*tot,ix=0;for(;ix<pool.length-1;ix++){r-=pool[ix].w;if(r<=0)break}pick.push(pool.splice(ix,1)[0])}
   const tt=rndTimes(R,n,90,3450,150);
   sc.nw=pick.map((c,i)=>{let size=sc.fi?(.5+R())*sc.kv*sc.ppbp*(sc.vm||1):(18+R()*22)*v;
@@ -705,8 +742,8 @@ function randSession(sc,label,nm){const _t=(label||"");const sx=sxSeed(),R=mkP(s
     let sg=c.e===0?(R()<.5?-1:1):Math.sign(c.e);if(c.e===0)size*=.15;else if(R()<.15)size*=-.4;
     return{t:tt[i],h:c.h,b:c.b,i:+(sg*Math.abs(size)*(c.e!==0&&c.cur==null?Math.min(1.2,Math.abs(c.e)):1)).toFixed(2)}}).sort((a,b)=>a.t-b.t);bombNews(sc,R,nm)}
 function mk(i,rm){
-  const sc=JSON.parse(JSON.stringify(SCB[i]));const rng={m:rm?rm.seed|0:1,c:rm?(rm.seed^0x9e3779b9)|0:2,a:rm?(rm.seed^0x85ebca6b)|0:3};RNGS=rng;RK="m";randSession(sc,rm&&rm.scn,rm&&rm.news);if(rm)tune(sc,rm);
-  const S={sc,cfg:rm?cfgOf(rm):{...CFG},sim:0,paused:true,fin:false,speed:+$("spd").value||1,mid:sc.px,fv:sc.px,disp:sc.px,nextRef:5,start:sc.px,hist:[[0,sc.px]],lastH:0,pos:0,avg:0,real:0,trades:[],orders:[],calls:[],feed:[],log:[],imp:[],wide:0,nextCall:rnd(4,10)*(sc.cr||1),cid:1,oid:1,auto:false,votes:{},res:[],bank:0,tab:"active",ntab:"news",v2:1,pk:0,dd:0,maxPos:0,rel:{},st:{sent:0,hit:0,exp:0,pass:0},
+  const sc=JSON.parse(JSON.stringify(SCB[i]));const rng={m:rm?rm.seed|0:1,c:rm?(rm.seed^0x9e3779b9)|0:2,a:rm?(rm.seed^0x85ebca6b)|0:3};RNGS=rng;RK="m";randSession(sc,rm&&rm.scn,rm&&rm.news,!!rm);if(rm)tune(sc,rm);
+  const S={sc,cfg:rm?cfgOf(rm):{...CFG},sim:0,paused:true,fin:false,speed:+$("spd").value||1,mid:sc.px,fv:sc.px,disp:sc.px,nextRef:5,start:sc.px,hist:[[0,sc.px]],lastH:0,pos:0,avg:0,real:0,trades:[],orders:[],calls:[],feed:[],log:[],imp:[],wide:0,nextCall:rnd(4,10)*(sc.cr||1),cid:1,oid:1,auto:false,votes:{},res:[],nv:{},nres:[],tr:0,bank:0,tab:"active",ntab:"news",v2:1,pk:0,dd:0,maxPos:0,rel:{},st:{sent:0,hit:0,exp:0,pass:0},
     tB:[],tA:[],zB:[],zA:[],bots:BOTN.map(n=>({n,pnl:0,mu:rnd(-.3,.8),sg:rnd(2,6)}))};
 
   for(let k=0;k<=10;k++){S.tB.push(Math.round(rnd(100,1300)*(sc.fi?.08:1)));S.tA.push(Math.round(rnd(100,1300)*(sc.fi?.08:1)))}S.zB=S.tB.slice();S.zA=S.tA.slice();S.rng=rng;S.room=rm;initWatch(S,rm);RK="a";return S;
@@ -811,18 +848,22 @@ function callTick(dt){
 
 /* ---------- mesin pasar ---------- */
 function step(dt){
-  S.sim+=dt;const zz=randn();let m=S.fv+S.sc.pip*S.sc.vol*(S.vz||1)*zz*Math.sqrt(dt);
-  S.imp=S.imp.filter(i=>{m+=i.per*Math.min(dt,i.left)*S.sc.pip;i.left-=dt;return i.left>0});S.fv=m;stepWatch(dt,zz);
-  if(S.sim>=S.nextRef){const df=S.fv-S.mid,big=S.sim<(S.big||0),cp=big?Math.abs(df)+1:Math.max(S.sc.pip*S.sc.vol*2.5,Math.abs(df)*.35);S.mid=qz(S.mid+Math.max(-cp,Math.min(cp,df)));S.nextRef=S.sim+(S.cfg.ref||5)*(big?.45:1)*rnd(.7,1.3)}
+  S.sim+=dt;const zz=randn();let m;
+  if(S.sc.fi){const sc=S.sc,pp=sc.pip*sc.vol*(S.vz||1),a=Math.exp(-dt/FIV.tau);S.tr=(S.tr||0)*a+FIV.sd*Math.sqrt(1-a*a)*randn();m=S.fv+pp*(FIV.d*zz*Math.sqrt(dt)+S.tr*dt)-(S.fv-sc.px)*dt/FIV.pull}
+  else m=S.fv+S.sc.pip*S.sc.vol*(S.vz||1)*zz*Math.sqrt(dt);
+  S.imp=S.imp.filter(i=>{if(i.dl>0){i.dl-=dt;return true}m+=i.per*Math.min(dt,i.left)*S.sc.pip;i.left-=dt;return i.left>0});S.fv=m;stepWatch(dt,zz);
+  if(S.sim>=S.nextRef){const df=S.fv-S.mid,big=S.sim<(S.big||0),fi=S.sc.fi,cp=big?Math.abs(df)+1:fi?S.sc.ppbp*S.sc.pip*FIV.cap:Math.max(S.sc.pip*S.sc.vol*2.5,Math.abs(df)*.35);S.mid=qz(S.mid+Math.max(-cp,Math.min(cp,df)));S.nextRef=S.sim+(fi?fiGap()*(S.cfg.ref||5)/5:(S.cfg.ref||5)*rnd(.7,1.3))*(big?.45:1)}
   S.disp+=(S.mid-S.disp)*(1-Math.exp(-dt/.35));
   for(let k=0;k<=10;k++){S.zB[k]+=(S.tB[k]-S.zB[k])*.12*dt+rnd(-15,15)*(S.sc.fi?.1:1)*dt;S.zA[k]+=(S.tA[k]-S.zA[k])*.12*dt+rnd(-15,15)*(S.sc.fi?.1:1)*dt;S.zB[k]=Math.max(S.sc.fi?6:20,S.zB[k]);S.zA[k]=Math.max(S.sc.fi?6:20,S.zA[k])}
   S.sc.ev.forEach((e,i)=>{if(!e.fired&&S.sim>=e.t){e.fired=1;const sur=+((rnd(0,1)*2-1)*e.sd*1.4).toFixed(e.d);e.act=+(e.fc+sur).toFixed(e.d);
     const imp=sur*e.s+randn()*S.sc.spr*.3;if(Math.abs(imp)>=S.sc.weak*1.2)S.big=S.sim+14;S.imp.push({per:imp/6,left:6});S.wide=S.sim+25;L("info",`${e.c} ${e.n}: ${e.act}${e.u}`,`forecast ${e.fc}${e.u}, previous ${e.pv}${e.u}`);
     S.res.push({at:S.sim+30,i,m0:S.mid});S.v2++}});
-  S.sc.nw.forEach(n=>{if(!n.fired&&S.sim>=n.t){n.fired=1;if(n.bomb||Math.abs(n.i)>=S.sc.weak*1.6)S.big=S.sim+14;S.feed.unshift({t:n.t,h:n.h,b:n.b,open:false});S.feed.forEach((f,k)=>{if(k)f.open=false});{const lf=n.bomb?3:8;S.imp.push({per:(n.i+randn()*2)/lf,left:lf})}S.wide=S.sim+12;S.v2++}});
+  S.sc.nw.forEach((n,ix)=>{if(!n.fired&&S.sim>=n.t){n.fired=1;if(n.bomb||Math.abs(n.i)>=S.sc.weak*1.6)S.big=S.sim+14;S.feed.unshift({t:n.t,h:n.h,b:n.b,open:false,k:ix});S.feed.forEach((f,k)=>{if(k)f.open=false});{const fi=S.sc.fi,lf=n.bomb?3:fi?FIV.lf:8;S.imp.push({per:(n.i+randn()*(fi?S.sc.ppbp*.15:2))/lf,left:lf});if(fi){if(!n.bomb)S.imp.push({per:-n.i*FIV.rev/FIV.rl,left:FIV.rl,dl:FIV.rd});S.nres.push({k:ix,at:n.t+FIV.evalAt,m0:S.mid,h:n.h})}}S.wide=S.sim+12;S.v2++}});
   S.res=S.res.filter(r=>{if(S.sim<r.at)return true;const mv=(S.sc.fi?-1:1)*pips(S.mid-r.m0),a=Math.abs(mv),c=a>=S.sc.strong?2:a>=S.sc.weak?1:0,real=c*Math.sign(mv),v=S.votes[r.i],e=S.sc.ev[r.i];
     if(v==null)L("info","Bank's view: no vote",`${e.n} moved ${mv.toFixed(1)} pips`);
     else{const pts=v===real?2:(v&&Math.sign(v)===Math.sign(real)&&real!==0?1:0);S.bank+=pts;L("info",`Bank's view result: +${pts} pts`,`${e.n}: market moved ${mv.toFixed(1)} pips`)}return false});
+  if(S.sc.fi)S.nres=(S.nres||[]).filter(r=>{if(S.sim<r.at)return true;const mv=(yld(S.mid)-yld(r.m0))*100,a=Math.abs(mv),k=S.sc.kv*(S.sc.vm||1),c=a>=FIV.strong*k?2:a>=FIV.weak*k?1:0,real=c*Math.sign(mv),v=(S.nv||{})[r.k];
+    if(v!=null){const pts=v===real?2:(v&&Math.sign(v)===Math.sign(real)&&real!==0?1:0);S.bank+=pts;L("info",`Bank's view result: +${pts} pts`,`${r.h.slice(0,52)}: yield ${mv>=0?"+":""}${mv.toFixed(1)} bp`)}return false});
   orderTick(dt);callTick(dt);
   if(S.sim-S.lastH>=1){S.lastH=S.sim;S.hist.push([S.sim,S.disp]);const p=S.real+unreal();S.pk=Math.max(S.pk,p);S.dd=Math.max(S.dd,S.pk-p);S.bots.forEach(b=>b.pnl+=b.mu*1e3+randn()*b.sg*1e3)}
   if(S.sim>=SESSION){S.fin=true;S.paused=true}
@@ -936,12 +977,15 @@ function renderNews(){
   if(S.ntab==="cal"){$("nbody").innerHTML=calHTML(true);return}
   let h="";const f0=F[0];
   if(f0)h+=`<div class="nw1"><div class="t"><span>${TT(f0.t)}</span><span>${S.sim-f0.t<60?'<span class="nwb">New</span> ':""}<button class="lnk" data-brief="1">Morning brief</button></span></div><h4>${f0.h}</h4><p class="${f0.open?"":"clamp"}">${f0.b}</p><button class="lnk" data-tg="0">${f0.open?"Show less":"Show all"}</button></div>`;
+  else if(sc.fi)h+=`<div class="nw1"><div class="t"><span>Morning brief</span><span class="mu">first headline at T+01:00</span></div>${fiBrief(sc).map(([t,x])=>(t?`<h4 style="margin-top:12px">${t}</h4>`:"")+`<p style="color:var(--tx)">${x}</p>`).join("")}</div>`;
   else h+=`<div class="nw1"><div class="t"><span>T+00:00</span><button class="lnk" data-brief="1">Morning brief</button></div><h4>No news yet</h4><p>Headlines will appear here as the session runs.</p></div>`;
+  if(sc.fi&&f0){const op=S.sim<f0.t+FIV.vote,cu=(S.nv||{})[f0.k],LB=["↓↓ Strongly down","↓ Down","Flat","↑ Up","↑↑ Strongly up"];
+    h+=op?`<div class="vv"><div class="vh"><span>Your bank's view</span><span class="am">${mm(f0.t+FIV.vote-S.sim)} left to vote</span></div><div class="vr"><b>${sc.pair}</b><div class="vt">${labs.map((l,k)=>`<button data-nv="${k-2}" class="${cu===k-2?"on":""}">${l}</button>`).join("")}</div></div></div>`:`<div class="vv"><div class="vh"><span>Your bank's view</span><span class="mu">Voting closed</span></div><div class="vr"><b>${sc.pair}</b><span class="${cu==null?"mu":"am"}">${cu==null?"No vote":LB[cu+2]}</span></div></div>`}
   const ve=S.vw>=0?sc.ev[S.vw]:null,lastF=sc.ev.map((e,i)=>e.fired?i:-1).filter(i=>i>=0).pop();
   if(ve&&!ve.fired){const cur=S.votes[S.vw];h+=`<div class="vv"><div class="vh"><span>Your bank's view</span><span class="am"><b data-cd="${ve.t}">${mm(ve.t-S.sim)}</b> left to vote</span></div><div class="vr"><b>${sc.pair}</b><div class="vt">${labs.map((l,k)=>`<button data-v="${k-2}" class="${cur===k-2?"on":""}">${l}</button>`).join("")}</div></div></div>`}
-  else if(lastF!=null){const cur=S.votes[lastF];h+=`<div class="vv"><div class="vh"><span>Your bank's view</span><span class="mu">Voting closed</span></div><div class="vr"><b>${sc.pair}</b><span>${cur==null?"No vote":["↓↓ Down ×2","↓ Down","Flat","↑ Up","↑↑ Up ×2"][cur+2]}</span></div></div>`}
+  else if(!sc.fi&&lastF!=null){const cur=S.votes[lastF];h+=`<div class="vv"><div class="vh"><span>Your bank's view</span><span class="mu">Voting closed</span></div><div class="vr"><b>${sc.pair}</b><span>${cur==null?"No vote":["↓↓ Down ×2","↓ Down","Flat","↑ Up","↑↑ Up ×2"][cur+2]}</span></div></div>`}
   const ne=sc.ev.find(e=>!e.fired);
-  h+=`<div class="ph2"><span>Upcoming</span><span class="mu" style="font-weight:400;font-size:12px">Forecast &nbsp;&nbsp; Previous</span></div>`+(ne?`<div class="up1"><div style="display:flex;justify-content:space-between"><span><span class="mu">in</span> <b data-cd="${ne.t}">${mm(ne.t-S.sim)}</b> &nbsp; <b>${ne.n}</b></span><span><b>${ne.fc}</b> <span class="mu">${ne.u||"-"}</span> &nbsp; <span class="mu">${ne.pv} ${ne.u||"-"}</span></span></div><div class="mu" style="font-size:12px">${ne.c}</div><p>${EVDesc(ne.n)}</p></div>`:'<div class="mu">No more scheduled events.</div>');
+  h+=`<div class="ph2"><span>Upcoming</span><span class="mu" style="font-weight:400;font-size:12px">Forecast &nbsp;&nbsp; Previous</span></div>`+(ne?`<div class="up1"><div style="display:flex;justify-content:space-between"><span><span class="mu">in</span> <b data-cd="${ne.t}">${mm(ne.t-S.sim)}</b> &nbsp; <b>${ne.n}</b></span><span><b>${ne.fc}</b> <span class="mu">${ne.u||"-"}</span> &nbsp; <span class="mu">${ne.pv} ${ne.u||"-"}</span></span></div><div class="mu" style="font-size:12px">${ne.c}</div>${sc.fi?"":`<p>${EVDesc(ne.n)}</p>`}</div>`:'<div class="mu">No more scheduled events.</div>');
   if(F.length>1)h+=`<div class="ph2"><span>Earlier</span></div>`+F.slice(1).map((f,i)=>`<button class="er" data-tg="${i+1}"><span>${TT(f.t)}</span>${f.h}</button>${f.open?`<p class="mu" style="margin:4px 0 8px">${f.b}</p>`:""}`).join("");
   $("nbody").innerHTML=h}
 /* ---------- chart ---------- */
@@ -967,8 +1011,10 @@ function drawChart(){
   let cd=[];if(typ==="candle"){const B=Math.max(10,Math.ceil(T/70));hs.forEach(([t,p])=>{const k=Math.floor(t/B),c=cd[cd.length-1];if(c&&c.k===k){c.h=Math.max(c.h,p);c.l=Math.min(c.l,p);c.c=p}else cd.push({k,t0:k*B,B,o:p,h:p,l:p,c:p})})}
   let lo=Infinity,hi=-Infinity;hs.forEach(([,p])=>{lo=Math.min(lo,p);hi=Math.max(hi,p)});const gl=lo,gh=hi,pd=Math.max((hi-lo)*.15,fi?.0004:S.sc.pip*4);lo-=pd;hi+=pd;
   const X=t=>t/T*w,Y=p=>pt+(hi-p)/(hi-lo)*h;CG={T,pr,pt,w,h,lo,hi,hs};g.font="11.5px system-ui";g.lineWidth=1;
-  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,y=Math.round(Y(v))+.5;g.strokeStyle=C("--ln");g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke();g.fillStyle=C("--mu");g.fillText(fpv(v)+(fi?"%":""),w+6,y+4)}
-  g.fillStyle=C("--mu");["Start",...[1,2,3].map(i=>TT(T*i/4))].forEach((t,i)=>g.fillText(t,i===0?0:w*i/4-18,H-6));
+  if(fi){const st=niceStep(hi-lo,6,[.0005,.001,.002,.005,.01,.02,.05,.1,.2,.5]);for(let v=Math.ceil(lo/st)*st;v<=hi+1e-9;v+=st){const y=Math.round(Y(v))+.5;g.strokeStyle=C("--ln");g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke();g.fillStyle=C("--mu");g.fillText(fpv(v)+"%",w+6,y+4)}
+    g.fillStyle=C("--mu");g.fillText("Start",0,H-6);const ts=niceStep(T,5,[15,30,60,120,300,600,900,1800]);for(let t=ts;t<T-ts*.25;t+=ts)g.fillText(TT(t),X(t)-18,H-6)}
+  else{for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,y=Math.round(Y(v))+.5;g.strokeStyle=C("--ln");g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke();g.fillStyle=C("--mu");g.fillText(fpv(v)+(fi?"%":""),w+6,y+4)}
+  g.fillStyle=C("--mu");["Start",...[1,2,3].map(i=>TT(T*i/4))].forEach((t,i)=>g.fillText(t,i===0?0:w*i/4-18,H-6))}
   if(typ==="candle"){const bw=Math.max(2,w/cd.length*.65);cd.forEach(c=>{const x=X(c.t0+c.B/2),up=c.c>=c.o;g.strokeStyle=g.fillStyle=up?C("--up"):C("--dn");g.beginPath();g.moveTo(x,Y(c.h));g.lineTo(x,Y(c.l));g.stroke();g.fillRect(x-bw/2,Math.min(Y(c.o),Y(c.c)),bw,Math.max(1,Math.abs(Y(c.o)-Y(c.c))))})}
   else{g.beginPath();hs.forEach(([t,p],i)=>i?g.lineTo(X(t),Y(p)):g.moveTo(X(t),Y(p)));
     if(typ==="area"){g.save();g.lineTo(X(S.sim),pt+h);g.lineTo(0,pt+h);g.closePath();const gr=g.createLinearGradient(0,pt,0,pt+h);gr.addColorStop(0,"rgba(79,143,247,.35)");gr.addColorStop(1,"rgba(79,143,247,0)");g.fillStyle=gr;g.fill();g.restore();g.beginPath();hs.forEach(([t,p],i)=>i?g.lineTo(X(t),Y(p)):g.moveTo(X(t),Y(p)))}
@@ -1000,7 +1046,7 @@ function drawChart(){
   S.trades.forEach(t=>{const x=X(t.t),y=Y(fi?yld(t.p):t.p),u=t.q>0;g.fillStyle=u?C("--up"):C("--dn");g.beginPath();g.moveTo(x,y+(u?-4:4));g.lineTo(x-5,y+(u?6:-6));g.lineTo(x+5,y+(u?6:-6));g.fill()});
   const ly=Y(hs[hs.length-1][1]),lv=fi?yld(S.mid):S.mid;g.strokeStyle=C("--tx");g.setLineDash([2,3]);g.beginPath();g.moveTo(0,ly);g.lineTo(w,ly);g.stroke();g.setLineDash([]);
   g.fillStyle="#fff";g.fillRect(w,ly-9,pr,18);g.fillStyle="#000";g.fillText(fpv(lv)+(fi?"%":""),w+4,ly+4);
-  if(fi){const dp=(lv-yld(S.start))*100;$("last").textContent=fpv(lv)+"%";$("dlt").innerHTML=`<span class="${dp>=0?"up":"dn"}">${dp>=0?"↑":"↓"} ${dp>=0?"+":""}${dp.toFixed(1)} bp</span>`}
+  if(fi){const dp=(lv-yld(S.start))*100;$("last").textContent=fpv(lv)+"%";$("dlt").innerHTML=`<span class="mu">${dp>=0?"↑":"↓"} ${dp>=0?"+":""}${dp.toFixed(1)} bp</span>`}
   else{const dp=pips(S.mid-S.start);$("last").textContent=fp(S.mid);$("dlt").innerHTML=`<span class="${cu(dp)}">${dp>=0?"↑":"↓"} ${dp>=0?"+":""}${dp.toFixed(0)} pips</span> <span class="mu">${dp>=0?"+":""}${((S.mid/S.start-1)*100).toFixed(2)}%</span>`}
   $("chR").textContent=`T+00:00 to ${S.sim?TT(S.sim):"now"}`;
 }
@@ -1074,6 +1120,7 @@ $("clist").onclick=e=>{const el=e.target.closest("[data-id]");if(!el)return;cons
   else if(d.mkt!==undefined){el.querySelector("[data-cb]").value=fp(bidP());el.querySelector("[data-ca]").value=fp(askP())}};
 $("nbody").onclick=e=>{const d=e.target.dataset;
   if(d.tg!==undefined){S.feed[d.tg].open=!S.feed[d.tg].open;S.v2++}
+  else if(d.nv!==undefined){if(!guard())return;const f=S.feed[0];if(f&&S.sim<f.t+FIV.vote){(S.nv=S.nv||{})[f.k]=+d.nv;S.v2++}}
   else if(d.v!==undefined){if(!guard())return;S.votes[S.vw]=+d.v;S.v2++}
   else if(e.target.id==="brief"||d.brief!==undefined)showBrief(false)};
 $("brief2").onclick=()=>showBrief(false);$("dashB").onclick=()=>showDash("Dashboard");$("helpB").onclick=showHelp;$("setB").onclick=()=>showSettings(false);$("dx").onclick=()=>$("dlg").close();
