@@ -273,13 +273,15 @@ const bpx=(y,c,n,f)=>{const r=y/100/f,N=Math.round(n*f);let s=0,d=1;for(let k=1;
 const byld=(p,c,n,f)=>{let y=c>0?c:2;for(let i=0;i<10;i++){const a=bpx(y,c,n,f),sl=(bpx(y+.01,c,n,f)-a)/.01;if(!sl)break;y-=(a-p)/sl;if(y<-5)y=-5;if(y>60)y=60}return y};
 const bdur=(y,c,n,f)=>{const p=bpx(y,c,n,f);return(bpx(y-.01,c,n,f)-p)/(p*1e-4)};
 const bcvx=(y,c,n,f)=>{const p=bpx(y,c,n,f);return(bpx(y+.01,c,n,f)+bpx(y-.01,c,n,f)-2*p)/p*1e6};
+const BREF={ID10Y:{cpn:6.38,y:6.88,iss:"25.05.2023",dv:14,yt:.01,fdec:2}};
 function bondInit(c,o){const ten=c.ten||10,m=/\s([\d.]+)\//.exec(c.pair),my=/\/(\d{4})/.exec(c.pair);c.fi=1;c.yrs=ten;c.frq=2;c.base="USD";
   const yg=1.8+ten*.04;c.cpn=m?+m[1]:c.pair==="US10Y"?1.625:Math.round(yg*8)/8;
+  const RF=BREF[c.pair];if(RF){c.cpn=RF.cpn;c.px=+bpx(RF.y,RF.cpn,ten,2).toFixed(3);c.yt=RF.yt;c.fdec=RF.fdec}
   let y0=byld(c.px,c.cpn,ten,2);if(!(y0>.2&&y0<12)){c.px=+bpx(yg,c.cpn,ten,2).toFixed(3);y0=yg}
-  c.iss=c.pair==="US10Y"?"15.02.2016":"15.02."+(my?my[1]-ten:2026-Math.floor(ten/2));
+  c.iss=RF?RF.iss:c.pair==="US10Y"?"15.02.2016":"15.02."+(my?my[1]-ten:2026-Math.floor(ten/2));
   const ppb=c.px*bdur(y0,c.cpn,ten,2)*1e-4;c.pip=.001;
   const rg=/^DE/.test(c.pair)?4.5:/^IT/.test(c.pair)?6.3:/^UK/.test(c.pair)?6.5:/^CA/.test(c.pair)?5:/^JGB/.test(c.pair)?3.5:/^ID/.test(c.pair)?3.6:/^(MSFT|TENT|TNCT|BCGPP|SIEG)/.test(c.pair)?6:5.4,
-    tf=ten<=3?1.05:ten<=7?1.05:ten<=10?1:.92;c.dvol=+(rg*tf).toFixed(2);c.kv=c.dvol/5.4;c.ppbp=ppb/.001;
+    tf=ten<=3?1.05:ten<=7?1.05:ten<=10?1:.92;c.dvol=RF?RF.dv:+(rg*tf).toFixed(2);c.kv=c.dvol/5.4;c.ppbp=ppb/.001;
   c.fvol=c.kv*.11*c.ppbp;c.dv=+(c.ppbp*.07).toFixed(2);c.spr=Math.max(2,Math.round(.2*ppb/.001));o.step=1;o.dec=8;
   c.sizes=[10,25,50,75,100,150];c.limit=600}
 function finishI(c,h,o){c.id="x"+SCB.length;c.gen=1;c.title=c.pair;if(c.cls==="FI")bondInit(c,o);c.dec=o.dec!=null?o.dec:Math.max(0,Math.ceil(-Math.log10(c.pip)-1e-9));c.step=o.step||c.spr;
@@ -550,7 +552,7 @@ const DEFCFG={on:1,int:15,ans:30,large:20,one:25,two:25,prop:50,ib:1,br:1,pl:30,
 let S,ALL=[],cur=0,pi=0,fd=0,nameU=localStorage.getItem("mts_name")||"Trader";
 const yld=p=>byld(p,S.sc.cpn,S.sc.yrs,S.sc.frq),dur=()=>bdur(yld(S.mid),S.sc.cpn,S.sc.yrs,S.sc.frq),
 dv01=q=>q*1e6*(S.mid/100)*dur()*1e-4,pv01=()=>S.mid*dur()*1e-4;
-const fpv=v=>v.toFixed(S.sc.fi?4:S.sc.dec),fp=p=>fpv(S.sc.fi?yld(p):p),fu=p=>fp(p)+(S.sc.fi?"%":""),pips=x=>x/S.sc.pip,ip=v=>S.sc.fi?bpx(+(+v).toFixed(5),S.sc.cpn,S.sc.yrs,S.sc.frq):v;
+const fpv=v=>v.toFixed(S.sc.fi?(S.sc.fdec||4):S.sc.dec),fp=p=>fpv(S.sc.fi?yld(p):p),fu=p=>fp(p)+(S.sc.fi?"%":""),pips=x=>x/S.sc.pip,ip=v=>S.sc.fi?bpx(+(+v).toFixed(5),S.sc.cpn,S.sc.yrs,S.sc.frq):v;
 const fK=v=>{const a=Math.abs(v);return a>=1e6?(a/1e6).toFixed(2)+"M":a>=1e3?(a/1e3).toFixed(1)+"K":a.toFixed(0)},sK=v=>(v<0?"−":"")+fK(v);
 const mm=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
 const TT=s=>"T+"+String(Math.floor(s/60)).padStart(2,"0")+":"+String(Math.floor(s%60)).padStart(2,"0");
@@ -765,10 +767,10 @@ async function realStart(){
     if(r.IDR>0)USDIDR=r.IDR;
     if(ALL[0]===t&&t.sim===0&&v>0&&!t.room){const p=t.sc.pip;t.mid=t.fv=t.disp=t.start=+(Math.round(v/p)*p).toFixed(t.sc.dec);t.hist=[[0,t.mid]];t.real0=true;t.v2++}}catch(e){}
 }
-const YT=.002,yq=i=>+(i*YT).toFixed(5),pOf=y=>bpx(y,S.sc.cpn,S.sc.yrs,S.sc.frq);
+const YTf=()=>(S&&S.sc&&S.sc.yt)||.002,yq=i=>+(i*YTf()).toFixed(5),pOf=y=>bpx(y,S.sc.cpn,S.sc.yrs,S.sc.frq);
 const qz=x=>S.sc.fi?pOf(+(Math.round(yld(x)/.001)*.001).toFixed(5)):+(Math.round(x/S.sc.pip)*S.sc.pip).toFixed(S.sc.dec);
 const sprP=()=>Math.max(1,Math.round(S.sc.spr*(S.sim<S.wide?2.2:1)));
-const nT=()=>Math.max(1,Math.round(sprP()/S.sc.spr)),bI=()=>Math.round(yld(S.mid)/YT+nT()/2-1e-9);
+const nT=()=>Math.max(1,Math.round(sprP()/S.sc.spr)),bI=()=>Math.round(yld(S.mid)/YTf()+nT()/2-1e-9);
 const bidP=()=>S.sc.fi?pOf(yq(bI())):qz(S.mid-sprP()*S.sc.pip/2),askP=()=>S.sc.fi?pOf(yq(bI()-nT())):qz(bidP()+sprP()*S.sc.pip);
 const lvl=(buy,k)=>S.sc.fi?pOf(yq(buy?bI()-nT()-k*S.sc.step:bI()+k*S.sc.step)):+((buy?askP()+k*S.sc.step*S.sc.pip:bidP()-k*S.sc.step*S.sc.pip)).toFixed(S.sc.dec);
 const unreal=()=>S.pos?S.pos*(S.mid-S.avg)*cv()*1e6:0;
@@ -929,6 +931,16 @@ function renderCalls(){
   if(fo&&fo.k){const f=cl.querySelector('.call[data-id="'+fo.id+'"] [data-'+fo.k+']');if(f){f.focus();try{f.setSelectionRange(fo.a,fo.b)}catch(e){}}}}
 $("clist").addEventListener("input",e=>{const t=e.target,ci=t.closest?t.closest(".call"):null;if(!ci)return;const c=S.calls.find(x=>x.id==ci.dataset.id);if(!c)return;
   if(t.hasAttribute("data-cb"))c.ub=t.value;else if(t.hasAttribute("data-ca"))c.ua=t.value;else if(t.hasAttribute("data-cp"))c.uv=t.value});
+$("clist").addEventListener("keydown",e=>{const t=e.target;if(!t||!t.hasAttribute||!(t.hasAttribute("data-cb")||t.hasAttribute("data-ca")||t.hasAttribute("data-cp")))return;
+  const m={ArrowLeft:-1,ArrowRight:1,ArrowUp:2,ArrowDown:-2}[e.key];if(m==null)return;
+  const ci=t.closest(".call"),c=ci&&S.calls.find(x=>x.id==ci.dataset.id);if(!c)return;e.preventDefault();
+  const dc=S.sc.fi?(S.sc.fdec||4):S.sc.dec,u=Math.pow(10,-dc),d=m*u,v=+t.value;if(!isFinite(v)||t.value==="")return;
+  const nv=+(v+d).toFixed(dc);t.value=nv.toFixed(dc);
+  if(t.hasAttribute("data-cp"))c.uv=t.value;
+  else{const isB=t.hasAttribute("data-cb"),o=ci.querySelector(isB?"[data-ca]":"[data-cb]"),ov=o?+o.value:NaN;
+    if(isB)c.ub=t.value;else c.ua=t.value;
+    if(o&&o.value!==""&&isFinite(ov)){o.value=(+(ov-d).toFixed(dc)).toFixed(dc);if(isB)c.ua=o.value;else c.ub=o.value}}
+  try{t.setSelectionRange(t.value.length,t.value.length)}catch(x){}});
 const EVD=[[/hourly|wage/i,"Wage growth. Faster wage growth feeds inflation and supports expectations of higher rates."],[/payroll|employment change|jobs/i,"Jobs added to the economy. Strong hiring signals a healthy economy and can lift rate expectations."],[/cpi|inflation|price index|ppi/i,"Change in the price of a basket of goods and services. A high reading points to inflation and raises the odds of tighter policy."],[/rate decision|lpr|loan prime|policy rate/i,"The central bank's policy-rate decision. A hike or hawkish tone usually lifts the currency and yields; a cut or dovish tone does the opposite."],[/pmi|manufacturing|zew|sentiment|kof|tankan|confidence|barometer/i,"Survey-based gauge of business or consumer conditions. Readings above the neutral level (50 for PMIs) point to expansion."],[/gdp/i,"Total output of the economy. Growth above forecast tends to support the currency and push yields up."],[/trade balance/i,"Exports minus imports. A larger surplus is generally positive for the local currency."],[/building permits|housing|home/i,"Tracks new construction or housing activity. A higher number points to a stronger housing market and economy."],[/industrial|production/i,"Volume of output in factories and mines. Strong readings can raise inflation and rate expectations."],[/crude|eia|oil|inventor/i,"Weekly change in crude stocks. A larger draw than forecast is usually read as bullish for oil."],[/retail|sales/i,"Consumer spending. A high reading signals strong demand and supports the currency."],[/earnings|eps/i,"Company profit per share against analyst forecasts. A beat usually lifts the share price."]];
 const EVDesc=n=>(EVD.find(x=>x[0].test(n))||[0,"Scheduled data release. A reading above forecast is usually seen as positive for the local currency and yields."])[1];
 function evBlock(e,i){const sc=S.sc,labs=["↓↓","↓","Flat","↑","↑↑"],cur=S.votes[i],open=i===S.vw&&!e.fired,df=e.fired?+(e.act-e.fc).toFixed(e.d):0,mt='<div class="mu" style="margin-top:6px">';
