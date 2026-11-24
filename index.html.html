@@ -172,6 +172,8 @@ body:not(.isfi) #lad{display:grid;grid-template-columns:1fr 1fr;column-gap:4px}
 #lad .ol .bw b{color:#ff7b7f}#lad .or .bw b{color:#58d9a2}
 #lad .ol:hover,#lad .or:hover{outline:1px solid var(--mu)}
 body.isfi .vtop{display:none}
+#bidBig,#askBig{font-size:18px;font-weight:400;padding:1px 4px;border-radius:3px}#bidBig b,#askBig b{font-size:22px;font-weight:700}
+#bidBig:hover{background:rgba(255,107,107,.18)}#askBig:hover{background:rgba(79,211,154,.18)}
 .ent{display:flex;align-items:center;gap:6px;margin:10px 0 8px;padding:0 10px;height:36px;border:1px solid var(--ln);border-radius:3px;background:var(--in);font-size:15px}
 .ent input{flex:1;width:auto;text-align:left;background:none;border:0;padding:0;font-weight:600;font-size:15px}
 .ent #ccy{font-size:13px}
@@ -925,9 +927,10 @@ function render(){
    <div class="kv mu"><span>${S.orders.filter(o=>o.q>0).map(o=>"Bid "+fM(o.left)+" @ "+fp(o.px)).join(", ")||"No bids"}</span><span>${S.orders.filter(o=>o.q<0).map(o=>"Ask "+fM(o.left)+" @ "+fp(o.px)).join(", ")||"No asks"}</span></div>`;
   if(sc.fi)$("posB").innerHTML=fiPos();
   const sz=+$("size").value||0;$("mSell").textContent="SELL "+fM(sz);$("mBuy").textContent="BUY "+fM(sz);$("szb").textContent=fM(S.zB[0]);$("sza").textContent=fM(S.zA[0]);
-  $("bidBig").textContent=fp(b);$("askBig").textContent=fp(a);$("spw").textContent=sprP();$("szq").textContent="/"+fM(sz);
+  const sp2=v=>{const t=fp(v);return t.slice(0,-2)+"<b>"+t.slice(-2)+"</b>"};$("bidBig").innerHTML=sp2(b);$("askBig").innerHTML=sp2(a);
+  $("bidBig").title="Sell "+fM(sz)+" "+sc.base+" of "+sc.pair+" at "+fp(b)+" · Immediate or cancel\n"+fM(S.zB[0])+" bid here";$("askBig").title="Buy "+fM(sz)+" "+sc.base+" of "+sc.pair+" at "+fp(a)+" · Immediate or cancel\n"+fM(S.zA[0])+" offered here";$("spw").textContent=sprP();$("szq").textContent="/"+fM(sz);
   let h="";const mx=Math.max(...S.zB.slice(1),...S.zA.slice(1));
-  for(let k=1;k<=10;k++)h+=`<div class="ol" data-p="${fp(lvl(false,k))}" data-s="b"><span class="sz">${fM(S.zB[k])}</span><span class="bw"><i style="width:${S.zB[k]/mx*100}%"></i><b>${fp(lvl(false,k))}</b></span></div><div class="or" data-p="${fp(lvl(true,k))}" data-s="a"><span class="bw"><i style="width:${S.zA[k]/mx*100}%"></i><b>${fp(lvl(true,k))}</b></span><span class="sz">${fM(S.zA[k])}</span></div>`;
+  for(let k=1;k<=10;k++)h+=`<div class="ol" data-k="${k}" title="Sell ${fM(sz)} ${sc.base} of ${sc.pair} at ${fp(lvl(false,k))} · Immediate or cancel&#10;${fM(S.zB[k])} bid here" data-p="${fp(lvl(false,k))}" data-s="b"><span class="sz">${fM(S.zB[k])}</span><span class="bw"><i style="width:${S.zB[k]/mx*100}%"></i><b>${fp(lvl(false,k))}</b></span></div><div class="or" data-k="${k}" title="Buy ${fM(sz)} ${sc.base} of ${sc.pair} at ${fp(lvl(true,k))} · Immediate or cancel&#10;${fM(S.zA[k])} offered here" data-p="${fp(lvl(true,k))}" data-s="a"><span class="bw"><i style="width:${S.zA[k]/mx*100}%"></i><b>${fp(lvl(true,k))}</b></span><span class="sz">${fM(S.zA[k])}</span></div>`;
   $("lad").innerHTML=sc.fi?fiLad():h;
   [["pb",b],["pa",a]].forEach(([id,v])=>{const e=$(id);if(!e.dataset.d&&document.activeElement!==e)e.value=fp(v)});
   $("onum").textContent=S.orders.length+" orders";
@@ -1150,8 +1153,16 @@ $("run").onclick=()=>toggleRun();$("spd").onchange=()=>ALL.forEach(t=>t.speed=+$
 $("mBuy").onclick=()=>market(+$("size").value,"ladder");$("mSell").onclick=()=>market(-$("size").value,"ladder");
 $("bBid").onclick=()=>post(1);$("bAsk").onclick=()=>post(-1);
 ["pb","pa"].forEach(i=>$(i).oninput=()=>$(i).dataset.d="1");
-$("best").onclick=e=>{if(e.target.closest("[data-reset]"))["pb","pa"].forEach(i=>$(i).dataset.d="")};
-$("lad").onclick=e=>{const d=e.target.closest("[data-p]");if(!d)return;if(S.sc.fi){market((d.dataset.s==="a"?1:-1)*(+$("size").value),"ladder");return}const el=$(d.dataset.s==="b"?"pb":"pa");el.value=d.dataset.p;el.dataset.d="1"};
+$("best").onclick=e=>{if(e.target.closest("[data-reset]"))["pb","pa"].forEach(i=>$(i).dataset.d="");if(S.sc.fi)return;if(e.target.closest("#bidBig"))iocLevel(false,0);else if(e.target.closest("#askBig"))iocLevel(true,0)};
+$("lad").onclick=e=>{const d=e.target.closest("[data-p]");if(!d)return;if(S.sc.fi){market((d.dataset.s==="a"?1:-1)*(+$("size").value),"ladder");return}iocLevel(d.dataset.s==="a",+d.dataset.k||0)};
+function iocLevel(buy,kmax){
+  if(!guard())return;const q=+$("size").value;if(!(q>0))return void err("Enter a size.");
+  const sz=buy?S.zA:S.zB;let rem=q,cost=0,got=0,sw=[];
+  for(let k=0;k<=kmax&&rem>1e-9;k++){const t=Math.min(rem,sz[k]);if(!(t>0))continue;const p=k?lvl(buy,k):buy?askP():bidP();cost+=t*p;rem-=t;got+=t;sw.push([k,t])}
+  if(got<=1e-9)return void err("No liquidity available at that price.");
+  const sq=buy?got:-got;if(!limOK(sq))return void err(`Position limit of ${S.sc.limit}M ${S.sc.base} would be exceeded.`);
+  sw.forEach(([k,t])=>sz[k]-=t);fill(sq,qz(cost/got),"ladder");
+  if(rem>1e-9)L("info","Immediate or cancel: partially filled",`${fM(got)} of ${fM(q)} ${S.sc.base} filled, rest cancelled`)}
 $("ordB").onclick=e=>{const id=e.target.dataset.x;if(!id||!guard())return;S.orders=S.orders.filter(o=>o.id!=id);L("info","Order cancelled")};
 $("cmm").onclick=()=>{if(!guard())return;const z=+$("size").value;if(!(z>0))return void err("Enter a size.");if(S.calls.some(c=>c.mm&&c.st==="active"))return void err("You already have a market-maker call open.");S.calls.unshift({id:S.cid++,cl:{n:pick(MMN),ty:"Interbank",inf:0},mm:1,size:z,st:"active",pend:true,wait:rnd(2,5),left:0,at:S.sim});S.tab="active";S.v2++};
 $("tA").onclick=()=>{S.tab="active";S.v2++};$("tR").onclick=()=>{S.tab="recent";S.v2++};
