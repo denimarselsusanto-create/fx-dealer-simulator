@@ -4,11 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Market Trader Simulator v8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#070707;--pn:#151515;--in:#0e0e0e;--ln:#2b2b2b;--tx:#f4f4f4;--mu:#9a9a9a;--bl:#5b8def;--up:#4fd39a;--dn:#ff6b6b;--am:#ffb340;--bn:#352607}
+:root{--bg:#121212;--pn:#1f1f1f;--in:#262626;--ln:#343434;--tx:#f2f2f2;--mu:#9b9b9b;--bl:#5b8def;--up:#4fd39a;--dn:#ff6b6b;--am:#ffb340;--bn:#352607}
 [data-theme=light]{--bg:#eaf0f6;--pn:#fff;--in:#f2f6fa;--ln:#d3dde8;--tx:#0e1b26;--mu:#5d7083;--bn:#fff0cf}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.4 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.4 "IBM Plex Sans",Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
 button,input,select{font:inherit;color:var(--tx);background:var(--in);border:1px solid var(--ln);border-radius:5px;padding:5px 9px}
 button{cursor:pointer}button:hover:not(:disabled){border-color:var(--mu)}button:disabled{opacity:.45;cursor:default}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--bl);outline-offset:1px}
@@ -144,6 +146,40 @@ body.isfi #cmm{width:auto!important;display:block;margin-left:auto}
 .vv{background:var(--in);border-radius:4px;padding:8px 10px;margin:6px 0}.vh,.vr{display:flex;justify-content:space-between;align-items:center}.vv .vt{margin:0;flex:1;margin-left:12px}
 .ph2{display:flex;justify-content:space-between;font-weight:600;padding:7px 0 3px;margin-top:6px;color:var(--tx)}
 .up1{padding:6px 0}.up1 p{color:var(--mu);margin:4px 0}
+
+/* ===== v9: tampilan broker/order book ala Vega ===== */
+header{background:#000}
+.pn{border:0;border-radius:4px}
+.ph h3{font-weight:600;font-size:14px}
+.vtop{display:grid;grid-template-columns:46px 1fr 44px 1fr 46px;align-items:end;margin:4px 0 6px}
+.vtop>span{align-self:start;font-size:12px;color:var(--mu);font-variant-numeric:tabular-nums}
+.vtop>span:last-child{text-align:right}
+.vtop .vs button{background:none;border:0;padding:0;font-size:11.5px;font-weight:700;display:block;line-height:1.3}
+.vtop .vs:first-of-type{text-align:right}.vtop .vs:first-of-type button{margin-left:auto;color:var(--dn)}
+.vtop .vs+.vm+.vs{text-align:left}.vtop .vs+.vm+.vs button{color:var(--up)}
+.vtop .vs div{font-size:20px;font-weight:500;line-height:1.15;cursor:pointer;font-variant-numeric:tabular-nums}
+#bidBig{color:var(--dn)}#askBig{color:var(--up)}
+.vm{text-align:center;line-height:1.05}.vm b{display:block;font-size:15px}.vm small{font-size:11px;color:var(--mu)}
+body:not(.isfi) #lad{display:grid;grid-template-columns:1fr 1fr;column-gap:4px}
+#lad .ol,#lad .or{display:flex;align-items:center;height:20px;margin:0;padding:0;cursor:pointer;font-variant-numeric:tabular-nums;font-size:13.5px;justify-content:flex-start}
+#lad .sz{width:46px;flex:none;color:#bdbdbd;font-size:12px}
+#lad .or .sz{text-align:right}
+#lad .bw{position:relative;flex:1;height:20px;display:flex;align-items:center}
+#lad .ol .bw{justify-content:flex-end}#lad .or .bw{justify-content:flex-start}
+#lad .bw i{position:absolute;top:0;bottom:0}
+#lad .ol .bw i{right:0;background:rgba(255,107,107,.24)}#lad .or .bw i{left:0;background:rgba(79,211,154,.24)}
+#lad .bw b{position:relative;z-index:1;font-weight:400;padding:0 8px}
+#lad .ol .bw b{color:#ff7b7f}#lad .or .bw b{color:#58d9a2}
+#lad .ol:hover,#lad .or:hover{outline:1px solid var(--mu)}
+body.isfi .vtop{display:none}
+.ent{display:flex;align-items:center;gap:6px;margin:10px 0 8px;padding:0 10px;height:36px;border:1px solid var(--ln);border-radius:3px;background:var(--in);font-size:15px}
+.ent input{flex:1;width:auto;text-align:left;background:none;border:0;padding:0;font-weight:600;font-size:15px}
+.ent #ccy{font-size:13px}
+.pr{grid-template-columns:1fr auto 1fr auto;gap:0}
+#pb,#pa{height:34px;border:0;border-radius:3px 0 0 3px;font-size:15px;text-align:center}
+#pb{background:#3a1d20;color:var(--dn)}#pa{background:#173b30;color:var(--up)}
+#bBid,#bAsk{height:34px;border:0;border-radius:0 3px 3px 0;font-weight:700;font-size:12px;padding:0 14px}
+#bBid{background:#2a1517;color:#ffc9c9;margin-right:8px}#bAsk{background:#0f2a21;color:#c9f5e2}
 </style>
 </head>
 <body>
@@ -162,19 +198,19 @@ body.isfi #cmm{width:auto!important;display:block;margin-left:auto}
 <div id="tl"><b id="tlp"></b></div>
 <div id="banner"></div>
 <main>
-  <div class="col" style="width:310px">
+  <div class="col" style="width:464px">
     <section class="pn" id="p-pos"><div class="ph"><h3 id="posT"></h3></div><div id="posB"></div></section>
     <section class="pn" id="p-watch"><div class="ph"><h3>Scenario watch</h3></div><div id="watchB"></div></section>
     <section class="pn fionly" id="p-risk"><div class="ph"><h3>Bond risk</h3></div><div id="riskB"></div></section>
     <section class="pn" id="p-brk"><div class="ph"><h3 id="brkT"></h3></div>
-      <div class="l4"><span id="szb"></span><button class="s" id="mSell"></button><button class="b" id="mBuy"></button><span id="sza"></span></div>
-      <div class="bb" id="best"></div><div class="lr" id="lad"></div>
-      <div class="ent"><span class="mu" id="ccy"></span><input id="size" type="number" min="1" step="1" value="20" aria-label="Size in millions" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><span class="mu">M</span></div>
+      <div class="vtop" id="best"><span id="szb"></span><div class="vs"><button id="mSell"></button><div id="bidBig" data-reset="1"></div></div><div class="vm"><b id="spw"></b><small>pips</small></div><div class="vs"><button id="mBuy"></button><div id="askBig" data-reset="1"></div></div><span id="sza"></span></div>
+      <div class="lr" id="lad"></div>
+      <div class="ent"><span class="mu" id="ccy"></span><input id="size" type="number" min="1" step="1" value="20" aria-label="Size in millions" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><span class="mu" id="szq"></span><b>M</b></div>
       <div class="pr"><input id="pb" aria-label="Bid price" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><button id="bBid">Bid</button><input id="pa" aria-label="Ask price" autocomplete="one-time-code" data-lpignore="true" data-1p-ignore><button id="bAsk">Ask</button></div>
     </section>
   </div>
   <div class="col-resizer" title="Drag to resize column"></div>
-  <div class="col" style="flex:1.1"><section class="pn fionly" id="p-calc"><div class="ph"><h3 id="calcT"></h3></div><div id="calcB"></div></section><section class="pn" id="p-calls">
+  <div class="col" style="width:464px;flex:none"><section class="pn fionly" id="p-calc"><div class="ph"><h3 id="calcT"></h3></div><div id="calcB"></div></section><section class="pn" id="p-calls">
     <div class="ph"><h3>Calls</h3><span class="mu" id="wait"></span></div>
     <div class="row" style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="tabs"><button id="tA" class="on"></button><button id="tR"></button></div><span class="mu">Auto-quote<span class="sw" id="auto" role="switch" aria-checked="false" tabindex="0"></span><span id="aq"></span></span></div>
     <div style="margin-bottom:8px"><button id="cmm" style="width:100%">☎ Call market makers</button></div>
@@ -188,7 +224,7 @@ body.isfi #cmm{width:auto!important;display:block;margin-left:auto}
     <section class="pn" id="p-log"><div class="ph"><h3>Log</h3><span class="mu" id="lnum"></span></div><div id="logB" style="max-height:300px;overflow:auto"></div></section>
   </div>
   <div class="col-resizer" title="Drag to resize column"></div>
-  <div class="col" style="width:380px"><section class="pn" id="p-news">
+  <div class="col" style="width:308px"><section class="pn" id="p-news">
     <div class="tabs" style="margin-bottom:8px"><button id="nT" class="on">News</button><button id="cT">Calendar</button><button class="lnk" id="brief2" style="margin-left:auto">Morning brief</button></div>
     <div id="nbody"></div><div class="ph" style="margin-top:8px"><span class="mu">Online</span><b id="onl">10</b></div>
   </section></div>
@@ -889,9 +925,9 @@ function render(){
    <div class="kv mu"><span>${S.orders.filter(o=>o.q>0).map(o=>"Bid "+fM(o.left)+" @ "+fp(o.px)).join(", ")||"No bids"}</span><span>${S.orders.filter(o=>o.q<0).map(o=>"Ask "+fM(o.left)+" @ "+fp(o.px)).join(", ")||"No asks"}</span></div>`;
   if(sc.fi)$("posB").innerHTML=fiPos();
   const sz=+$("size").value||0;$("mSell").textContent="SELL "+fM(sz);$("mBuy").textContent="BUY "+fM(sz);$("szb").textContent=fM(S.zB[0]);$("sza").textContent=fM(S.zA[0]);
-  $("best").innerHTML=`<span data-reset="1">${fp(b)}</span><small>${sprP()} pips</small><span data-reset="1">${fp(a)}</span>`;
+  $("bidBig").textContent=fp(b);$("askBig").textContent=fp(a);$("spw").textContent=sprP();$("szq").textContent="/"+fM(sz);
   let h="";const mx=Math.max(...S.zB.slice(1),...S.zA.slice(1));
-  for(let k=1;k<=10;k++)h+=`<div class="l" style="--w:${S.zB[k]/mx*100}%" data-p="${fp(lvl(false,k))}" data-s="b"><small>${fM(S.zB[k])}</small><span class="dn">${fp(lvl(false,k))}</span></div><div class="r" style="--w:${S.zA[k]/mx*100}%" data-p="${fp(lvl(true,k))}" data-s="a"><span class="up">${fp(lvl(true,k))}</span><small>${fM(S.zA[k])}</small></div>`;
+  for(let k=1;k<=10;k++)h+=`<div class="ol" data-p="${fp(lvl(false,k))}" data-s="b"><span class="sz">${fM(S.zB[k])}</span><span class="bw"><i style="width:${S.zB[k]/mx*100}%"></i><b>${fp(lvl(false,k))}</b></span></div><div class="or" data-p="${fp(lvl(true,k))}" data-s="a"><span class="bw"><i style="width:${S.zA[k]/mx*100}%"></i><b>${fp(lvl(true,k))}</b></span><span class="sz">${fM(S.zA[k])}</span></div>`;
   $("lad").innerHTML=sc.fi?fiLad():h;
   [["pb",b],["pa",a]].forEach(([id,v])=>{const e=$(id);if(!e.dataset.d&&document.activeElement!==e)e.value=fp(v)});
   $("onum").textContent=S.orders.length+" orders";
@@ -1114,7 +1150,7 @@ $("run").onclick=()=>toggleRun();$("spd").onchange=()=>ALL.forEach(t=>t.speed=+$
 $("mBuy").onclick=()=>market(+$("size").value,"ladder");$("mSell").onclick=()=>market(-$("size").value,"ladder");
 $("bBid").onclick=()=>post(1);$("bAsk").onclick=()=>post(-1);
 ["pb","pa"].forEach(i=>$(i).oninput=()=>$(i).dataset.d="1");
-$("best").onclick=()=>{["pb","pa"].forEach(i=>$(i).dataset.d="")};
+$("best").onclick=e=>{if(e.target.closest("[data-reset]"))["pb","pa"].forEach(i=>$(i).dataset.d="")};
 $("lad").onclick=e=>{const d=e.target.closest("[data-p]");if(!d)return;if(S.sc.fi){market((d.dataset.s==="a"?1:-1)*(+$("size").value),"ladder");return}const el=$(d.dataset.s==="b"?"pb":"pa");el.value=d.dataset.p;el.dataset.d="1"};
 $("ordB").onclick=e=>{const id=e.target.dataset.x;if(!id||!guard())return;S.orders=S.orders.filter(o=>o.id!=id);L("info","Order cancelled")};
 $("cmm").onclick=()=>{if(!guard())return;const z=+$("size").value;if(!(z>0))return void err("Enter a size.");if(S.calls.some(c=>c.mm&&c.st==="active"))return void err("You already have a market-maker call open.");S.calls.unshift({id:S.cid++,cl:{n:pick(MMN),ty:"Interbank",inf:0},mm:1,size:z,st:"active",pend:true,wait:rnd(2,5),left:0,at:S.sim});S.tab="active";S.v2++};
@@ -1147,9 +1183,9 @@ SCB.forEach((c,i)=>{const o=document.createElement("option");o.value=i;o.textCon
 $("scn").onchange=()=>{if(S.sim>0&&!S.fin&&!confirm("Ganti valas akan memulai sesi baru. Lanjut?")){$("scn").value=pi;return}init(+$("scn").value);showBrief(true)};
 
 /* ---------- drag, drop & resize panel + column splitter ---------- */
-const LK="mts_layout2",SZK="mts_panel_sizes",COLS=()=>[...document.querySelectorAll("main .col")],ids=c=>[...c.querySelectorAll(":scope>.pn")].map(p=>p.id);
+const LK="mts_layout2",SZK="mts_panel_sizes2",COLS=()=>[...document.querySelectorAll("main .col")],ids=c=>[...c.querySelectorAll(":scope>.pn")].map(p=>p.id);
 const DEF=COLS().map(ids);
-const DEF_COL_W=["310px","","","380px"];
+const DEF_COL_W=["464px","464px","","308px"];
 
 function saveSizes(){
   const cols=COLS().map(c=>c.style.width||"");
@@ -1254,7 +1290,7 @@ $("lrst").onclick=()=>{applyLay(document.body.classList.contains("isfi")?FIA:DEF
 
 /* ================= ONLINE LAYER (Supabase) ================= */
 const sb=(window.supabase&&!/ISI_/.test(SUPABASE_URL+SUPABASE_ANON_KEY))?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}):null;
-let SESS=null,saving=0,KIND="",finishing=0,CH=[],LBD=[],LBS="pnl",LBF=false;
+let SESS=null,saving=0,KIND="",finishing=0,CH=[],LBD=[],LBS="pnl",LBF=false,LBP=0,LBN=50;
 const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));v===null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const snap=()=>({pi,usd:USDIDR,S:Object.assign({},S,{log:S.log.slice(0,150)})});
 const ordn=n=>{n=Math.round(n);const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
@@ -1422,16 +1458,19 @@ $("notyou").onclick=()=>{if(SESS&&S&&!S.fin){S.paused=true;saveNow()}location.re
 const LBCOLS="id,player_name,game_no,pair,status,pnl,pct,duration_sec,used_sec,updated_at,finished_at,room_code,room_name";
 async function loadLB(box,lim){
   if(!sb)return;const bx=$("lbBox");
-  try{const {data,error}=await sb.from("dealer_sessions").select(LBCOLS).order("pnl",{ascending:false}).limit(200);
+  try{let data=[],error=null,from=0;for(;;){const r=await sb.from("dealer_sessions").select(LBCOLS).order("pnl",{ascending:false}).order("id").range(from,from+999);if(r.error){error=r.error;break}data=data.concat(r.data||[]);if(!r.data||r.data.length<1000||from>=19000)break;from+=1000}
     if(error){console.error("LB error:",error);if(bx)bx.innerHTML='<p class="dn">Gagal memuat leaderboard: '+esc(error.message)+'. Pastikan supabase_setup_v7.sql sudah dijalankan di Supabase SQL Editor.</p>';return}
     LBD=(data||[]).map(r=>({...r,pnl:+r.pnl||0,pct:r.pct==null?null:+r.pct,used_sec:+r.used_sec||0,duration_sec:+r.duration_sec||0}));drawLB()}
   catch(e){console.error(e);if(bx)bx.innerHTML='<p class="dn">Gagal memuat leaderboard: '+esc(e.message||e)+'</p>'}}
 function drawLB(){const box=$("lbBox"),Q=(LBD||[]).filter(r=>!LBF||r.status==="finished");
-  const m=Q.slice().sort((a,b)=>LBS==="pct"?(b.pct||0)-(a.pct||0):b.pnl-a.pnl),f=LBF?"checked":"";
-  box.innerHTML=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap"><span class="mu">Urut:</span><button data-s="pnl" class="${LBS==="pnl"?"pri":""}">Total P&amp;L (USD)</button><button data-s="pct" class="${LBS==="pct"?"pri":""}">% terhadap MAT</button><label style="margin-left:auto;cursor:pointer"><input type="checkbox" id="lbf" ${f}> Hanya yang selesai</label></div>`+(m.length?`<table><thead><tr><th>#</th><th>Player</th><th>Game</th><th>Server</th><th>Pair</th><th>Status</th><th>P&amp;L (USD)</th><th>% MAT</th><th>Time</th></tr></thead><tbody>${m.slice(0,25).map((r,i)=>{
+  const m=Q.slice().sort((a,b)=>LBS==="pct"?(b.pct||0)-(a.pct||0):b.pnl-a.pnl),f=LBF?"checked":"",PG=Math.max(1,Math.ceil(m.length/LBN));if(LBP>=PG)LBP=PG-1;if(LBP<0)LBP=0;
+  box.innerHTML=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap"><span class="mu">Urut:</span><button data-s="pnl" class="${LBS==="pnl"?"pri":""}">Total P&amp;L (USD)</button><button data-s="pct" class="${LBS==="pct"?"pri":""}">% terhadap MAT</button><label style="margin-left:auto;cursor:pointer"><input type="checkbox" id="lbf" ${f}> Hanya yang selesai</label></div>`+(m.length?`<table><thead><tr><th>#</th><th>Player</th><th>Game</th><th>Server</th><th>Pair</th><th>Status</th><th>P&amp;L (USD)</th><th>% MAT</th><th>Time</th></tr></thead><tbody>${m.slice(LBP*LBN,(LBP+1)*LBN).map((r,i0)=>{const i=i0+LBP*LBN;
     const lv=r.status==="finished"?["Finished","mu"]:Date.now()-Date.parse(r.updated_at)<30000?["Live","up"]:["Paused","am"],me=SESS&&r.id===SESS.id,pc=r.pct;
-    return `<tr style="${me?"font-weight:700":""}"><td>${i+1}</td><td>${esc(r.player_name)}</td><td>#${r.game_no}</td><td>${esc(r.room_name||r.room_code||"—")}</td><td>${esc(r.pair)}</td><td class="${lv[1]}">${lv[0]}</td><td class="${cu(r.pnl)}">${fU(r.pnl)}</td><td class="${pc==null?"mu":cu(pc)}">${pc==null?"—":(pc>=0?"+":"")+(+pc).toFixed(1)+"%"}</td><td>${mm(r.used_sec)} / ${mm(r.duration_sec)}</td></tr>`}).join("")}</tbody></table>`:'<p class="mu">Belum ada sesi.</p>');
-  box.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{LBS=b.dataset.s;drawLB()});const lf=$("lbf");if(lf)lf.onchange=e=>{LBF=e.target.checked;drawLB()}}
+    return `<tr style="${me?"font-weight:700":""}"><td>${i+1}</td><td>${esc(r.player_name)}</td><td>#${r.game_no}</td><td>${esc(r.room_name||r.room_code||"—")}</td><td>${esc(r.pair)}</td><td class="${lv[1]}">${lv[0]}</td><td class="${cu(r.pnl)}">${fU(r.pnl)}</td><td class="${pc==null?"mu":cu(pc)}">${pc==null?"—":(pc>=0?"+":"")+(+pc).toFixed(1)+"%"}</td><td>${mm(r.used_sec)} / ${mm(r.duration_sec)}</td></tr>`}).join("")}</tbody></table><div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:10px;flex-wrap:wrap"><button data-pg="-1" ${LBP<=0?"disabled":""}>← Prev</button><span class="mu">Halaman ${LBP+1} / ${PG} · peringkat ${LBP*LBN+1}–${Math.min(m.length,(LBP+1)*LBN)} dari ${m.length}</span><button data-pg="1" ${LBP>=PG-1?"disabled":""}>Next →</button><select id="lbn" style="width:auto">${[25,50,100].map(n=>`<option value="${n}" ${n===LBN?"selected":""}>${n} / halaman</option>`).join("")}</select></div>`:'<p class="mu">Belum ada sesi.</p>');
+  box.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{LBS=b.dataset.s;LBP=0;drawLB()});
+  box.querySelectorAll("[data-pg]").forEach(b=>b.onclick=()=>{LBP+=+b.dataset.pg;drawLB()});
+  const ln=$("lbn");if(ln)ln.onchange=e=>{LBN=+e.target.value;LBP=0;drawLB()};
+  const lf=$("lbf");if(lf)lf.onchange=e=>{LBF=e.target.checked;LBP=0;drawLB()}}
 setInterval(()=>{if($("lobby").style.display!=="none"){loadLB($("lbBox"),1);loadRooms()}},5000);
 
 /* --- metrics & post-session report --- */
