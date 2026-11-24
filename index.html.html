@@ -971,6 +971,9 @@ function renderCalls(){
 $("clist").addEventListener("input",e=>{const t=e.target,ci=t.closest?t.closest(".call"):null;if(!ci)return;const c=S.calls.find(x=>x.id==ci.dataset.id);if(!c)return;
   if(t.hasAttribute("data-cb"))c.ub=t.value;else if(t.hasAttribute("data-ca"))c.ua=t.value;else if(t.hasAttribute("data-cp"))c.uv=t.value});
 $("clist").addEventListener("keydown",e=>{const t=e.target;if(!t||!t.hasAttribute||!(t.hasAttribute("data-cb")||t.hasAttribute("data-ca")||t.hasAttribute("data-cp")))return;
+  if(e.key==="Enter"){const ci=t.closest(".call"),c=ci&&S.calls.find(x=>x.id==ci.dataset.id);if(!c||c.st!=="active"||c.pend)return;e.preventDefault();
+    if(t.hasAttribute("data-cp")){const v=ip(+t.value);sendQuote(c,v,v)}
+    else sendQuote(c,ip(+ci.querySelector("[data-cb]").value),ip(+ci.querySelector("[data-ca]").value));return}
   const m={ArrowLeft:-1,ArrowRight:1,ArrowUp:2,ArrowDown:-2}[e.key];if(m==null)return;
   const ci=t.closest(".call"),c=ci&&S.calls.find(x=>x.id==ci.dataset.id);if(!c)return;e.preventDefault();
   const dc=S.sc.fi?(S.sc.fdec||4):S.sc.dec,u=Math.pow(10,-dc),d=m*u,v=+t.value;if(!isFinite(v)||t.value==="")return;
